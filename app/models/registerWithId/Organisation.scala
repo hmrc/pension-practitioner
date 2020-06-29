@@ -23,13 +23,11 @@ import play.api.libs.json._
 case class Organisation(organisationName: String, organisationType: OrganisationTypeEnum.OrganisationType)
 
 object Organisation {
-  implicit val rds: Reads[Organisation] = (
+  implicit val reads: Reads[Organisation] = (
     (JsPath \ "organisationName").read[String] and
       (JsPath \ "organisationType").read(EnumUtils.enumReads(OrganisationTypeEnum))
     ) (
     (orgName, orgType) => {
-      println("\n\n\n orgName: "+orgName)
-      println("updated :"+orgName.replaceAll("""[^a-zA-Z0-9 '&\/]+""", ""))
       Organisation(
         orgName.replaceAll("""[^a-zA-Z0-9 '&\/]+""", ""),
         orgType
