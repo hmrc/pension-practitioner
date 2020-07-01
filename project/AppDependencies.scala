@@ -1,6 +1,4 @@
 import play.core.PlayVersion.current
-import play.sbt.PlayImport._
-import sbt.Keys.libraryDependencies
 import sbt._
 
 object AppDependencies {
@@ -19,7 +17,8 @@ object AppDependencies {
     "org.scalatestplus.play"  %% "scalatestplus-play"       % "3.1.2"                 % "test, it",
     "org.mockito"             %  "mockito-all"              % "1.10.19"               % "test",
     "org.scalacheck"              %% "scalacheck"                   % "1.14.0"            % "test",
-    "com.github.tomakehurst"  %  "wiremock-jre8"            % "2.26.0"                % "test"
+    "com.github.tomakehurst"  %  "wiremock-jre8"            % "2.26.0"                % "test",
+    "org.scalatestplus.play"  %% "scalatestplus-play"       % "3.1.2"                 % "test, it"
   )
 
 }
