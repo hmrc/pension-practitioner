@@ -5,4 +5,6 @@ POST        /register-with-id/organisation              controllers.Registration
 POST        /register-with-no-id/organisation           controllers.RegistrationController.registrationNoIdOrganisation
 POST        /register-with-no-id/individual             controllers.RegistrationController.registrationNoIdIndividual
 
-
+GET         /journey-cache                              controllers.cache.DataCacheController.get
+POST        /journey-cache                              controllers.cache.DataCacheController.save
+DELETE      /journey-cache                              controllers.cache.DataCacheController.remove
