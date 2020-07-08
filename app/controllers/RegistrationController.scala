@@ -57,7 +57,7 @@ class RegistrationController @Inject()(
       withAuth { externalId =>
         (request.headers.get("utr"), request.body.asJson) match {
           case (Some(utr), Some(jsBody)) =>
-            val registerWithIdData = Json.obj(fields = "regime" -> "PODP", "requiresNameMatch" -> false, "isAnAgent" -> false) ++
+            val registerWithIdData = Json.obj(fields = "regime" -> "PODP", "requiresNameMatch" -> true, "isAnAgent" -> false) ++
               Json.obj(fields = "organisation" -> Json.toJson(jsBody.convertTo[Organisation]))
             registerConnector.registerWithIdOrganisation(externalId, utr, registerWithIdData).map { response =>
               Ok(Json.toJson(response))
