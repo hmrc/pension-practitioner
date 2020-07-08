@@ -117,7 +117,7 @@ class RegistrationControllerSpec extends AsyncWordSpec with MustMatchers with Mo
 
     val mandatoryRequestData = Json.parse(
       """
-        |{"regime":"PODP","isAnAgent":false,"organisation":{"organisationName":"Test Ltd","organisationType":"Corporate Body"},"requiresNameMatch":false}
+        |{"regime":"PODP","isAnAgent":false,"organisation":{"organisationName":"Test Ltd","organisationType":"Corporate Body"},"requiresNameMatch":true}
       """.stripMargin
     )
 
