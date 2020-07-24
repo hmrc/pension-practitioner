@@ -44,7 +44,7 @@ class RegistrationAuditService @Inject()(auditService: AuditService) {
 
     case Failure(error: UpstreamErrorResponse) =>
       auditService.sendEvent(PSPRegistration(withId, externalId, psaType, found = true,
-        None, error.upstreamResponseCode, requestJson, None))
+        None, error.statusCode, requestJson, None))
 
     case Failure(error: HttpException) =>
       auditService.sendEvent(PSPRegistration(withId, externalId, psaType, found = true,
@@ -60,7 +60,7 @@ class RegistrationAuditService @Inject()(auditService: AuditService) {
 
     case Failure(error: UpstreamErrorResponse) =>
       auditService.sendEvent(PSPRegistration(withId, externalId, psaType, found = true,
-        None, error.upstreamResponseCode, requestJson, None))
+        None, error.statusCode, requestJson, None))
 
     case Failure(error: HttpException) =>
       auditService.sendEvent(PSPRegistration(withId, externalId, psaType, found = true,
