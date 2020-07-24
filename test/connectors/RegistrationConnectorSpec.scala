@@ -95,9 +95,7 @@ class RegistrationConnectorSpec extends AsyncWordSpec with MustMatchers with Wir
           )
       )
 
-      recoverToExceptionIf[UpstreamErrorResponse](
-        connector.registerWithIdIndividual(externalId, testNino, testRegisterDataIndividual)
-      ) map {
+      recoverToExceptionIf[UpstreamErrorResponse](connector.registerWithIdIndividual(externalId, testNino, testRegisterDataIndividual)) map {
         ex =>
           ex.statusCode mustBe BAD_REQUEST
           ex.message must include("INVALID_NINO")
@@ -113,9 +111,7 @@ class RegistrationConnectorSpec extends AsyncWordSpec with MustMatchers with Wir
           )
       )
 
-      recoverToExceptionIf[UpstreamErrorResponse](
-        connector.registerWithIdIndividual(externalId, testNino, testRegisterDataIndividual)
-      ) map {
+      recoverToExceptionIf[UpstreamErrorResponse](connector.registerWithIdIndividual(externalId, testNino, testRegisterDataIndividual)) map {
         ex =>
           ex.statusCode mustBe SERVICE_UNAVAILABLE
       }
@@ -134,16 +130,8 @@ class RegistrationConnectorSpec extends AsyncWordSpec with MustMatchers with Wir
       )
       connector.registerWithIdIndividual(externalId, testNino, testRegisterDataIndividual).map { _ =>
         verify(mockAuditService, times(1)).sendEvent(eventCaptor.capture())(any(), any())
-        eventCaptor.getValue mustEqual PSPRegistration(
-          withId = true,
-          externalId = externalId,
-          psaType = "Individual",
-          found = true,
-          isUk = Some(true),
-          status = Status.OK,
-          request = testRegisterDataIndividual,
-          response = Some(Json.toJson(registerIndividualResponse.as[RegisterWithIdResponse]))
-        )
+        eventCaptor.getValue mustEqual PSPRegistration(withId = true, externalId, "Individual", found = true,
+          Some(true), Status.OK, testRegisterDataIndividual, Some(Json.toJson(registerIndividualResponse.as[RegisterWithIdResponse])))
       }
     }
   }
@@ -175,9 +163,7 @@ class RegistrationConnectorSpec extends AsyncWordSpec with MustMatchers with Wir
           )
       )
 
-      recoverToExceptionIf[UpstreamErrorResponse](
-        connector.registerWithIdOrganisation(externalId, testUtr, testRegisterDataOrganisation)
-      ) map {
+      recoverToExceptionIf[UpstreamErrorResponse](connector.registerWithIdOrganisation(externalId, testUtr, testRegisterDataOrganisation)) map {
         ex =>
           ex.statusCode mustBe BAD_REQUEST
           ex.message must include("INVALID_UTR")
@@ -193,9 +179,7 @@ class RegistrationConnectorSpec extends AsyncWordSpec with MustMatchers with Wir
           )
       )
 
-      recoverToExceptionIf[UpstreamErrorResponse](
-        connector.registerWithIdOrganisation(externalId, testUtr, testRegisterDataOrganisation)
-      ) map {
+      recoverToExceptionIf[UpstreamErrorResponse](connector.registerWithIdOrganisation(externalId, testUtr, testRegisterDataOrganisation)) map {
         ex =>
           ex.statusCode mustBe CONFLICT
       }
@@ -215,16 +199,8 @@ class RegistrationConnectorSpec extends AsyncWordSpec with MustMatchers with Wir
 
       connector.registerWithIdOrganisation(externalId, testUtr, testRegisterDataOrganisation).map { _ =>
         verify(mockAuditService, times(1)).sendEvent(eventCaptor.capture())(any(), any())
-        eventCaptor.getValue mustEqual PSPRegistration(
-          withId = true,
-          externalId = externalId,
-          psaType = psaType,
-          found = true,
-          isUk = Some(true),
-          status = Status.OK,
-          request = testRegisterDataOrganisation,
-          response = Some(Json.toJson(registerOrganisationResponse.as[RegisterWithIdResponse]))
-        )
+        eventCaptor.getValue mustEqual PSPRegistration(withId = true, externalId, psaType, found = true,
+          Some(true), Status.OK, testRegisterDataOrganisation, Some(Json.toJson(registerOrganisationResponse.as[RegisterWithIdResponse])))
       }
     }
   }
@@ -249,8 +225,7 @@ class RegistrationConnectorSpec extends AsyncWordSpec with MustMatchers with Wir
     "send a PSPRegistration audit event on success" in {
       Mockito.reset(mockAuditService)
       when(mockHeaderUtils.getCorrelationId(any())).thenReturn(testCorrelationId)
-      val regWithoutIdRequest =
-        Json.toJson(organisationRegistrant)(OrganisationRegistrant.writesOrganisationRegistrantRequest(testCorrelationId))
+      val regWithoutIdRequest = Json.toJson(organisationRegistrant)(OrganisationRegistrant.writesOrganisationRegistrantRequest(testCorrelationId))
       server.stubFor(
         post(urlEqualTo(registerOrganisationWithoutIdUrl))
           .willReturn(
@@ -262,16 +237,8 @@ class RegistrationConnectorSpec extends AsyncWordSpec with MustMatchers with Wir
 
       connector.registrationNoIdOrganisation(externalId, organisationRegistrant).map { _ =>
         verify(mockAuditService, times(1)).sendEvent(eventCaptor.capture())(any(), any())
-        eventCaptor.getValue mustEqual PSPRegistration(
-          withId = false,
-          externalId = externalId,
-          psaType = "Organisation",
-          found = true,
-          isUk = Some(false),
-          status = Status.OK,
-          request = regWithoutIdRequest,
-          response = Some(registerWithoutIdResponseJson)
-        )
+        eventCaptor.getValue mustEqual PSPRegistration(withId = false, externalId, "Organisation", found = true,
+          Some(false), Status.OK, regWithoutIdRequest, Some(registerWithoutIdResponseJson))
       }
     }
   }
@@ -442,8 +409,7 @@ object RegistrationConnectorSpec {
     )
 
   private val registerIndividualWithoutIdRequestJson: JsValue =
-    Json.toJson(registerIndividualWithoutIdRequest)
-  RegisterWithoutIdIndividualRequest.writesRegistrationNoIdIndividualRequest(testCorrelationId)
+    Json.toJson(registerIndividualWithoutIdRequest)(RegisterWithoutIdIndividualRequest.writesRegistrationNoIdIndividualRequest(testCorrelationId))
 
   private def errorResponse(code: String): String = {
     Json.obj(
