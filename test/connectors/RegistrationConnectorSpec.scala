@@ -34,6 +34,7 @@ import play.api.inject.guice.GuiceableModule
 import play.api.libs.json.{JsNull, JsObject, JsValue, Json}
 import play.api.mvc.RequestHeader
 import play.api.test.FakeRequest
+import repository.DataCacheRepository
 import uk.gov.hmrc.http.{HeaderCarrier, _}
 import utils.WireMockHelper
 
@@ -48,13 +49,15 @@ class RegistrationConnectorSpec extends AsyncWordSpec with MustMatchers with Wir
 
   private val mockAuditService = mock[AuditService]
   private val mockHeaderUtils = mock[HeaderUtils]
+  private val mockDataCacheRepository = mock[DataCacheRepository]
 
   private lazy val connector: RegistrationConnector = injector.instanceOf[RegistrationConnector]
 
   override protected def bindings: Seq[GuiceableModule] =
     Seq(
       bind[AuditService].toInstance(mockAuditService),
-      bind[HeaderUtils].toInstance(mockHeaderUtils)
+      bind[HeaderUtils].toInstance(mockHeaderUtils),
+      bind[DataCacheRepository].toInstance(mockDataCacheRepository)
     )
 
   private val registerIndividualWithIdUrl = s"/registration/individual/nino/$testNino"
@@ -95,9 +98,9 @@ class RegistrationConnectorSpec extends AsyncWordSpec with MustMatchers with Wir
           )
       )
 
-      recoverToExceptionIf[BadRequestException](connector.registerWithIdIndividual(externalId, testNino, testRegisterDataIndividual)) map {
+      recoverToExceptionIf[UpstreamErrorResponse](connector.registerWithIdIndividual(externalId, testNino, testRegisterDataIndividual)) map {
         ex =>
-          ex.responseCode mustBe BAD_REQUEST
+          ex.statusCode mustBe BAD_REQUEST
           ex.message must include("INVALID_NINO")
       }
     }
@@ -111,9 +114,9 @@ class RegistrationConnectorSpec extends AsyncWordSpec with MustMatchers with Wir
           )
       )
 
-      recoverToExceptionIf[Upstream5xxResponse](connector.registerWithIdIndividual(externalId, testNino, testRegisterDataIndividual)) map {
+      recoverToExceptionIf[UpstreamErrorResponse](connector.registerWithIdIndividual(externalId, testNino, testRegisterDataIndividual)) map {
         ex =>
-          ex.upstreamResponseCode mustBe SERVICE_UNAVAILABLE
+          ex.statusCode mustBe SERVICE_UNAVAILABLE
       }
     }
 
@@ -163,9 +166,9 @@ class RegistrationConnectorSpec extends AsyncWordSpec with MustMatchers with Wir
           )
       )
 
-      recoverToExceptionIf[BadRequestException](connector.registerWithIdOrganisation(externalId, testUtr, testRegisterDataOrganisation)) map {
+      recoverToExceptionIf[UpstreamErrorResponse](connector.registerWithIdOrganisation(externalId, testUtr, testRegisterDataOrganisation)) map {
         ex =>
-          ex.responseCode mustBe BAD_REQUEST
+          ex.statusCode mustBe BAD_REQUEST
           ex.message must include("INVALID_UTR")
       }
     }
@@ -179,9 +182,9 @@ class RegistrationConnectorSpec extends AsyncWordSpec with MustMatchers with Wir
           )
       )
 
-      recoverToExceptionIf[Upstream4xxResponse](connector.registerWithIdOrganisation(externalId, testUtr, testRegisterDataOrganisation)) map {
+      recoverToExceptionIf[UpstreamErrorResponse](connector.registerWithIdOrganisation(externalId, testUtr, testRegisterDataOrganisation)) map {
         ex =>
-          ex.upstreamResponseCode mustBe CONFLICT
+          ex.statusCode mustBe CONFLICT
       }
     }
 

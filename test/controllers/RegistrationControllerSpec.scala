@@ -32,6 +32,7 @@ import play.api.inject.guice.{GuiceApplicationBuilder, GuiceableModule}
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{INTERNAL_SERVER_ERROR, contentAsJson, status, _}
+import repository.DataCacheRepository
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http._
 
@@ -43,11 +44,13 @@ class RegistrationControllerSpec extends AsyncWordSpec with MustMatchers with Mo
 
   private val mockRegistrationConnector = mock[RegistrationConnector]
   private val authConnector: AuthConnector = mock[AuthConnector]
+  private val mockDataCacheRepository = mock[DataCacheRepository]
 
   private val modules: Seq[GuiceableModule] =
     Seq(
       bind[AuthConnector].toInstance(authConnector),
-      bind[RegistrationConnector].toInstance(mockRegistrationConnector)
+      bind[RegistrationConnector].toInstance(mockRegistrationConnector),
+      bind[DataCacheRepository].toInstance(mockDataCacheRepository)
     )
 
   private val application: Application = new GuiceApplicationBuilder()
@@ -103,12 +106,12 @@ class RegistrationControllerSpec extends AsyncWordSpec with MustMatchers with Mo
     "throw Upstream5XXResponse on Internal Server Error from DES" in {
 
       when(mockRegistrationConnector.registerWithIdIndividual(any(), any(), any())(any(), any(), any()))
-        .thenReturn(Future.failed(Upstream5xxResponse(message = "Internal Server Error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR)))
+        .thenReturn(Future.failed(UpstreamErrorResponse(message = "Internal Server Error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR)))
 
-      recoverToExceptionIf[Upstream5xxResponse] {
+      recoverToExceptionIf[UpstreamErrorResponse] {
         controller.registerWithIdIndividual(fakeRequestWithNino)
       } map {
-        _.upstreamResponseCode mustBe INTERNAL_SERVER_ERROR
+        _.statusCode mustBe INTERNAL_SERVER_ERROR
       }
     }
   }
@@ -156,12 +159,12 @@ class RegistrationControllerSpec extends AsyncWordSpec with MustMatchers with Mo
     "throw Upstream5XXResponse on Internal Server Error from DES" in {
 
       when(mockRegistrationConnector.registerWithIdOrganisation(any(), any(), any())(any(), any(), any()))
-        .thenReturn(Future.failed(Upstream4xxResponse(message = "CONFLICT", CONFLICT, CONFLICT)))
+        .thenReturn(Future.failed(UpstreamErrorResponse(message = "CONFLICT", CONFLICT, CONFLICT)))
 
-      recoverToExceptionIf[Upstream4xxResponse] {
+      recoverToExceptionIf[UpstreamErrorResponse] {
         controller.registerWithIdOrganisation(fakeRequestWithUtr)
       } map {
-        _.upstreamResponseCode mustBe CONFLICT
+        _.statusCode mustBe CONFLICT
       }
     }
   }
@@ -206,12 +209,12 @@ class RegistrationControllerSpec extends AsyncWordSpec with MustMatchers with Mo
     "throw Upstream5XXResponse on Internal Server Error from DES" in {
 
       when(mockRegistrationConnector.registrationNoIdIndividual(any(), any())(any(), any(), any()))
-        .thenReturn(Future.failed(Upstream5xxResponse(message = "Internal Server Error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR)))
+        .thenReturn(Future.failed(UpstreamErrorResponse(message = "Internal Server Error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR)))
 
-      recoverToExceptionIf[Upstream5xxResponse] {
+      recoverToExceptionIf[UpstreamErrorResponse] {
         call(controller.registrationNoIdIndividual, fakeRequestWithNoIdIndBody)
       } map {
-        _.upstreamResponseCode mustBe INTERNAL_SERVER_ERROR
+        _.statusCode mustBe INTERNAL_SERVER_ERROR
       }
     }
   }
@@ -262,12 +265,12 @@ class RegistrationControllerSpec extends AsyncWordSpec with MustMatchers with Mo
     "throw Upstream5XXResponse on Internal Server Error from DES" in {
 
       when(mockRegistrationConnector.registrationNoIdOrganisation(any(), any())(any(), any(), any()))
-        .thenReturn(Future.failed(Upstream5xxResponse(message = "Internal Server Error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR)))
+        .thenReturn(Future.failed(UpstreamErrorResponse(message = "Internal Server Error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR)))
 
-      recoverToExceptionIf[Upstream5xxResponse] {
+      recoverToExceptionIf[UpstreamErrorResponse] {
         call(controller.registrationNoIdOrganisation, fakeRequestWithNoIdOrgBody)
       } map {
-        _.upstreamResponseCode mustBe INTERNAL_SERVER_ERROR
+        _.statusCode mustBe INTERNAL_SERVER_ERROR
       }
     }
   }
