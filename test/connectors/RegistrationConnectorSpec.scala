@@ -34,6 +34,7 @@ import play.api.inject.guice.GuiceableModule
 import play.api.libs.json.{JsNull, JsObject, JsValue, Json}
 import play.api.mvc.RequestHeader
 import play.api.test.FakeRequest
+import repository.DataCacheRepository
 import uk.gov.hmrc.http.{HeaderCarrier, _}
 import utils.WireMockHelper
 
@@ -48,13 +49,15 @@ class RegistrationConnectorSpec extends AsyncWordSpec with MustMatchers with Wir
 
   private val mockAuditService = mock[AuditService]
   private val mockHeaderUtils = mock[HeaderUtils]
+  private val mockDataCacheRepository = mock[DataCacheRepository]
 
   private lazy val connector: RegistrationConnector = injector.instanceOf[RegistrationConnector]
 
   override protected def bindings: Seq[GuiceableModule] =
     Seq(
       bind[AuditService].toInstance(mockAuditService),
-      bind[HeaderUtils].toInstance(mockHeaderUtils)
+      bind[HeaderUtils].toInstance(mockHeaderUtils),
+      bind[DataCacheRepository].toInstance(mockDataCacheRepository)
     )
 
   private val registerIndividualWithIdUrl = s"/registration/individual/nino/$testNino"

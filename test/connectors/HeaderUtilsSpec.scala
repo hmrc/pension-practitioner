@@ -18,8 +18,10 @@ package connectors
 
 import config.AppConfig
 import org.scalatest.{MustMatchers, WordSpec}
-import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.mockito.MockitoSugar
+import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
+import repository.DataCacheRepository
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.RequestId
 
@@ -33,7 +35,8 @@ class HeaderUtilsSpec extends WordSpec with MustMatchers {
     "call desHeader" must {
 
       "return all the appropriate headers" in {
-        implicit val hc: HeaderCarrier = HeaderCarrier(requestId = Some(RequestId("govuk-tax-4725c811-9251-4c06-9b8f-f1d84659b2dfe")))
+        implicit val hc: HeaderCarrier =
+          HeaderCarrier(requestId = Some(RequestId("govuk-tax-4725c811-9251-4c06-9b8f-f1d84659b2dfe")))
 
         val result = headerUtils.desHeaderWithoutCorrelationId
         result mustEqual Seq("Environment" -> "local", "Authorization" -> "Bearer test-token",
@@ -64,10 +67,13 @@ class HeaderUtilsSpec extends WordSpec with MustMatchers {
   }
 }
 
-object HeaderUtilsSpec {
+object HeaderUtilsSpec extends MockitoSugar {
+  private val mockDataCacheRepository = mock[DataCacheRepository]
   private val app = new GuiceApplicationBuilder().configure(
     "microservice.services.des-hod.env" -> "local",
     "microservice.services.des-hod.authorizationToken" -> "test-token"
+  ).overrides(
+    bind[DataCacheRepository].toInstance(mockDataCacheRepository)
   ).build()
   private val injector = app.injector
   private val appConfig: AppConfig = injector.instanceOf[AppConfig]
