@@ -68,7 +68,6 @@ object RegisterWithoutIdIndividualRequestSpec {
   private val fullAddressRequest = RegisterWithoutIdIndividualRequest(
     "John",
     "Smith",
-    LocalDate.of(1990, 1, 1),
     Address(
       "100, Sutton Street",
       "Wokingham",
@@ -88,8 +87,7 @@ object RegisterWithoutIdIndividualRequestSpec {
       |  "isAGroup": false,
       |  "individual": {
       |    "firstName": "John",
-      |    "lastName": "Smith",
-      |    "dateOfBirth": "1990-01-01"
+      |    "lastName": "Smith"
       |    },
       |  "address": {
       |    "addressLine1": "100, Sutton Street",
@@ -107,7 +105,6 @@ object RegisterWithoutIdIndividualRequestSpec {
   private val minimalAddressRequest = registerWithoutId.RegisterWithoutIdIndividualRequest(
     "John",
     "Smith",
-    LocalDate.of(1990, 4, 3),
     Address(
       "100, Sutton Street",
       "Wokingham",
@@ -127,8 +124,7 @@ object RegisterWithoutIdIndividualRequestSpec {
       |  "isAGroup": false,
       |  "individual": {
       |    "firstName": "John",
-      |    "lastName": "Smith",
-      |    "dateOfBirth": "1990-04-03"
+      |    "lastName": "Smith"
       |    },
       |  "address": {
       |    "addressLine1": "100, Sutton Street",
