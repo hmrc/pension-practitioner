@@ -400,7 +400,6 @@ object RegistrationConnectorSpec {
     RegisterWithoutIdIndividualRequest(
       "test-first-name",
       "test-last-name",
-      LocalDate.now(),
       Address(
         "test-address-line-1",
         "test-address-line-2",

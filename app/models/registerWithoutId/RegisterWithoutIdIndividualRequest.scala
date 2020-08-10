@@ -20,7 +20,7 @@ import java.time.LocalDate
 
 import play.api.libs.json._
 
-case class RegisterWithoutIdIndividualRequest(firstName: String, lastName: String, dateOfBirth: LocalDate, address: Address)
+case class RegisterWithoutIdIndividualRequest(firstName: String, lastName: String, address: Address)
 
 object RegisterWithoutIdIndividualRequest {
   implicit val formats: Format[RegisterWithoutIdIndividualRequest] = Json.format[RegisterWithoutIdIndividualRequest]
@@ -38,8 +38,7 @@ object RegisterWithoutIdIndividualRequest {
           "isAGroup" -> JsBoolean(false),
           "individual" -> Json.obj(
             "firstName" -> registrant.firstName,
-            "lastName" -> registrant.lastName,
-            "dateOfBirth" -> Json.toJson(registrant.dateOfBirth)
+            "lastName" -> registrant.lastName
           ),
           "address" -> Json.obj(
             "addressLine1" -> registrant.address.addressLine1,
