@@ -37,4 +37,5 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
   lazy val registerWithoutIdIndividualUrl: String = s"$baseURL${config.get[String](path = "serviceUrls.register-without-id-individual")}"
   lazy val registerWithIdIndividualUrl: String = s"$baseURL${config.get[String](path = "serviceUrls.register-with-id-individual")}"
   lazy val registerWithIdOrganisationUrl: String = s"$baseURL${config.get[String](path = "serviceUrls.register-with-id-organisation")}"
+  lazy val pspSubscriptionUrl: String = s"$baseURL${config.get[String](path = "serviceUrls.psp-subscription")}"
 }
