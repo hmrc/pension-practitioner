@@ -8,3 +8,5 @@ POST        /register-with-no-id/individual             controllers.Registration
 GET         /journey-cache                              controllers.cache.DataCacheController.get
 POST        /journey-cache                              controllers.cache.DataCacheController.save
 DELETE      /journey-cache                              controllers.cache.DataCacheController.remove
+
+POST        /subscribePsp                               controllers.SubscriptionController.subscribePsp
