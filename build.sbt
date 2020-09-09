@@ -1,3 +1,4 @@
+import play.sbt.routes.RoutesKeys
 import uk.gov.hmrc.DefaultBuildSettings.integrationTestSettings
 import uk.gov.hmrc.SbtArtifactory
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
@@ -13,6 +14,7 @@ lazy val microservice = Project(appName, file("."))
   )
   .settings(publishingSettings: _*)
   .settings(
+    RoutesKeys.routesImport ++= Seq("models.enumeration.JourneyType"),
     PlayKeys.devSettings += "play.server.http.port" -> "8209"
   )
   .configs(IntegrationTest)

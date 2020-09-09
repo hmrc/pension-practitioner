@@ -10,3 +10,5 @@ POST        /journey-cache                              controllers.cache.DataCa
 DELETE      /journey-cache                              controllers.cache.DataCacheController.remove
 
 POST        /subscribePsp                               controllers.SubscriptionController.subscribePsp
+
+POST          /email-response/:journeyType/:requestId/:email/:psaId        controllers.EmailResponseController.retrieveStatus(journeyType: JourneyType.Name, requestId: String, email: String, psaId: String)
