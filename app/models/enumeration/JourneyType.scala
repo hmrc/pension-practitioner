@@ -21,10 +21,8 @@ import play.api.mvc.PathBindable
 
 object JourneyType extends Enumeration {
   type Name = Value
-  val AFT_COMPILE_RETURN: JourneyType.Value = Value("AFTReturnCompiled")
-  val AFT_SUBMIT_RETURN: JourneyType.Value = Value("AFTReturnSubmitted")
-  val AFT_COMPILE_AMEND: JourneyType.Value = Value("AFTAmendmentCompiled")
-  val AFT_SUBMIT_AMEND: JourneyType.Value = Value("AFTAmendmentSubmitted")
+  // Only one item in this enumeration at present but more will potentially be added later
+  val PSP_SUBSCRIPTION: JourneyType.Value = Value("PSPSubscription")
 
   implicit val journeyTypePathBinder: PathBindable[Name] = EnumPathBinder.pathBinder(this)
 }

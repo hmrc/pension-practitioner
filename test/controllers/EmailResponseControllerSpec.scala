@@ -17,7 +17,7 @@
 package controllers
 
 import audit.{AuditService, EmailAuditEvent}
-import models.enumeration.JourneyType.AFT_SUBMIT_RETURN
+import models.enumeration.JourneyType.PSP_SUBSCRIPTION
 import models.{Sent, _}
 import org.joda.time.DateTime
 import org.mockito.Matchers.any
@@ -43,13 +43,11 @@ class EmailResponseControllerSpec extends AsyncWordSpec with MustMatchers with M
 
   private val mockAuditService = mock[AuditService]
   private val mockAuthConnector = mock[AuthConnector]
- // private val mockDataCacheRepository = mock[AftDataCacheRepository]
 
   private val application: Application = new GuiceApplicationBuilder()
     .configure(conf = "auditing.enabled" -> false, "metrics.enabled" -> false, "metrics.jvm" -> false).
     overrides(Seq(
       bind[AuthConnector].toInstance(mockAuthConnector),
-      //bind[AftDataCacheRepository].toInstance(mockDataCacheRepository),
       bind[AuditService].toInstance(mockAuditService)
     )).build()
 
@@ -67,15 +65,15 @@ class EmailResponseControllerSpec extends AsyncWordSpec with MustMatchers with M
   "EmailResponseController" must {
 
     "respond OK when given EmailEvents" in {
-      val result = controller.retrieveStatus(AFT_SUBMIT_RETURN, requestId, encryptedEmail, encryptedPsaId)(fakeRequest.withBody(Json.toJson(emailEvents)))
+      val result = controller.retrieveStatus(PSP_SUBSCRIPTION, requestId, encryptedEmail, encryptedPsaId)(fakeRequest.withBody(Json.toJson(emailEvents)))
 
       status(result) mustBe OK
       verify(mockAuditService, times(4)).sendEvent(eventCaptor.capture())(any(), any())
-      eventCaptor.getValue mustEqual EmailAuditEvent(psa, email, Complained, AFT_SUBMIT_RETURN, requestId)
+      eventCaptor.getValue mustEqual EmailAuditEvent(psa, email, Complained, PSP_SUBSCRIPTION, requestId)
     }
 
     "respond with BAD_REQUEST when not given EmailEvents" in {
-      val result = controller.retrieveStatus(AFT_SUBMIT_RETURN, requestId, encryptedEmail, encryptedPsaId)(fakeRequest.withBody(Json.obj("name" -> "invalid")))
+      val result = controller.retrieveStatus(PSP_SUBSCRIPTION, requestId, encryptedEmail, encryptedPsaId)(fakeRequest.withBody(Json.obj("name" -> "invalid")))
 
       verify(mockAuditService, never()).sendEvent(any())(any(), any())
       status(result) mustBe BAD_REQUEST

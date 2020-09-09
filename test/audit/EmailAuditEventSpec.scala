@@ -17,9 +17,9 @@
 package audit
 
 import models.Sent
-import org.scalatest.{FlatSpec, Matchers}
-import models.enumeration.JourneyType.AFT_SUBMIT_RETURN
-import play.api.libs.json.{JsObject, Json}
+import models.enumeration.JourneyType
+import org.scalatest.FlatSpec
+import org.scalatest.Matchers
 import uk.gov.hmrc.domain.PsaId
 
 class EmailAuditEventSpec extends FlatSpec with Matchers {
@@ -30,7 +30,7 @@ class EmailAuditEventSpec extends FlatSpec with Matchers {
       psaId = PsaId("A2500001"),
       emailAddress = "test@test.com",
       event = Sent,
-      journeyType = AFT_SUBMIT_RETURN,
+      journeyType = JourneyType.PSP_SUBSCRIPTION,
       requestId = "test-request-id"
     )
 
@@ -41,7 +41,7 @@ class EmailAuditEventSpec extends FlatSpec with Matchers {
       "event" -> Sent.toString
     )
 
-    event.auditType shouldBe "AFTReturnSubmittedEmailEvent"
+    event.auditType shouldBe "PSPSubscriptionEmailEvent"
     event.details shouldBe expected
   }
 }
