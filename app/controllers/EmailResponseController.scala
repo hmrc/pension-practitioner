@@ -16,6 +16,10 @@
 
 package controllers
 
+import java.net.URLDecoder
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
+
 import audit.AuditService
 import audit.EmailAuditEvent
 import com.google.inject.Inject
@@ -44,14 +48,8 @@ class EmailResponseController @Inject()(
 
   def retrieveStatus(journeyType: JourneyType.Name, requestId: String, email: String, encryptedPspId: String): Action[JsValue] = Action(parser.tolerantJson) {
     implicit request =>
-    println("\nI AM HERE")
       validatePspIdEmail(encryptedPspId, email) match {
         case Right(Tuple2(pspId, emailAddress)) =>
-          //val xx = request.body.validate[EmailEvents]
-          //xx match {
-          //  case JsSuccess(value, path) => println("\n>>>SUCCESS:" + value)
-          //  case JsError(errors) => println( "\n>>>>>ERROR:" + errors)
-          //}
           request.body.validate[EmailEvents].fold(
             _ => BadRequest("Bad request received for email call back event"),
             valid => {
@@ -70,8 +68,8 @@ class EmailResponseController @Inject()(
   }
 
   private def validatePspIdEmail(encryptedPspId: String, encryptedEmail: String): Either[Result, (String, String)] = {
-    val pspId = crypto.QueryParameterCrypto.decrypt(Crypted(encryptedPspId)).value
-    val emailAddress = crypto.QueryParameterCrypto.decrypt(Crypted(encryptedEmail)).value
+    val pspId = URLDecoder.decode(crypto.QueryParameterCrypto.decrypt(Crypted(encryptedPspId)).value, StandardCharsets.UTF_8.toString)
+    val emailAddress = URLDecoder.decode(crypto.QueryParameterCrypto.decrypt(Crypted(encryptedEmail)).value, StandardCharsets.UTF_8.toString)
     val emailRegex: String = "^(?:[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"" +
       "(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")" +
       "@(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?|" +
