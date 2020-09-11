@@ -32,11 +32,11 @@ class SubscriptionConnectorSpec extends AsyncWordSpec with MustMatchers with Wir
   private implicit lazy val hc: HeaderCarrier = HeaderCarrier()
   private implicit lazy val rh: RequestHeader = FakeRequest("", "")
 
-  override protected def portConfigKey: String = "microservice.services.des-hod.port"
+  override protected def portConfigKey: String = "microservice.services.if-hod.port"
 
   private lazy val connector: SubscriptionConnector = injector.instanceOf[SubscriptionConnector]
 
-  private val pspSubscriptionUrl = s"/pension-online/subscriptions/psp"
+  private val pspSubscriptionUrl = "/if/sync/pension-online/subscriptions/psp"
 
   "pspSubscription" must {
 
@@ -65,10 +65,8 @@ class SubscriptionConnectorSpec extends AsyncWordSpec with MustMatchers with Wir
           )
       )
 
-      recoverToExceptionIf[BadRequestException] {
-        connector.pspSubscription(data)
-      } map {
-        _.responseCode mustEqual BAD_REQUEST
+      connector.pspSubscription(data).map {
+        _.status mustEqual BAD_REQUEST
       }
     }
 
@@ -82,10 +80,8 @@ class SubscriptionConnectorSpec extends AsyncWordSpec with MustMatchers with Wir
           )
       )
 
-      recoverToExceptionIf[NotFoundException] {
-        connector.pspSubscription(data)
-      } map {
-        _.responseCode mustEqual NOT_FOUND
+      connector.pspSubscription(data).map {
+        _.status mustEqual NOT_FOUND
       }
     }
 
@@ -98,8 +94,8 @@ class SubscriptionConnectorSpec extends AsyncWordSpec with MustMatchers with Wir
             serverError()
           )
       )
-      recoverToExceptionIf[UpstreamErrorResponse](connector.pspSubscription(data)) map {
-        _.statusCode mustBe INTERNAL_SERVER_ERROR
+      connector.pspSubscription(data).map {
+        _.status mustBe INTERNAL_SERVER_ERROR
       }
     }
 
