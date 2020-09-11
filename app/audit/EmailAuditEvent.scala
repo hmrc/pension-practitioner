@@ -18,16 +18,14 @@ package audit
 
 import models.Event
 import models.enumeration.JourneyType
-import play.api.libs.json.{JsObject, Json}
-import uk.gov.hmrc.domain.PsaId
 
-case class EmailAuditEvent(psaId: PsaId, emailAddress: String, event: Event, journeyType: JourneyType.Name, requestId: String) extends AuditEvent {
+case class EmailAuditEvent(pspId: String, emailAddress: String, event: Event, journeyType: JourneyType.Name, requestId: String) extends AuditEvent {
 
   override def auditType: String = s"${journeyType.toString}EmailEvent"
 
   override def details = Map(
     "email-initiation-request-id" -> requestId,
-    "psaId" -> psaId.id,
+    "pspId" -> pspId,
     "emailAddress" -> emailAddress,
     "event" -> event.toString
   )

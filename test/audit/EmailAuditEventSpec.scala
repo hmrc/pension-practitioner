@@ -20,14 +20,13 @@ import models.Sent
 import models.enumeration.JourneyType
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
-import uk.gov.hmrc.domain.PsaId
 
 class EmailAuditEventSpec extends FlatSpec with Matchers {
 
   "EmailAuditEvent" should "output the correct map of data" in {
 
     val event = EmailAuditEvent(
-      psaId = PsaId("A2500001"),
+      pspId = "A2500001",
       emailAddress = "test@test.com",
       event = Sent,
       journeyType = JourneyType.PSP_SUBSCRIPTION,
@@ -36,7 +35,7 @@ class EmailAuditEventSpec extends FlatSpec with Matchers {
 
     val expected = Map(
       "email-initiation-request-id" -> "test-request-id",
-      "psaId" -> "A2500001",
+      "pspId" -> "A2500001",
       "emailAddress" -> "test@test.com",
       "event" -> Sent.toString
     )

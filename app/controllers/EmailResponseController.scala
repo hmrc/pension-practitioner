@@ -16,16 +16,20 @@
 
 package controllers
 
-import audit.{AuditService, EmailAuditEvent}
+import audit.AuditService
+import audit.EmailAuditEvent
 import com.google.inject.Inject
 import models.enumeration.JourneyType
-import models.{EmailEvents, Opened}
+import models.EmailEvents
+import models.Opened
 import play.api.Logger
+import play.api.libs.json.JsError
+import play.api.libs.json.JsSuccess
 import play.api.libs.json.JsValue
 import play.api.mvc._
 import uk.gov.hmrc.auth.core._
-import uk.gov.hmrc.crypto.{ApplicationCrypto, Crypted}
-import uk.gov.hmrc.domain.PsaId
+import uk.gov.hmrc.crypto.ApplicationCrypto
+import uk.gov.hmrc.crypto.Crypted
 import uk.gov.hmrc.play.bootstrap.controller.BackendController
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -38,11 +42,16 @@ class EmailResponseController @Inject()(
                                          val authConnector: AuthConnector
                                        ) extends BackendController(cc) with AuthorisedFunctions {
 
-  def retrieveStatus(journeyType: JourneyType.Name, requestId: String, email: String, encryptedPsaId: String): Action[JsValue] = Action(parser.tolerantJson) {
+  def retrieveStatus(journeyType: JourneyType.Name, requestId: String, email: String, encryptedPspId: String): Action[JsValue] = Action(parser.tolerantJson) {
     implicit request =>
     println("\nI AM HERE")
-      validatePsaIdEmail(encryptedPsaId, email) match {
-        case Right(Tuple2(psaId, emailAddress)) =>
+      validatePspIdEmail(encryptedPspId, email) match {
+        case Right(Tuple2(pspId, emailAddress)) =>
+          //val xx = request.body.validate[EmailEvents]
+          //xx match {
+          //  case JsSuccess(value, path) => println("\n>>>SUCCESS:" + value)
+          //  case JsError(errors) => println( "\n>>>>>ERROR:" + errors)
+          //}
           request.body.validate[EmailEvents].fold(
             _ => BadRequest("Bad request received for email call back event"),
             valid => {
@@ -50,7 +59,7 @@ class EmailResponseController @Inject()(
                 _.event == Opened
               ).foreach { event =>
                 Logger.debug(s"Email Audit event coming from $journeyType is $event")
-                auditService.sendEvent(EmailAuditEvent(psaId, emailAddress, event.event, journeyType, requestId))
+                auditService.sendEvent(EmailAuditEvent(pspId, emailAddress, event.event, journeyType, requestId))
               }
               Ok
             }
@@ -60,9 +69,9 @@ class EmailResponseController @Inject()(
       }
   }
 
-  private def validatePsaIdEmail(encryptedPsaId: String, email: String): Either[Result, (PsaId, String)] = {
-    val psaId = crypto.QueryParameterCrypto.decrypt(Crypted(encryptedPsaId)).value
-    val emailAddress = crypto.QueryParameterCrypto.decrypt(Crypted(email)).value
+  private def validatePspIdEmail(encryptedPspId: String, encryptedEmail: String): Either[Result, (String, String)] = {
+    val pspId = crypto.QueryParameterCrypto.decrypt(Crypted(encryptedPspId)).value
+    val emailAddress = crypto.QueryParameterCrypto.decrypt(Crypted(encryptedEmail)).value
     val emailRegex: String = "^(?:[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"" +
       "(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")" +
       "@(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?|" +
@@ -71,9 +80,9 @@ class EmailResponseController @Inject()(
 
     try {
       require(emailAddress.matches(emailRegex))
-      Right(Tuple2(PsaId(psaId), emailAddress))
+      Right(Tuple2(pspId, emailAddress))
     } catch {
-      case _: IllegalArgumentException => Left(Forbidden(s"Malformed PSAID : $psaId or Email : $emailAddress"))
+      case _: IllegalArgumentException => Left(Forbidden(s"Malformed PSPID : $pspId or Email : $emailAddress"))
     }
   }
 }
