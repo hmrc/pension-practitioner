@@ -18,7 +18,6 @@ package connectors
 
 import com.google.inject.Inject
 import config.AppConfig
-import play.api.http.Status.OK
 import play.api.libs.json._
 import play.api.mvc.RequestHeader
 import uk.gov.hmrc.http._
@@ -35,13 +34,7 @@ class SubscriptionConnector @Inject()(http: HttpClient,
   def pspSubscription(data: JsValue)
                               (implicit hc: HeaderCarrier, ec: ExecutionContext, request: RequestHeader): Future[HttpResponse] = {
 
-    val headerCarrier: HeaderCarrier = HeaderCarrier(extraHeaders = headerUtils.desHeader)
-    http.POST[JsValue, HttpResponse](config.pspSubscriptionUrl, data)(implicitly, implicitly, headerCarrier, implicitly) map {
-      response =>
-        response.status match {
-          case OK => response
-          case _ => handleErrorResponse("POST", config.pspSubscriptionUrl)(response)
-        }
-    }
+    val headerCarrier: HeaderCarrier = HeaderCarrier(extraHeaders = headerUtils.integrationFrameworkHeader)
+    http.POST[JsValue, HttpResponse](config.pspSubscriptionUrl, data)(implicitly, implicitly, headerCarrier, implicitly)
   }
 }

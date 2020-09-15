@@ -30,12 +30,18 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
   val graphiteHost: String     = config.get[String]("microservice.metrics.graphite.host")
 
   private val baseURL: String = servicesConfig.baseUrl(serviceName = "des-hod")
+  private val ifURL: String = servicesConfig.baseUrl(serviceName = "if-hod")
   lazy val desEnvironment: String = config.getOptional[String]("microservice.services.des-hod.env").getOrElse("local")
   lazy val authorization: String = "Bearer " + config.getOptional[String]("microservice.services.des-hod.authorizationToken").getOrElse("local")
+
+  lazy val integrationframeworkEnvironment: String = config.getOptional[String](
+    path = "microservice.services.if-hod.env").getOrElse("local")
+  lazy val integrationframeworkAuthorization: String = "Bearer " + config.getOptional[String](
+    path = "microservice.services.if-hod.authorizationToken").getOrElse("local")
 
   lazy val registerWithoutIdOrganisationUrl: String = s"$baseURL${config.get[String](path = "serviceUrls.register-without-id-organisation")}"
   lazy val registerWithoutIdIndividualUrl: String = s"$baseURL${config.get[String](path = "serviceUrls.register-without-id-individual")}"
   lazy val registerWithIdIndividualUrl: String = s"$baseURL${config.get[String](path = "serviceUrls.register-with-id-individual")}"
   lazy val registerWithIdOrganisationUrl: String = s"$baseURL${config.get[String](path = "serviceUrls.register-with-id-organisation")}"
-  lazy val pspSubscriptionUrl: String = s"$baseURL${config.get[String](path = "serviceUrls.psp-subscription")}"
+  lazy val pspSubscriptionUrl: String = s"$ifURL${config.get[String](path = "serviceUrls.psp-subscription")}"
 }
