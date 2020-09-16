@@ -42,6 +42,15 @@ class HeaderUtils @Inject()(config: AppConfig) {
       "CorrelationId" -> requestId)
   }
 
+  def integrationFrameworkHeader(implicit hc: HeaderCarrier): Seq[(String, String)] = {
+    val requestId = getCorrelationId(hc.requestId.map(_.value))
+
+    Seq("Environment" -> config.integrationframeworkEnvironment,
+      "Authorization" -> config.integrationframeworkAuthorization,
+      "Content-Type" -> "application/json",
+      "CorrelationId" -> requestId)
+  }
+
   def getCorrelationId(requestId: Option[String]): String = {
     requestId.getOrElse {
       Logger.error("No Request Id found to generate Correlation Id")
