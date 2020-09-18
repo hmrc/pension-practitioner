@@ -32,7 +32,7 @@ class PSPSubscriptionTransformer extends JsonTransformer {
       transformDeclaration).reduce
 
   private def transformSubscriptionDetails: Reads[JsObject] =
-    ((__ \ 'subscriptionTypeAndPSPIDDetails \ 'subscriptionType).json.put(JsString("Creation ")) and
+    ((__ \ 'subscriptionTypeAndPSPIDDetails \ 'subscriptionType).json.put(JsString("Creation")) and
       (__ \ 'subscriptionTypeAndPSPIDDetails \ 'existingPSPID).json.put(JsString("No"))).reduce
 
   private def transformLegalAndCustomer: Reads[JsObject] =

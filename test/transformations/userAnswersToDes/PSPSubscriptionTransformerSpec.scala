@@ -161,7 +161,7 @@ object PSPSubscriptionTransformerSpec {
     "regime" -> "PODP",
     "subscriptionTypeAndPSPIDDetails" -> Json.obj(
       "existingPSPID" -> "No",
-      "subscriptionType" -> "Creation "
+      "subscriptionType" -> "Creation"
     ),
     "sapNumber" -> "1234567890",
     "declaration" -> Json.obj(
