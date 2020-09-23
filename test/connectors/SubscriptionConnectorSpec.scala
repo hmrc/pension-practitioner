@@ -36,7 +36,7 @@ class SubscriptionConnectorSpec extends AsyncWordSpec with MustMatchers with Wir
 
   private lazy val connector: SubscriptionConnector = injector.instanceOf[SubscriptionConnector]
 
-  private val pspSubscriptionUrl = "/if/sync/pension-online/subscriptions/psp"
+  private val pspSubscriptionUrl = "/pension-online/subscriptions/psp"
 
   "pspSubscription" must {
 
