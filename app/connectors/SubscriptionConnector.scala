@@ -16,6 +16,7 @@
 
 package connectors
 
+import audit.SubscriptionAuditService
 import com.google.inject.Inject
 import config.AppConfig
 import play.api.libs.json._
@@ -24,17 +25,19 @@ import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import utils.HttpResponseHelper
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{Future, ExecutionContext}
 
 class SubscriptionConnector @Inject()(http: HttpClient,
                                       config: AppConfig,
-                                      headerUtils: HeaderUtils
+                                      headerUtils: HeaderUtils,
+                                      subscriptionAuditService: SubscriptionAuditService
                                      ) extends HttpResponseHelper {
 
-  def pspSubscription(data: JsValue)
+  def pspSubscription(externalId: String, data: JsValue)
                               (implicit hc: HeaderCarrier, ec: ExecutionContext, request: RequestHeader): Future[HttpResponse] = {
 
     val headerCarrier: HeaderCarrier = HeaderCarrier(extraHeaders = headerUtils.integrationFrameworkHeader)
-    http.POST[JsValue, HttpResponse](config.pspSubscriptionUrl, data)(implicitly, implicitly, headerCarrier, implicitly)
+    http.POST[JsValue, HttpResponse](config.pspSubscriptionUrl, data)(implicitly, implicitly, headerCarrier, implicitly) andThen
+      subscriptionAuditService.sendSubscribeAuditEvent(externalId, data)
   }
 }

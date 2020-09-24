@@ -39,7 +39,7 @@ class SubscriptionController @Inject()(
 
   def subscribePsp: Action[AnyContent] = Action.async {
     implicit request => {
-      withAuth { _ =>
+      withAuth { externalId =>
         val feJson = request.body.asJson
         Logger.debug(s"[PSP-Subscription-Incoming-Payload]$feJson")
         feJson match {
@@ -47,7 +47,7 @@ class SubscriptionController @Inject()(
             json.transform(pspSubscriptionTransformer.transformPspSubscription) match {
               case JsSuccess(data, _) =>
                 Logger.debug(s"[PSP-Subscription-Outgoing-Payload]$data")
-                subscriptionConnector.pspSubscription(data).map(res => Ok(res.body))
+                subscriptionConnector.pspSubscription(externalId, data).map(res => Ok(res.body))
               case JsError(errors) => throw JsResultException(errors)
           }
           case _ => Future.failed(new BadRequestException("Bad Request with no request body returned for PSP subscription"))

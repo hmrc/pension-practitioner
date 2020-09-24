@@ -66,7 +66,7 @@ class SubscriptionControllerSpec extends AsyncWordSpec with MustMatchers with Mo
   "subscribePsa" must {
     "return OK when valid response from DES" in {
 
-      when(mockSubscriptionConnector.pspSubscription(any())(any(), any(), any()))
+      when(mockSubscriptionConnector.pspSubscription(any(), any())(any(), any(), any()))
         .thenReturn(Future.successful(HttpResponse(OK, response.toString)))
 
       val result = controller.subscribePsp()(fakeRequest.withJsonBody(uaIndividualUK))
@@ -75,7 +75,7 @@ class SubscriptionControllerSpec extends AsyncWordSpec with MustMatchers with Mo
 
     "throw Upstream5XXResponse on Internal Server Error from DES" in {
 
-      when(mockSubscriptionConnector.pspSubscription(any())(any(), any(), any()))
+      when(mockSubscriptionConnector.pspSubscription(any(), any())(any(), any(), any()))
         .thenReturn(Future.failed(UpstreamErrorResponse(message = "Internal Server Error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR)))
 
       recoverToExceptionIf[UpstreamErrorResponse] {
