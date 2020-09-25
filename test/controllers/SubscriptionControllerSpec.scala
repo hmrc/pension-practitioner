@@ -67,7 +67,7 @@ class SubscriptionControllerSpec extends AsyncWordSpec with MustMatchers with Mo
     "return OK when valid response from DES" in {
 
       when(mockSubscriptionConnector.pspSubscription(any(), any())(any(), any(), any()))
-        .thenReturn(Future.successful(Right(response.toString)))
+        .thenReturn(Future.successful(Right(response)))
 
       val result = controller.subscribePsp()(fakeRequest.withJsonBody(uaIndividualUK))
       status(result) mustBe OK

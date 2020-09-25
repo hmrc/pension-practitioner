@@ -41,7 +41,7 @@ class SubscriptionConnector @Inject()(http: HttpClient,
   def pspSubscription(externalId: String, data: JsValue)
                               (implicit hc: HeaderCarrier,
                                 ec: ExecutionContext,
-                                request: RequestHeader): Future[Either[HttpException, String]] = {
+                                request: RequestHeader): Future[Either[HttpException, JsValue]] = {
     val headerCarrier: HeaderCarrier = HeaderCarrier(extraHeaders = headerUtils.integrationFrameworkHeader)
     val futureHttpResponse = http.POST[JsValue, HttpResponse](
       config.pspSubscriptionUrl, data)(implicitly, implicitly, headerCarrier, implicitly) andThen
@@ -50,16 +50,16 @@ class SubscriptionConnector @Inject()(http: HttpClient,
   }
 
   private def processResponse(response: HttpResponse, url: String)(
-    implicit request: RequestHeader, ec: ExecutionContext) : Either[HttpException, String] = {
+    implicit request: RequestHeader, ec: ExecutionContext) : Either[HttpException, JsValue] = {
     if (response.status == OK) {
       Logger.info(s"POST of $url returned successfully")
-      Right(response.body)
+      Right(response.json)
     } else {
       processFailureResponse(response, url)
     }
   }
 
-  private def processFailureResponse(response: HttpResponse, url: String): Either[HttpException, String] = {
+  private def processFailureResponse(response: HttpResponse, url: String): Either[HttpException, JsValue] = {
     Logger.warn(s"POST or $url returned ${response.status} with body ${response.body}")
     response.status match {
       case FORBIDDEN if response.body.contains("ACTIVE_PSPID_ALREADY_EXISTS") =>

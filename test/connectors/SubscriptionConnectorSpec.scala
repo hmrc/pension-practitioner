@@ -76,6 +76,7 @@ class SubscriptionConnectorSpec extends AsyncWordSpec with MustMatchers with Wir
           .withRequestBody(equalTo(Json.stringify(data)))
           .willReturn(
             ok
+              .withBody(Json.stringify(JsString("response")))
           )
       )
 
