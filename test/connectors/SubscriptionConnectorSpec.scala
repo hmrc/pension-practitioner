@@ -16,13 +16,28 @@
 
 package connectors
 
+import audit.AuditService
+import audit.PSPSubscription
 import com.github.tomakehurst.wiremock.client.WireMock._
-import org.scalatest.{AsyncWordSpec, EitherValues, MustMatchers}
+import org.mockito.ArgumentCaptor
+import org.mockito.Matchers.any
+import org.mockito.Mockito
+import org.mockito.Mockito.times
+import org.mockito.Mockito.verify
+import org.mockito.Mockito.when
+import org.scalatest.AsyncWordSpec
+import org.scalatest.EitherValues
+import org.scalatest.MustMatchers
 import org.scalatestplus.mockito.MockitoSugar
+import play.api.http.Status
 import play.api.http.Status._
+import play.api.inject.bind
+import play.api.inject.guice.GuiceableModule
+import play.api.libs.json.JsString
 import play.api.libs.json.Json
 import play.api.mvc.RequestHeader
 import play.api.test.FakeRequest
+import repository.DataCacheRepository
 import uk.gov.hmrc.http._
 import utils.WireMockHelper
 
@@ -34,11 +49,26 @@ class SubscriptionConnectorSpec extends AsyncWordSpec with MustMatchers with Wir
 
   override protected def portConfigKey: String = "microservice.services.if-hod.port"
 
+  private val mockAuditService = mock[AuditService]
+  private val mockHeaderUtils = mock[HeaderUtils]
+  private val mockDataCacheRepository = mock[DataCacheRepository]
+
   private lazy val connector: SubscriptionConnector = injector.instanceOf[SubscriptionConnector]
+
+  override protected def bindings: Seq[GuiceableModule] =
+    Seq(
+      bind[AuditService].toInstance(mockAuditService),
+      bind[HeaderUtils].toInstance(mockHeaderUtils),
+      bind[DataCacheRepository].toInstance(mockDataCacheRepository)
+    )
 
   private val pspSubscriptionUrl = "/pension-online/subscriptions/psp"
 
   private val externalId = "id"
+
+  private val eventCaptor = ArgumentCaptor.forClass(classOf[PSPSubscription])
+
+  when(mockHeaderUtils.integrationFrameworkHeader).thenReturn(Nil)
 
   "pspSubscription" must {
 
@@ -101,6 +131,26 @@ class SubscriptionConnectorSpec extends AsyncWordSpec with MustMatchers with Wir
       }
     }
 
+    "send a PSPSubscription audit event on success" in {
+      val response = JsString("mock response")
+      val data = Json.obj(fields = "Id" -> "value")
+      Mockito.reset(mockAuditService)
+      server.stubFor(
+        post(urlEqualTo(pspSubscriptionUrl))
+          .withRequestBody(equalTo(Json.stringify(data)))
+          .willReturn(
+            ok
+              .withHeader("Content-Type", "application/json")
+              .withBody(Json.stringify(response))
+          )
+      )
+
+      connector.pspSubscription(externalId, data).map {_ =>
+        verify(mockAuditService, times(1)).sendEvent(eventCaptor.capture())(any(), any())
+          eventCaptor.getValue mustEqual PSPSubscription(
+            externalId, Status.OK, data, Some(response))
+      }
+    }
   }
 
   def errorResponse(code: String): String = {
