@@ -16,10 +16,16 @@
 
 package transformations.userAnswersToDes
 
-import org.scalatest.{FreeSpec, MustMatchers, OptionValues}
-import play.api.libs.json.{JsObject, Json}
+import org.scalatest.FreeSpec
+import org.scalatest.MustMatchers
+import org.scalatest.OptionValues
+import play.api.libs.json.JsObject
+import play.api.libs.json.Json
 
-class PSPSubscriptionTransformerSpec extends FreeSpec with MustMatchers with OptionValues {
+class PSPSubscriptionTransformerSpec
+    extends FreeSpec
+    with MustMatchers
+    with OptionValues {
 
   import PSPSubscriptionTransformerSpec._
 
@@ -27,28 +33,38 @@ class PSPSubscriptionTransformerSpec extends FreeSpec with MustMatchers with Opt
     "must transform from UserAnswers to ETMP AFT Return format for UK individual" in {
       val transformer = new PSPSubscriptionTransformer
 
-      val transformedJson = uaIndividualUK.transform(transformer.transformPspSubscription).asOpt.value
+      val transformedJson = uaIndividualUK
+        .transform(transformer.transformPspSubscription)
+        .asOpt
+        .value
       transformedJson mustBe individualUK
     }
 
     "must transform from UserAnswers to ETMP AFT Return format for Non UK individual" in {
       val transformer = new PSPSubscriptionTransformer
 
-      val transformedJson = uaIndividualNonUk.transform(transformer.transformPspSubscription).asOpt.value
+      val transformedJson = uaIndividualNonUk
+        .transform(transformer.transformPspSubscription)
+        .asOpt
+        .value
       transformedJson mustBe individualNonUk
     }
 
-    "must transform from UserAnswers to ETMP AFT Return format for UK company" in {
+    "must transform from UserAnswers to ETMP AFT Return format for existing UK company" in {
       val transformer = new PSPSubscriptionTransformer
 
-      val transformedJson = uaCompanyUk.transform(transformer.transformPspSubscription).asOpt.value
+      val transformedJson =
+        uaCompanyUk.transform(transformer.transformPspSubscription).asOpt.value
       transformedJson mustBe companyUK
     }
 
     "must transform from UserAnswers to ETMP AFT Return format for Non UK partnership" in {
       val transformer = new PSPSubscriptionTransformer
 
-      val transformedJson = uaPartnershipNonUK.transform(transformer.transformPspSubscription).asOpt.value
+      val transformedJson = uaPartnershipNonUK
+        .transform(transformer.transformPspSubscription)
+        .asOpt
+        .value
       transformedJson mustBe partnershipNonUK
     }
   }
@@ -58,33 +74,33 @@ class PSPSubscriptionTransformerSpec extends FreeSpec with MustMatchers with Opt
 object PSPSubscriptionTransformerSpec {
 
   private val individualDetails: JsObject = Json.obj(
-    "individualDetails" -> Json.obj(
-      "firstName" -> "Stephen",
-      "lastName" -> "Wood"
+    "individualDetails" -> Json
+      .obj("firstName" -> "Stephen", "lastName" -> "Wood")
+  )
+
+  private val uaAddress: JsObject = Json.obj(
+    "contactAddress" -> Json.obj(
+      "addressLine1" -> "4 Other Place",
+      "addressLine2" -> "Some District",
+      "addressLine3" -> "Anytown",
+      "addressLine4" -> "Somerset",
+      "postcode" -> "ZZ1 1ZZ",
+      "country" -> "GB"
     )
   )
 
-  private val uaAddress: JsObject = Json.obj( "contactAddress" -> Json.obj(
-    "addressLine1" -> "4 Other Place",
-    "addressLine2" -> "Some District",
-    "addressLine3" -> "Anytown",
-    "addressLine4" -> "Somerset",
-    "postcode" -> "ZZ1 1ZZ",
-    "country" -> "GB"
-  ))
-
-  private val uaAddressNonUk: JsObject = Json.obj( "contactAddress" -> Json.obj(
-    "addressLine1" -> "4 Other Place",
-    "addressLine2" -> "Some District",
-    "addressLine3" -> "Anytown",
-    "addressLine4" -> "Somerset",
-    "country" -> "FR"
-  ))
-
-  private val uaContactDetails: JsObject = Json.obj(
-    "email" -> "sdd@ds.sd",
-    "phone" -> "3445"
+  private val uaAddressNonUk: JsObject = Json.obj(
+    "contactAddress" -> Json.obj(
+      "addressLine1" -> "4 Other Place",
+      "addressLine2" -> "Some District",
+      "addressLine3" -> "Anytown",
+      "addressLine4" -> "Somerset",
+      "country" -> "FR"
+    )
   )
+
+  private val uaContactDetails: JsObject =
+    Json.obj("email" -> "sdd@ds.sd", "phone" -> "3445")
 
   val uaIndividualUK: JsObject = Json.obj(
     "registrationInfo" -> Json.obj(
@@ -94,45 +110,48 @@ object PSPSubscriptionTransformerSpec {
       "customerType" -> "UK",
       "idType" -> "NINO",
       "idNumber" -> "AB123456C"
-    )
+    ),
+    "existingPSP" -> Json.obj("isExistingPSP" -> false)
   ) ++ individualDetails ++ uaAddress ++ uaContactDetails
 
   private val uaIndividualNonUk: JsObject = Json.obj(
-    "registrationInfo"  -> Json.obj(
-      "legalStatus"  ->  "Individual",
-      "sapNumber"  ->  "1234567890",
-      "noIdentifier"  ->  true,
-      "customerType"  ->  "NonUK"
-    )
+    "registrationInfo" -> Json.obj(
+      "legalStatus" -> "Individual",
+      "sapNumber" -> "1234567890",
+      "noIdentifier" -> true,
+      "customerType" -> "NonUK"
+    ),
+    "existingPSP" -> Json.obj("isExistingPSP" -> false)
   ) ++ individualDetails ++ uaAddressNonUk ++ uaContactDetails
-  
+
   private val uaCompanyUk: JsObject = Json.obj(
-      "registrationInfo"  ->  Json.obj(
-        "legalStatus"  ->  "Company",
-        "sapNumber"  ->  "1234567890",
-        "noIdentifier"  ->  false,
-        "customerType"  ->  "UK",
-        "idType"  ->  "UTR",
-        "idNumber"  ->  "1234567890"
-      ),
-      "name"  ->  "Test Ltd"
+    "registrationInfo" -> Json.obj(
+      "legalStatus" -> "Company",
+      "sapNumber" -> "1234567890",
+      "noIdentifier" -> false,
+      "customerType" -> "UK",
+      "idType" -> "UTR",
+      "idNumber" -> "1234567890"
+    ),
+    "name" -> "Test Ltd",
+    "existingPSP" -> Json.obj("isExistingPSP" -> true, "existingPSPId" -> "A2345678")
   ) ++ uaAddress ++ uaContactDetails
 
   private val uaPartnershipNonUK: JsObject = Json.obj(
-    "registrationInfo"  ->  Json.obj(
-      "legalStatus"  ->  "Partnership",
-      "sapNumber"  ->  "1234567890",
-      "noIdentifier"  ->  false,
-      "customerType"  ->  "NonUK"
+    "registrationInfo" -> Json.obj(
+      "legalStatus" -> "Partnership",
+      "sapNumber" -> "1234567890",
+      "noIdentifier" -> false,
+      "customerType" -> "NonUK"
     ),
-    "name"  ->  "Testing Ltd"
+    "name" -> "Testing Ltd",
+    "existingPSP" -> Json.obj("isExistingPSP" -> false)
   ) ++ uaAddressNonUk ++ uaContactDetails
 
   private val contactDetails: JsObject = Json.obj(
-    "correspondenceContactDetails" -> Json.obj(
-      "telephone" -> "3445",
-      "email" -> "sdd@ds.sd"
-    ))
+    "correspondenceContactDetails" -> Json
+      .obj("telephone" -> "3445", "email" -> "sdd@ds.sd")
+  )
 
   private val address: JsObject = Json.obj(
     "correspondenceAddressDetails" -> Json.obj(
@@ -157,17 +176,27 @@ object PSPSubscriptionTransformerSpec {
     )
   )
 
-  private val declarationEtcDetails: JsObject = Json.obj(
-    "regime" -> "PODP",
-    "subscriptionTypeAndPSPIDDetails" -> Json.obj(
-      "existingPSPID" -> "No",
-      "subscriptionType" -> "Creation"
-    ),
-    "sapNumber" -> "1234567890",
-    "declaration" -> Json.obj(
-      "pspDeclarationBox1" -> true
-    )
-  )
+  private def declarationEtcDetails(isExistingPSPID: Boolean): JsObject = {
+    val existingDetail = if (isExistingPSPID) {
+      Json.obj(
+        "subscriptionTypeAndPSPIDDetails" -> Json.obj(
+          "existingPSPID" -> "Yes",
+          "pspid" -> "A2345678",
+          "subscriptionType" -> "Creation"
+        )
+      )
+    } else {
+      Json.obj(
+        "subscriptionTypeAndPSPIDDetails" -> Json
+          .obj("existingPSPID" -> "No", "subscriptionType" -> "Creation")
+      )
+    }
+    Json.obj(
+      "regime" -> "PODP",
+      "sapNumber" -> "1234567890",
+      "declaration" -> Json.obj("pspDeclarationBox1" -> true)
+    ) ++ existingDetail
+  }
 
   private val individualUK: JsObject = Json.obj(
     "legalEntityAndCustomerID" -> Json.obj(
@@ -175,14 +204,17 @@ object PSPSubscriptionTransformerSpec {
       "idType" -> "NINO",
       "legalStatus" -> "Individual",
       "idNumber" -> "AB123456C"
-    )) ++ individualDetails ++ address ++ contactDetails ++ declarationEtcDetails
-
+    )
+  ) ++ individualDetails ++ address ++ contactDetails ++ declarationEtcDetails(
+    isExistingPSPID = false
+  )
 
   private val individualNonUk: JsObject = Json.obj(
-    "legalEntityAndCustomerID" -> Json.obj(
-      "customerType" -> "NonUK",
-      "legalStatus" -> "Individual"
-    )) ++ individualDetails ++ addressNonUk ++ contactDetails ++ declarationEtcDetails
+    "legalEntityAndCustomerID" -> Json
+      .obj("customerType" -> "NonUK", "legalStatus" -> "Individual")
+  ) ++ individualDetails ++ addressNonUk ++ contactDetails ++ declarationEtcDetails(
+    isExistingPSPID = false
+  )
 
   private val companyUK: JsObject = Json.obj(
     "legalEntityAndCustomerID" -> Json.obj(
@@ -191,19 +223,17 @@ object PSPSubscriptionTransformerSpec {
       "legalStatus" -> "Company",
       "idNumber" -> "1234567890"
     ),
-    "orgOrPartnershipDetails" -> Json.obj(
-      "organisationName" -> "Test Ltd"
-    )
-  ) ++ address ++ contactDetails ++ declarationEtcDetails
+    "orgOrPartnershipDetails" -> Json.obj("organisationName" -> "Test Ltd")
+  ) ++ address ++ contactDetails ++ declarationEtcDetails(
+    isExistingPSPID = true
+  )
 
   private val partnershipNonUK: JsObject = Json.obj(
-    "legalEntityAndCustomerID" -> Json.obj(
-      "customerType" -> "NonUK",
-      "legalStatus" -> "Partnership"
-    ),
-    "orgOrPartnershipDetails" -> Json.obj(
-      "organisationName" -> "Testing Ltd"
-    )
-  ) ++ addressNonUk ++ contactDetails ++ declarationEtcDetails
+    "legalEntityAndCustomerID" -> Json
+      .obj("customerType" -> "NonUK", "legalStatus" -> "Partnership"),
+    "orgOrPartnershipDetails" -> Json.obj("organisationName" -> "Testing Ltd")
+  ) ++ addressNonUk ++ contactDetails ++ declarationEtcDetails(
+    isExistingPSPID = false
+  )
 
 }

@@ -31,9 +31,20 @@ class PSPSubscriptionTransformer extends JsonTransformer {
       transformContactDetails and
       transformDeclaration).reduce
 
+  // TODO Transform from existingPSP { isExistingPSP: Boolean, existingPSPId: Option[String] }
   private def transformSubscriptionDetails: Reads[JsObject] =
-    ((__ \ 'subscriptionTypeAndPSPIDDetails \ 'subscriptionType).json.put(JsString("Creation")) and
-      (__ \ 'subscriptionTypeAndPSPIDDetails \ 'existingPSPID).json.put(JsString("No"))).reduce
+    (
+      (__ \ 'subscriptionTypeAndPSPIDDetails \ 'subscriptionType).json.put(JsString("Creation")) and
+        (__ \ 'subscriptionTypeAndPSPIDDetails \ 'existingPSPID).json.copyFrom(
+          (__ \ 'existingPSP \ 'isExistingPSP).read[Boolean].map{
+            case true => JsString("Yes")
+            case false => JsString("No")
+          }
+        ) and
+      (
+        (__ \ 'subscriptionTypeAndPSPIDDetails \ 'pspid).json.copyFrom((__ \ 'existingPSP \ 'existingPSPId).json.pick) orElse doNothing
+      )
+    ).reduce
 
   private def transformLegalAndCustomer: Reads[JsObject] =
     ((__ \ 'regime).json.put(JsString("PODP")) and
