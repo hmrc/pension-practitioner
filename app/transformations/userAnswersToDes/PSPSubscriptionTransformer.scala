@@ -30,8 +30,7 @@ class PSPSubscriptionTransformer extends JsonTransformer {
       transformAddress and
       transformContactDetails and
       transformDeclaration).reduce
-
-  // TODO Transform from existingPSP { isExistingPSP: Boolean, existingPSPId: Option[String] }
+  
   private def transformSubscriptionDetails: Reads[JsObject] =
     (
       (__ \ 'subscriptionTypeAndPSPIDDetails \ 'subscriptionType).json.put(JsString("Creation")) and
