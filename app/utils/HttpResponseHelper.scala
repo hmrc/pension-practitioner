@@ -25,14 +25,14 @@ trait HttpResponseHelper extends HttpErrorFunctions {
     override def read(method: String, url: String, response: HttpResponse): HttpResponse = response
   }
 
-  def handleErrorResponse(httpMethod: String, url: String)(response: HttpResponse): Nothing =
+  def handleErrorResponse(httpMethod: String, url: String)(response: HttpResponse): HttpException =
     response.status match {
       case BAD_REQUEST =>
-        throw new BadRequestException(
+        new BadRequestException(
           badRequestMessage(httpMethod, url, response.body)
         )
       case NOT_FOUND =>
-        throw new NotFoundException(
+        new NotFoundException(
           notFoundMessage(httpMethod, url, response.body)
         )
       case status if is4xx(status) =>

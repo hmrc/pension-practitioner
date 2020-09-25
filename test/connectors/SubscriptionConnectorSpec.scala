@@ -79,8 +79,8 @@ class SubscriptionConnectorSpec extends AsyncWordSpec with MustMatchers with Wir
           )
       )
 
-      connector.pspSubscription(externalId, data) map {
-        _.status mustBe OK
+      connector.pspSubscription(externalId, data) collect {
+        case Right(_) => succeed
       }
     }
 
@@ -94,8 +94,8 @@ class SubscriptionConnectorSpec extends AsyncWordSpec with MustMatchers with Wir
           )
       )
 
-      connector.pspSubscription(externalId, data).map {
-        _.status mustEqual BAD_REQUEST
+      connector.pspSubscription(externalId, data).collect {
+        case Left(_: BadRequestException) => succeed
       }
     }
 
@@ -109,12 +109,12 @@ class SubscriptionConnectorSpec extends AsyncWordSpec with MustMatchers with Wir
           )
       )
 
-      connector.pspSubscription(externalId, data).map {
-        _.status mustEqual NOT_FOUND
+      connector.pspSubscription(externalId, data).collect {
+        case Left(_: NotFoundException) => succeed
       }
     }
 
-    "return Upstream5xxResponse when ETMP has returned Internal Server Error" in {
+    "throw Upstream5xxResponse when ETMP has returned Internal Server Error" in {
       val data = Json.obj(fields = "Id" -> "value")
       server.stubFor(
         post(urlEqualTo(pspSubscriptionUrl))
@@ -123,9 +123,8 @@ class SubscriptionConnectorSpec extends AsyncWordSpec with MustMatchers with Wir
             serverError()
           )
       )
-      connector.pspSubscription(externalId, data).map {
-        _.status mustBe INTERNAL_SERVER_ERROR
-      }
+
+      recoverToSucceededIf[Upstream5xxResponse](connector.pspSubscription(externalId, data))
     }
 
     "send a PSPSubscription audit event on success" in {
