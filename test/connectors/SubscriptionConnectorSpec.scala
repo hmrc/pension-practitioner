@@ -37,7 +37,6 @@ import play.api.libs.json.JsString
 import play.api.libs.json.Json
 import play.api.mvc.RequestHeader
 import play.api.test.FakeRequest
-import repository.DataCacheRepository
 import uk.gov.hmrc.http._
 import utils.WireMockHelper
 
