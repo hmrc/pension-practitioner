@@ -147,8 +147,7 @@ class SubscriptionConnectorSpec extends AsyncWordSpec with MustMatchers with Wir
 
       connector.pspSubscription(externalId, data).map {_ =>
         verify(mockAuditService, times(1)).sendEvent(eventCaptor.capture())(any(), any())
-          eventCaptor.getValue mustEqual PSPSubscription(
-            externalId, Status.OK, data, Some(response))
+          eventCaptor.getValue mustEqual PSPSubscription(externalId, Status.OK, data, Some(response))
       }
     }
   }

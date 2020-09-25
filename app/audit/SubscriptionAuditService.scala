@@ -36,7 +36,6 @@ class SubscriptionAuditService @Inject()(auditService: AuditService) {
   def sendSubscribeAuditEvent(externalId: String, requestJson: JsValue)
                                   (implicit ec: ExecutionContext, request: RequestHeader): PartialFunction[Try[HttpResponse], Unit] = {
     case Success(response) =>
-      println("\nYY")
       auditService.sendEvent(PSPSubscription(externalId, Status.OK, requestJson, Some(response.json)))
 
     case Failure(error: UpstreamErrorResponse) =>
@@ -56,7 +55,7 @@ case class PSPSubscription(
                             response: Option[JsValue]
                           ) extends AuditEvent {
 
-  override def auditType: String = ""
+  override def auditType: String = "PSPSubscription"
 
   override def details: Map[String, String] =
     Map(
