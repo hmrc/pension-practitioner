@@ -51,15 +51,13 @@ class SubscriptionConnectorSpec extends AsyncWordSpec with MustMatchers with Wir
 
   private val mockAuditService = mock[AuditService]
   private val mockHeaderUtils = mock[HeaderUtils]
-  private val mockDataCacheRepository = mock[DataCacheRepository]
 
   private lazy val connector: SubscriptionConnector = injector.instanceOf[SubscriptionConnector]
 
   override protected def bindings: Seq[GuiceableModule] =
     Seq(
       bind[AuditService].toInstance(mockAuditService),
-      bind[HeaderUtils].toInstance(mockHeaderUtils),
-      bind[DataCacheRepository].toInstance(mockDataCacheRepository)
+      bind[HeaderUtils].toInstance(mockHeaderUtils)
     )
 
   private val pspSubscriptionUrl = "/pension-online/subscriptions/psp"
