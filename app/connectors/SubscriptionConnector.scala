@@ -43,7 +43,7 @@ class SubscriptionConnector @Inject()(http: HttpClient,
     val headerCarrier: HeaderCarrier = HeaderCarrier(extraHeaders = headerUtils.integrationFrameworkHeader)
     val futureHttpResponse = http.POST[JsValue, HttpResponse](
       config.pspSubscriptionUrl, data)(implicitly, implicitly, headerCarrier, implicitly) andThen
-      subscriptionAuditService.sendSubscribeAuditEvent(externalId, data) // TODO: Add existingPSPId and isExistingPSPId to audit event
+      subscriptionAuditService.sendSubscribeAuditEvent(externalId, data) 
     futureHttpResponse.map(httpResponse => processResponse(httpResponse, config.pspSubscriptionUrl))
   }
 
