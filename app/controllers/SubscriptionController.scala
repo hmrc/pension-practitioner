@@ -52,10 +52,8 @@ class SubscriptionController @Inject()(
         Logger.debug(s"[PSP-Subscription-Incoming-Payload]$feJson")
         feJson match {
           case Some(json) =>
-            println("\n>>>>BEFORE:" + json)
             json.transform(pspSubscriptionTransformer.transformPspSubscription) match {
               case JsSuccess(data, _) =>
-                println("\nAFTER:" + data)
                 Logger.debug(s"[PSP-Subscription-Outgoing-Payload]$data")
                 subscriptionConnector.pspSubscription(externalId, data).map {
                   case Right(response) => Ok(response)
