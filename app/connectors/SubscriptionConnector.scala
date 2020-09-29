@@ -17,8 +17,6 @@
 package connectors
 
 import audit.SubscriptionAuditService
-import play.api.http.Status.BAD_REQUEST
-import play.api.http.Status.FORBIDDEN
 import com.google.inject.Inject
 import config.AppConfig
 import play.api.http.Status._
@@ -45,7 +43,7 @@ class SubscriptionConnector @Inject()(http: HttpClient,
     val headerCarrier: HeaderCarrier = HeaderCarrier(extraHeaders = headerUtils.integrationFrameworkHeader)
     val futureHttpResponse = http.POST[JsValue, HttpResponse](
       config.pspSubscriptionUrl, data)(implicitly, implicitly, headerCarrier, implicitly) andThen
-      subscriptionAuditService.sendSubscribeAuditEvent(externalId, data)
+      subscriptionAuditService.sendSubscribeAuditEvent(externalId, data) // TODO: Add existingPSPId and isExistingPSPId to audit event
     futureHttpResponse.map(httpResponse => processResponse(httpResponse, config.pspSubscriptionUrl))
   }
 
@@ -55,18 +53,7 @@ class SubscriptionConnector @Inject()(http: HttpClient,
       Logger.info(s"POST of $url returned successfully")
       Right(response.json)
     } else {
-      processFailureResponse(response, url)
-    }
-  }
-
-  private def processFailureResponse(response: HttpResponse, url: String): Either[HttpException, JsValue] = {
-    Logger.warn(s"POST or $url returned ${response.status} with body ${response.body}")
-    response.status match {
-      case FORBIDDEN if response.body.contains("ACTIVE_PSPID_ALREADY_EXISTS") =>
-        Left(new ConflictException("ACTIVE_PSPID_ALREADY_EXISTS"))
-      case BAD_REQUEST if response.body.contains("INVALID_PAYLOAD") =>
-        Left(new BadRequestException("INVALID PAYLOAD"))
-      case _ => Left(handleErrorResponse("POST", url)(response))
+      Left(handleErrorResponse("POST", url)(response))
     }
   }
 }

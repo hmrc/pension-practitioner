@@ -16,6 +16,7 @@
 
 package utils
 
+import play.api.Logger
 import uk.gov.hmrc.http._
 import play.api.http.Status._
 
@@ -25,9 +26,11 @@ trait HttpResponseHelper extends HttpErrorFunctions {
     override def read(method: String, url: String, response: HttpResponse): HttpResponse = response
   }
 
-  def handleErrorResponse(httpMethod: String, url: String)(response: HttpResponse): HttpException =
+
+  def handleErrorResponse(httpMethod: String, url: String, args: String*)(response: HttpResponse): HttpException =
     response.status match {
       case BAD_REQUEST =>
+        if (response.body.contains("INVALID_PAYLOAD")) Logger.warn(s"INVALID_PAYLOAD returned for: ${args.headOption.getOrElse(url)} from: $url")
         new BadRequestException(
           badRequestMessage(httpMethod, url, response.body)
         )
