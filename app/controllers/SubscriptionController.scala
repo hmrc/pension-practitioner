@@ -20,12 +20,13 @@ import com.google.inject.Inject
 import connectors.SubscriptionConnector
 import play.api.Logger
 import play.api.libs.json.{JsError, JsResultException, JsSuccess}
-import play.api.mvc._
+import play.api.mvc.{Result, _}
 import transformations.userAnswersToDes.PSPSubscriptionTransformer
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve._
 import uk.gov.hmrc.http.{Request => _, _}
 import uk.gov.hmrc.play.bootstrap.controller.BackendController
+import utils.HttpResponseHelper
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -35,7 +36,7 @@ class SubscriptionController @Inject()(
                                         subscriptionConnector: SubscriptionConnector,
                                         pspSubscriptionTransformer: PSPSubscriptionTransformer,
                                         cc: ControllerComponents
-                                      ) extends BackendController(cc) with AuthorisedFunctions {
+                                      ) extends BackendController(cc) with HttpResponseHelper with AuthorisedFunctions {
 
   def subscribePsp: Action[AnyContent] = Action.async {
     implicit request => {
@@ -47,7 +48,7 @@ class SubscriptionController @Inject()(
             json.transform(pspSubscriptionTransformer.transformPspSubscription) match {
               case JsSuccess(data, _) =>
                 Logger.debug(s"[PSP-Subscription-Outgoing-Payload]$data")
-                subscriptionConnector.pspSubscription(data).map(res => Ok(res.body))
+                subscriptionConnector.pspSubscription(data).map(result)
               case JsError(errors) => throw JsResultException(errors)
           }
           case _ => Future.failed(new BadRequestException("Bad Request with no request body returned for PSP subscription"))

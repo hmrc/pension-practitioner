@@ -63,7 +63,7 @@ class SubscriptionControllerSpec extends AsyncWordSpec with MustMatchers with Mo
     .thenReturn(Future.successful(Some("Ext-137d03b9-d807-4283-a254-fb6c30aceef1")))
   }
 
-  "subscribePsa" must {
+  "subscribePsp" must {
     "return OK when valid response from DES" in {
 
       when(mockSubscriptionConnector.pspSubscription(any())(any(), any(), any()))
