@@ -18,33 +18,23 @@ package connectors
 
 import com.google.inject.Inject
 import config.AppConfig
-import play.api.http.Status.BAD_REQUEST
 import play.api.libs.json._
 import play.api.mvc.RequestHeader
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
-import utils.{HttpResponseHelper, InvalidPayloadHandler}
+import utils.HttpResponseHelper
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class SubscriptionConnector @Inject()(http: HttpClient,
                                       config: AppConfig,
                                       headerUtils: HeaderUtils
-                                   //   invalidPayloadHandler: InvalidPayloadHandler
                                      ) extends HttpResponseHelper {
 
   def pspSubscription(data: JsValue)
                               (implicit hc: HeaderCarrier, ec: ExecutionContext, request: RequestHeader): Future[HttpResponse] = {
 
     val headerCarrier: HeaderCarrier = HeaderCarrier(extraHeaders = headerUtils.integrationFrameworkHeader)
-    http.POST[JsValue, HttpResponse](config.pspSubscriptionUrl, data)(implicitly, implicitly, headerCarrier, implicitly).map {
-      response =>
-        response.status match {
-          case BAD_REQUEST if response.body.contains("INVALID_PAYLOAD") =>
-   //         invalidPayloadHandler.logFailures("/resources/schemas/pspSubscriptionRequest.json", config.pspSubscriptionUrl)(response.json)
-            response
-          case _ => response
-        }
-    }
+    http.POST[JsValue, HttpResponse](config.pspSubscriptionUrl, data)(implicitly, implicitly, headerCarrier, implicitly)
   }
 }
