@@ -7,6 +7,8 @@ object AppDependencies {
 
     "uk.gov.hmrc"             %% "simple-reactivemongo"     % "7.30.0-play-26",
     "uk.gov.hmrc"             %% "bootstrap-play-26"        % "1.16.0",
+    "com.networknt"           %  "json-schema-validator"  % "1.0.3",
+    "com.josephpconley"       %% "play-jsonpath"          % "2.6.0",
     "uk.gov.hmrc"             %% "domain"                   % "5.10.0-play-26"
   )
 

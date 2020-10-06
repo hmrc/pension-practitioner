@@ -17,8 +17,14 @@
 package utils
 
 import play.api.Logger
+import akka.util.ByteString
+import play.api.http.HttpEntity
 import uk.gov.hmrc.http._
 import play.api.http.Status._
+import play.api.mvc.ResponseHeader
+import play.api.mvc.Result
+
+import scala.util.matching.Regex
 
 trait HttpResponseHelper extends HttpErrorFunctions {
 
@@ -26,6 +32,21 @@ trait HttpResponseHelper extends HttpErrorFunctions {
     override def read(method: String, url: String, response: HttpResponse): HttpResponse = response
   }
 
+  def result(res: HttpResponse): Result = {
+
+    val responseBodyRegex: Regex = """^.*Response body:? '(.*)'$""".r
+
+    val httpEntity: HttpEntity.Strict = res.body match {
+      case responseBodyRegex(body) =>
+        HttpEntity.Strict(ByteString(body), Some("application/json"))
+      case message: String =>
+        HttpEntity.Strict(ByteString(message), Some("text/plain"))
+      case _ =>
+        HttpEntity.NoEntity
+    }
+
+    Result(ResponseHeader(res.status), httpEntity)
+  }
 
   def handleErrorResponse(httpMethod: String, url: String, args: String*)(response: HttpResponse): HttpException =
     response.status match {

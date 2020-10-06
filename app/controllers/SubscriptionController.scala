@@ -22,6 +22,7 @@ import play.api.Logger
 import play.api.libs.json.JsError
 import play.api.libs.json.JsResultException
 import play.api.libs.json.JsSuccess
+import play.api.mvc.Result
 import play.api.mvc._
 import transformations.userAnswersToDes.PSPSubscriptionTransformer
 import uk.gov.hmrc.auth.core._

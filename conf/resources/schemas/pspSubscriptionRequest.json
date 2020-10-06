@@ -1,0 +1,1242 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "API#1658 Create or Amend PSP Subscription - Request Schema",
+  "type": "object",
+  "oneOf": [
+    {
+      "description": "Subscription Type as Creation with Legal status as Individual and customerType as UK ",
+      "type": "object",
+      "properties": {
+        "regime": {
+          "type": "string",
+          "enum": [
+            "PODP"
+          ]
+        },
+        "sapNumber": {
+          "description": "SAP Number- BP(10 char) + CA (12 char) + CO (20 char)For PSP Subscription only BP number will be received which was created during ROSM process",
+          "type": "string",
+          "pattern": "^[0-9]{1,42}$"
+        },
+        "subscriptionTypeAndPSPIDDetails": {
+          "$ref": "#/definitions/subscriptionTypeAndPSPIDDetailsCreation"
+        },
+        "legalEntityAndCustomerID": {
+          "description": "Legal status -  Individual",
+          "type": "object",
+          "properties": {
+            "legalStatus": {
+              "type": "string",
+              "enum": [
+                "Individual"
+              ]
+            },
+            "customerType": {
+              "type": "string",
+              "enum": [
+                "UK"
+              ]
+            },
+            "idType": {
+              "type": "string",
+              "enum": [
+                "NINO"
+              ]
+            },
+            "idNumber": {
+              "type": "string",
+              "description": "nino",
+              "pattern": "^((?!(BG|GB|KN|NK|NT|TN|ZZ)|(D|F|I|Q|U|V)[A-Z]|[A-Z](D|F|I|O|Q|U|V))[A-Z]{2})[0-9]{6}[A-D]$"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "legalStatus",
+            "customerType",
+            "idType",
+            "idNumber"
+          ]
+        },
+        "individualDetails": {
+          "$ref": "#/definitions/individualDetailsType"
+        },
+        "correspondenceAddressDetails": {
+          "$ref": "#/definitions/correspondenceAddressDetailsType"
+        },
+        "correspondenceContactDetails": {
+          "$ref": "#/definitions/contactDetailsType"
+        },
+        "declaration": {
+          "$ref": "#/definitions/declarationType"
+        }
+      },
+      "required": [
+        "subscriptionTypeAndPSPIDDetails",
+        "legalEntityAndCustomerID",
+        "individualDetails",
+        "correspondenceAddressDetails",
+        "correspondenceContactDetails",
+        "declaration"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "description": "Subscription Type Creation with Legal status as Individual and customerType as NonUK ",
+      "type": "object",
+      "properties": {
+        "regime": {
+          "type": "string",
+          "enum": [
+            "PODP"
+          ]
+        },
+        "sapNumber": {
+          "description": "SAP Number: BP(10 char) + CA (12 char) + CO (20 char)For PSP Subscription only BP number will be received which was created during ROSM process",
+          "type": "string",
+          "pattern": "^[0-9]{1,42}$"
+        },
+        "subscriptionTypeAndPSPIDDetails": {
+          "$ref": "#/definitions/subscriptionTypeAndPSPIDDetailsCreation"
+        },
+        "legalEntityAndCustomerID": {
+          "description": "Legal status - Individual",
+          "type": "object",
+          "properties": {
+            "legalStatus": {
+              "type": "string",
+              "enum": [
+                "Individual"
+              ]
+            },
+            "customerType": {
+              "type": "string",
+              "enum": [
+                "NonUK"
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "legalStatus",
+            "customerType"
+          ]
+        },
+        "individualDetails": {
+          "$ref": "#/definitions/individualDetailsType"
+        },
+        "correspondenceAddressDetails": {
+          "$ref": "#/definitions/correspondenceAddressDetailsType"
+        },
+        "correspondenceContactDetails": {
+          "$ref": "#/definitions/contactDetailsType"
+        },
+        "declaration": {
+          "$ref": "#/definitions/declarationType"
+        }
+      },
+      "required": [
+        "subscriptionTypeAndPSPIDDetails",
+        "legalEntityAndCustomerID",
+        "individualDetails",
+        "correspondenceAddressDetails",
+        "correspondenceContactDetails",
+        "declaration"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "description": "Subscription Type Creation with Legal status as Partnership or Company and customerType as UK ",
+      "type": "object",
+      "properties": {
+        "regime": {
+          "type": "string",
+          "enum": [
+            "PODP"
+          ]
+        },
+        "sapNumber": {
+          "description": "SAP Number: BP(10 char) + CA (12 char) + CO (20 char)For PSP Subscription only BP number will be received which was created during ROSM process",
+          "type": "string",
+          "pattern": "^[0-9]{1,42}$"
+        },
+        "subscriptionTypeAndPSPIDDetails": {
+          "$ref": "#/definitions/subscriptionTypeAndPSPIDDetailsCreation"
+        },
+        "legalEntityAndCustomerID": {
+          "description": "Legal status as Partnership or Company",
+          "type": "object",
+          "properties": {
+            "legalStatus": {
+              "type": "string",
+              "enum": [
+                "Partnership",
+                "Company"
+              ]
+            },
+            "customerType": {
+              "type": "string",
+              "enum": [
+                "UK"
+              ]
+            },
+            "idType": {
+              "type": "string",
+              "enum": [
+                "UTR"
+              ]
+            },
+            "idNumber": {
+              "type": "string",
+              "description": "utr",
+              "pattern": "^[0-9]{10}$"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "legalStatus",
+            "customerType",
+            "idType",
+            "idNumber"
+          ]
+        },
+        "orgOrPartnershipDetails": {
+          "$ref": "#/definitions/orgOrPartnershipDetails"
+        },
+        "correspondenceAddressDetails": {
+          "$ref": "#/definitions/correspondenceAddressDetailsType"
+        },
+        "correspondenceContactDetails": {
+          "$ref": "#/definitions/contactDetailsType"
+        },
+        "declaration": {
+          "$ref": "#/definitions/declarationType"
+        }
+      },
+      "required": [
+        "subscriptionTypeAndPSPIDDetails",
+        "legalEntityAndCustomerID",
+        "orgOrPartnershipDetails",
+        "correspondenceAddressDetails",
+        "correspondenceContactDetails",
+        "declaration"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "description": "Subscription Type as Creation with Legal status as Partnership or Company and customerType as NonUK ",
+      "type": "object",
+      "properties": {
+        "regime": {
+          "type": "string",
+          "enum": [
+            "PODP"
+          ]
+        },
+        "sapNumber": {
+          "description": "SAP Number: BP(10 char) + CA (12 char) + CO (20 char)For PSP Subscription only BP number will be received which was created during ROSM process",
+          "type": "string",
+          "pattern": "^[0-9]{1,42}$"
+        },
+        "subscriptionTypeAndPSPIDDetails": {
+          "$ref": "#/definitions/subscriptionTypeAndPSPIDDetailsCreation"
+        },
+        "legalEntityAndCustomerID": {
+          "description": "Legal status as Partnership or Company",
+          "type": "object",
+          "properties": {
+            "legalStatus": {
+              "type": "string",
+              "enum": [
+                "Partnership",
+                "Company"
+              ]
+            },
+            "customerType": {
+              "type": "string",
+              "enum": [
+                "NonUK"
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "legalStatus",
+            "customerType"
+          ]
+        },
+        "orgOrPartnershipDetails": {
+          "$ref": "#/definitions/orgOrPartnershipDetails"
+        },
+        "correspondenceAddressDetails": {
+          "$ref": "#/definitions/correspondenceAddressDetailsType"
+        },
+        "correspondenceContactDetails": {
+          "$ref": "#/definitions/contactDetailsType"
+        },
+        "declaration": {
+          "$ref": "#/definitions/declarationType"
+        }
+      },
+      "required": [
+        "subscriptionTypeAndPSPIDDetails",
+        "legalEntityAndCustomerID",
+        "orgOrPartnershipDetails",
+        "correspondenceAddressDetails",
+        "correspondenceContactDetails",
+        "declaration"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "description": "Subscription Type as Variation with Legal status as Individual and customerType as UK ",
+      "type": "object",
+      "properties": {
+        "regime": {
+          "type": "string",
+          "enum": [
+            "PODP"
+          ]
+        },
+        "sapNumber": {
+          "description": "SAP Number: BP(10 char) + CA (12 char) + CO (20 char)For PSP Subscription only BP number will be received which was created during ROSM process",
+          "type": "string",
+          "pattern": "^[0-9]{1,42}$"
+        },
+        "subscriptionTypeAndPSPIDDetails": {
+          "$ref": "#/definitions/subscriptionTypeAndPSPIDDetailsVariation"
+        },
+        "legalEntityAndCustomerID": {
+          "description": "Legal status - Individual",
+          "type": "object",
+          "properties": {
+            "legalStatus": {
+              "type": "string",
+              "enum": [
+                "Individual"
+              ]
+            },
+            "customerType": {
+              "type": "string",
+              "enum": [
+                "UK"
+              ]
+            },
+            "idType": {
+              "type": "string",
+              "enum": [
+                "NINO"
+              ]
+            },
+            "idNumber": {
+              "type": "string",
+              "description": "nino",
+              "pattern": "^((?!(BG|GB|KN|NK|NT|TN|ZZ)|(D|F|I|Q|U|V)[A-Z]|[A-Z](D|F|I|O|Q|U|V))[A-Z]{2})[0-9]{6}[A-D]$"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "legalStatus",
+            "customerType",
+            "idType",
+            "idNumber"
+          ]
+        },
+        "individualDetails": {
+          "$ref": "#/definitions/individualDetailsType"
+        },
+        "correspondenceAddressDetails": {
+          "$ref": "#/definitions/changeFlagCorresAddressDetailsType"
+        },
+        "correspondenceContactDetails": {
+          "$ref": "#/definitions/contactDetailsType"
+        },
+        "declaration": {
+          "$ref": "#/definitions/declarationType"
+        }
+      },
+      "required": [
+        "subscriptionTypeAndPSPIDDetails",
+        "legalEntityAndCustomerID",
+        "individualDetails",
+        "correspondenceAddressDetails",
+        "correspondenceContactDetails",
+        "declaration"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "description": "Subscription Type as Variation with Legal status as Individual and customerType as NonUK",
+      "type": "object",
+      "properties": {
+        "regime": {
+          "type": "string",
+          "enum": [
+            "PODP"
+          ]
+        },
+        "sapNumber": {
+          "description": "SAP Number: BP(10 char) + CA (12 char) + CO (20 char)For PSP Subscription only BP number will be received which was created during ROSM process",
+          "type": "string",
+          "pattern": "^[0-9]{1,42}$"
+        },
+        "subscriptionTypeAndPSPIDDetails": {
+          "$ref": "#/definitions/subscriptionTypeAndPSPIDDetailsVariation"
+        },
+        "legalEntityAndCustomerID": {
+          "description": "Legal status - Individual",
+          "type": "object",
+          "properties": {
+            "legalStatus": {
+              "type": "string",
+              "enum": [
+                "Individual"
+              ]
+            },
+            "customerType": {
+              "type": "string",
+              "enum": [
+                "NonUK"
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "legalStatus",
+            "customerType"
+          ]
+        },
+        "individualDetails": {
+          "$ref": "#/definitions/changeFlagIndividualDetailsType"
+        },
+        "correspondenceAddressDetails": {
+          "$ref": "#/definitions/changeFlagCorresAddressDetailsType"
+        },
+        "correspondenceContactDetails": {
+          "$ref": "#/definitions/contactDetailsType"
+        },
+        "declaration": {
+          "$ref": "#/definitions/declarationType"
+        }
+      },
+      "required": [
+        "subscriptionTypeAndPSPIDDetails",
+        "legalEntityAndCustomerID",
+        "individualDetails",
+        "correspondenceAddressDetails",
+        "correspondenceContactDetails",
+        "declaration"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "description": "Subscription Type as Variation with Legal status as Partnership or Company and customerType as UK ",
+      "type": "object",
+      "properties": {
+        "regime": {
+          "type": "string",
+          "enum": [
+            "PODP"
+          ]
+        },
+        "sapNumber": {
+          "description": "SAP Number: BP(10 char) + CA (12 char) + CO (20 char)For PSP Subscription only BP number will be received which was created during ROSM process",
+          "type": "string",
+          "pattern": "^[0-9]{1,42}$"
+        },
+        "subscriptionTypeAndPSPIDDetails": {
+          "$ref": "#/definitions/subscriptionTypeAndPSPIDDetailsVariation"
+        },
+        "legalEntityAndCustomerID": {
+          "description": "Legal status - Partnership or Company",
+          "type": "object",
+          "properties": {
+            "legalStatus": {
+              "type": "string",
+              "enum": [
+                "Partnership",
+                "Company"
+              ]
+            },
+            "customerType": {
+              "type": "string",
+              "enum": [
+                "UK"
+              ]
+            },
+            "idType": {
+              "type": "string",
+              "enum": [
+                "UTR"
+              ]
+            },
+            "idNumber": {
+              "type": "string",
+              "description": "utr",
+              "pattern": "^[0-9]{10}$"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "legalStatus",
+            "customerType",
+            "idType",
+            "idNumber"
+          ]
+        },
+        "orgOrPartnershipDetails": {
+          "$ref": "#/definitions/orgOrPartnershipDetails"
+        },
+        "correspondenceAddressDetails": {
+          "$ref": "#/definitions/changeFlagCorresAddressDetailsType"
+        },
+        "correspondenceContactDetails": {
+          "$ref": "#/definitions/contactDetailsType"
+        },
+        "declaration": {
+          "$ref": "#/definitions/declarationType"
+        }
+      },
+      "required": [
+        "subscriptionTypeAndPSPIDDetails",
+        "legalEntityAndCustomerID",
+        "orgOrPartnershipDetails",
+        "correspondenceAddressDetails",
+        "correspondenceContactDetails",
+        "declaration"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "description": "Subscription Type as Variation with Legal status as Partnership or Company and customerType as NonUK",
+      "type": "object",
+      "properties": {
+        "regime": {
+          "type": "string",
+          "enum": [
+            "PODP"
+          ]
+        },
+        "sapNumber": {
+          "description": "SAP Number: BP(10 char) + CA (12 char) + CO (20 char)For PSP Subscription only BP number will be received which was created during ROSM process",
+          "type": "string",
+          "pattern": "^[0-9]{1,42}$"
+        },
+        "subscriptionTypeAndPSPIDDetails": {
+          "$ref": "#/definitions/subscriptionTypeAndPSPIDDetailsVariation"
+        },
+        "legalEntityAndCustomerID": {
+          "description": "Legal status - Partnership or Company",
+          "type": "object",
+          "properties": {
+            "legalStatus": {
+              "type": "string",
+              "enum": [
+                "Partnership",
+                "Company"
+              ]
+            },
+            "customerType": {
+              "type": "string",
+              "enum": [
+                "NonUK"
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "legalStatus",
+            "customerType"
+          ]
+        },
+        "orgOrPartnershipDetails": {
+          "$ref": "#/definitions/changeFlagOrgOrPartnershipDetails"
+        },
+        "correspondenceAddressDetails": {
+          "$ref": "#/definitions/changeFlagCorresAddressDetailsType"
+        },
+        "correspondenceContactDetails": {
+          "$ref": "#/definitions/contactDetailsType"
+        },
+        "declaration": {
+          "$ref": "#/definitions/declarationType"
+        }
+      },
+      "required": [
+        "subscriptionTypeAndPSPIDDetails",
+        "legalEntityAndCustomerID",
+        "orgOrPartnershipDetails",
+        "correspondenceAddressDetails",
+        "correspondenceContactDetails",
+        "declaration"
+      ],
+      "additionalProperties": false
+    }
+  ],
+  "definitions": {
+    "subscriptionTypeAndPSPIDDetailsCreation": {
+      "oneOf": [
+        {
+          "description": "Subscription Type - Creation",
+          "type": "object",
+          "properties": {
+            "subscriptionType": {
+              "type": "string",
+              "enum": [
+                "Creation"
+              ]
+            },
+            "existingPSPID": {
+              "type": "string",
+              "enum": [
+                "Yes"
+              ]
+            },
+            "pspid": {
+              "type": "string",
+              "description": "PSP ID",
+              "pattern": "^[0|1|2]{1}[0-9]{7}$"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "subscriptionType",
+            "existingPSPID",
+            "pspid"
+          ]
+        },
+        {
+          "description": "Subscription Type - Creation",
+          "type": "object",
+          "properties": {
+            "subscriptionType": {
+              "type": "string",
+              "enum": [
+                "Creation"
+              ]
+            },
+            "existingPSPID": {
+              "type": "string",
+              "enum": [
+                "No"
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "subscriptionType",
+            "existingPSPID"
+          ]
+        }
+      ]
+    },
+    "subscriptionTypeAndPSPIDDetailsVariation": {
+      "description": "Subscription Type - Variation",
+      "type": "object",
+      "properties": {
+        "subscriptionType": {
+          "type": "string",
+          "enum": [
+            "Variation"
+          ]
+        },
+        "pspid": {
+          "type": "string",
+          "description": "PSP ID",
+          "pattern": "^[0|1|2]{1}[0-9]{7}$"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "subscriptionType",
+        "pspid"
+      ]
+    },
+    "organisationNameType": {
+      "type": "string",
+      "description": "Organisation Or PartnershipName , À for À, ÿ for ÿ, — for — (EM DASH), – for – (EN DASH), ‐ for -(HYPHEN), - - -(HYPHEN_MINUS), \\ for \\",
+      "pattern": "^[a-zA-Z0-9À-ÿ !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]£€¥\\u005C—–‐-]{1,160}$"
+    },
+    "addressLineType": {
+      "type": "string",
+      "description": "Address Line , — for — (EM DASH), – for – (EN DASH), ‐ for -(HYPHEN), - for -(HYPHEN_MINUS)",
+      "pattern": "^[A-Za-z0-9 &!'‘’\"“”(),./—–‐-]{1,35}$"
+    },
+    "titleType": {
+      "type": "string",
+      "enum": [
+        "Mr",
+        "Mrs",
+        "Miss",
+        "Ms",
+        "Dr",
+        "Sir",
+        "Professor",
+        "Lord"
+      ]
+    },
+    "nameType": {
+      "type": "string",
+      "pattern": "^[a-zA-Z &`\\\\'\\.^-]{1,35}$"
+    },
+    "changeFlagIndividualDetailsType": {
+      "type": "object",
+      "properties": {
+        "changeFlag": {
+          "description": "true for Changes updated, false for No changes made",
+          "type": "boolean"
+        },
+        "title": {
+          "$ref": "#/definitions/titleType"
+        },
+        "firstName": {
+          "$ref": "#/definitions/nameType"
+        },
+        "middleName": {
+          "$ref": "#/definitions/nameType"
+        },
+        "lastName": {
+          "$ref": "#/definitions/nameType"
+        }
+      },
+      "required": [
+        "changeFlag",
+        "firstName",
+        "lastName"
+      ],
+      "additionalProperties": false
+    },
+    "individualDetailsType": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "$ref": "#/definitions/titleType"
+        },
+        "firstName": {
+          "$ref": "#/definitions/nameType"
+        },
+        "middleName": {
+          "$ref": "#/definitions/nameType"
+        },
+        "lastName": {
+          "$ref": "#/definitions/nameType"
+        }
+      },
+      "required": [
+        "firstName",
+        "lastName"
+      ],
+      "additionalProperties": false
+    },
+    "orgOrPartnershipDetails": {
+      "type": "object",
+      "properties": {
+        "organisationName": {
+          "$ref": "#/definitions/organisationNameType"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "organisationName"
+      ]
+    },
+    "changeFlagOrgOrPartnershipDetails": {
+      "type": "object",
+      "properties": {
+        "changeFlag": {
+          "description": "true for Changes updated, false for No changes made",
+          "type": "boolean"
+        },
+        "organisationName": {
+          "$ref": "#/definitions/organisationNameType"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "changeFlag",
+        "organisationName"
+      ]
+    },
+    "declarationType": {
+      "type": "object",
+      "properties": {
+        "pspDeclarationBox1": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "pspDeclarationBox1"
+      ],
+      "additionalProperties": false
+    },
+    "correspondenceAddressDetailsType": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "nonUKAddress": {
+              "type": "string",
+              "enum": [
+                "false"
+              ]
+            },
+            "addressLine1": {
+              "$ref": "#/definitions/addressLineType"
+            },
+            "addressLine2": {
+              "$ref": "#/definitions/addressLineType"
+            },
+            "addressLine3": {
+              "$ref": "#/definitions/addressLineType"
+            },
+            "addressLine4": {
+              "$ref": "#/definitions/addressLineType"
+            },
+            "countryCode": {
+              "type": "string",
+              "enum": [
+                "GB"
+              ]
+            },
+            "postalCode": {
+              "type": "string",
+              "pattern": "^[A-Z]{1,2}[0-9][0-9A-Z]?\\s?[0-9][A-Z]{2}$|BFPO\\s?[0-9]{1,3}$"
+            }
+          },
+          "required": [
+            "nonUKAddress",
+            "addressLine1",
+            "addressLine2",
+            "countryCode",
+            "postalCode"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "nonUKAddress": {
+              "type": "string",
+              "enum": [
+                "true"
+              ]
+            },
+            "addressLine1": {
+              "$ref": "#/definitions/addressLineType"
+            },
+            "addressLine2": {
+              "$ref": "#/definitions/addressLineType"
+            },
+            "addressLine3": {
+              "$ref": "#/definitions/addressLineType"
+            },
+            "addressLine4": {
+              "$ref": "#/definitions/addressLineType"
+            },
+            "countryCode": {
+              "$ref": "#/definitions/countryCodes"
+            },
+            "postalCode": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 10
+            }
+          },
+          "required": [
+            "nonUKAddress",
+            "addressLine1",
+            "addressLine2",
+            "countryCode"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "changeFlagCorresAddressDetailsType": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "changeFlag": {
+              "description": "true for Changes updated, false for No changes made",
+              "type": "boolean"
+            },
+            "nonUKAddress": {
+              "type": "string",
+              "enum": [
+                "false"
+              ]
+            },
+            "addressLine1": {
+              "$ref": "#/definitions/addressLineType"
+            },
+            "addressLine2": {
+              "$ref": "#/definitions/addressLineType"
+            },
+            "addressLine3": {
+              "$ref": "#/definitions/addressLineType"
+            },
+            "addressLine4": {
+              "$ref": "#/definitions/addressLineType"
+            },
+            "countryCode": {
+              "type": "string",
+              "enum": [
+                "GB"
+              ]
+            },
+            "postalCode": {
+              "type": "string",
+              "pattern": "^[A-Z]{1,2}[0-9][0-9A-Z]?\\s?[0-9][A-Z]{2}$|BFPO\\s?[0-9]{1,3}$"
+            }
+          },
+          "required": [
+            "changeFlag",
+            "nonUKAddress",
+            "addressLine1",
+            "addressLine2",
+            "countryCode",
+            "postalCode"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "changeFlag": {
+              "description": "true for Changes updated, false for No changes made",
+              "type": "boolean"
+            },
+            "nonUKAddress": {
+              "type": "string",
+              "enum": [
+                "true"
+              ]
+            },
+            "addressLine1": {
+              "$ref": "#/definitions/addressLineType"
+            },
+            "addressLine2": {
+              "$ref": "#/definitions/addressLineType"
+            },
+            "addressLine3": {
+              "$ref": "#/definitions/addressLineType"
+            },
+            "addressLine4": {
+              "$ref": "#/definitions/addressLineType"
+            },
+            "countryCode": {
+              "$ref": "#/definitions/countryCodes"
+            },
+            "postalCode": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 10
+            }
+          },
+          "required": [
+            "changeFlag",
+            "nonUKAddress",
+            "addressLine1",
+            "addressLine2",
+            "countryCode"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "contactDetailsType": {
+      "type": "object",
+      "properties": {
+        "telephone": {
+          "$ref": "#/definitions/phoneNumberType"
+        },
+        "mobileNumber": {
+          "$ref": "#/definitions/phoneNumberType"
+        },
+        "fax": {
+          "$ref": "#/definitions/phoneNumberType"
+        },
+        "email": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 132,
+          "format": "email"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "telephone",
+        "email"
+      ]
+    },
+    "phoneNumberType": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 24,
+      "pattern": "^[0-9 )/(*#+-]+$"
+    },
+    "countryCodes": {
+      "description": "Country code iso 3166-1 alpha-2",
+      "type": "string",
+      "enum": [
+        "AD",
+        "AE",
+        "AF",
+        "AG",
+        "AI",
+        "AL",
+        "AM",
+        "AN",
+        "AO",
+        "AQ",
+        "AR",
+        "AS",
+        "AT",
+        "AU",
+        "AW",
+        "AX",
+        "AZ",
+        "BA",
+        "BB",
+        "BD",
+        "BE",
+        "BF",
+        "BG",
+        "BH",
+        "BI",
+        "BJ",
+        "BL",
+        "BM",
+        "BN",
+        "BO",
+        "BQ",
+        "BR",
+        "BS",
+        "BT",
+        "BV",
+        "BW",
+        "BY",
+        "BZ",
+        "CA",
+        "CC",
+        "CD",
+        "CF",
+        "CG",
+        "CH",
+        "CI",
+        "CK",
+        "CL",
+        "CM",
+        "CN",
+        "CO",
+        "CR",
+        "CS",
+        "CU",
+        "CV",
+        "CW",
+        "CX",
+        "CY",
+        "CZ",
+        "DE",
+        "DJ",
+        "DK",
+        "DM",
+        "DO",
+        "DZ",
+        "EC",
+        "EE",
+        "EG",
+        "EH",
+        "ER",
+        "ES",
+        "ET",
+        "EU",
+        "FC",
+        "FI",
+        "FJ",
+        "FK",
+        "FM",
+        "FO",
+        "FR",
+        "GA",
+        "GD",
+        "GE",
+        "GF",
+        "GG",
+        "GH",
+        "GI",
+        "GL",
+        "GM",
+        "GN",
+        "GP",
+        "GQ",
+        "GR",
+        "GS",
+        "GT",
+        "GU",
+        "GW",
+        "GY",
+        "HK",
+        "HM",
+        "HN",
+        "HR",
+        "HT",
+        "HU",
+        "ID",
+        "IE",
+        "IL",
+        "IM",
+        "IN",
+        "IO",
+        "IQ",
+        "IR",
+        "IS",
+        "IT",
+        "JE",
+        "JM",
+        "JO",
+        "JP",
+        "KE",
+        "KG",
+        "KH",
+        "KI",
+        "KM",
+        "KN",
+        "KP",
+        "KR",
+        "KW",
+        "KY",
+        "KZ",
+        "LA",
+        "LB",
+        "LC",
+        "LI",
+        "LK",
+        "LR",
+        "LS",
+        "LT",
+        "LU",
+        "LV",
+        "LY",
+        "MA",
+        "MC",
+        "MD",
+        "ME",
+        "MF",
+        "MG",
+        "MH",
+        "MK",
+        "ML",
+        "MM",
+        "MN",
+        "MO",
+        "MP",
+        "MQ",
+        "MR",
+        "MS",
+        "MT",
+        "MU",
+        "MV",
+        "MW",
+        "MX",
+        "MY",
+        "MZ",
+        "NA",
+        "NC",
+        "NE",
+        "NF",
+        "NG",
+        "NI",
+        "NL",
+        "NO",
+        "NP",
+        "NR",
+        "NT",
+        "NU",
+        "NZ",
+        "OM",
+        "OR",
+        "PA",
+        "PE",
+        "PF",
+        "PG",
+        "PH",
+        "PK",
+        "PL",
+        "PM",
+        "PN",
+        "PR",
+        "PS",
+        "PT",
+        "PW",
+        "PY",
+        "QA",
+        "RE",
+        "RO",
+        "RS",
+        "RU",
+        "RW",
+        "SA",
+        "SB",
+        "SC",
+        "SD",
+        "SE",
+        "SG",
+        "SH",
+        "SI",
+        "SJ",
+        "SK",
+        "SL",
+        "SM",
+        "SN",
+        "SO",
+        "SR",
+        "SS",
+        "ST",
+        "SV",
+        "SX",
+        "SY",
+        "SZ",
+        "TC",
+        "TD",
+        "TF",
+        "TG",
+        "TH",
+        "TJ",
+        "TK",
+        "TL",
+        "TM",
+        "TN",
+        "TO",
+        "TP",
+        "TR",
+        "TT",
+        "TV",
+        "TW",
+        "TZ",
+        "UA",
+        "UG",
+        "UM",
+        "UN",
+        "US",
+        "UY",
+        "UZ",
+        "VA",
+        "VC",
+        "VE",
+        "VG",
+        "VI",
+        "VN",
+        "VU",
+        "WF",
+        "WS",
+        "YE",
+        "YT",
+        "ZA",
+        "ZM",
+        "ZW",
+        "ZZ"
+      ]
+    }
+  }
+}
