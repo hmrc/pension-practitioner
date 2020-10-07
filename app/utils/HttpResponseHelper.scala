@@ -16,11 +16,13 @@
 
 package utils
 
+import play.api.Logger
 import akka.util.ByteString
 import play.api.http.HttpEntity
 import uk.gov.hmrc.http._
 import play.api.http.Status._
-import play.api.mvc.{ResponseHeader, Result}
+import play.api.mvc.ResponseHeader
+import play.api.mvc.Result
 
 import scala.util.matching.Regex
 
@@ -46,14 +48,15 @@ trait HttpResponseHelper extends HttpErrorFunctions {
     Result(ResponseHeader(res.status), httpEntity)
   }
 
-  def handleErrorResponse(httpMethod: String, url: String)(response: HttpResponse): Nothing =
+  def handleErrorResponse(httpMethod: String, url: String, args: String*)(response: HttpResponse): HttpException =
     response.status match {
       case BAD_REQUEST =>
-        throw new BadRequestException(
+        if (response.body.contains("INVALID_PAYLOAD")) Logger.warn(s"INVALID_PAYLOAD returned for: ${args.headOption.getOrElse(url)} from: $url")
+        new BadRequestException(
           badRequestMessage(httpMethod, url, response.body)
         )
       case NOT_FOUND =>
-        throw new NotFoundException(
+        new NotFoundException(
           notFoundMessage(httpMethod, url, response.body)
         )
       case status if is4xx(status) =>
