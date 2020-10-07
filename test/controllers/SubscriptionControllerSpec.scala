@@ -87,6 +87,41 @@ class SubscriptionControllerSpec extends AsyncWordSpec with MustMatchers with Mo
 
   }
 
+  "getPspDetails" must {
+    "return OK when service returns successfully" in {
+
+      when(mockSubscriptionConnector.getSubscriptionDetails(any())(any(), any(), any()))
+        .thenReturn(Future.successful(Right(Json.obj())))
+      val result = controller.getPspDetails(fakeRequest.withHeaders(("pspId", "A2123456")))
+
+      status(result) mustBe OK
+      contentAsJson(result) mustBe Json.obj()
+    }
+
+    "return bad request when connector returns BAD_REQUEST" in {
+
+      when(mockSubscriptionConnector.getSubscriptionDetails(any())(any(), any(), any()))
+        .thenReturn(Future.successful(Left(HttpResponse(BAD_REQUEST, "bad request")))
+      )
+
+      val result = controller.getPspDetails(fakeRequest.withHeaders(("pspId", "A2123456")))
+
+      status(result) mustBe BAD_REQUEST
+      contentAsString(result) mustBe "bad request"
+      }
+
+    "return not found when connector returns NOT_FOUND" in {
+
+      when(mockSubscriptionConnector.getSubscriptionDetails(any())(any(), any(), any()))
+        .thenReturn(Future.successful(Left(HttpResponse(NOT_FOUND, "not found"))))
+
+      val result = controller.getPspDetails(fakeRequest.withHeaders(("pspId", "A2123456")))
+
+      status(result) mustBe NOT_FOUND
+      contentAsString(result) mustBe "not found"
+    }
+  }
+
   def errorResponse(code: String): String = {
     Json.stringify(
       Json.obj(

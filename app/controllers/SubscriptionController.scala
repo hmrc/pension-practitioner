@@ -19,7 +19,7 @@ package controllers
 import com.google.inject.Inject
 import connectors.SubscriptionConnector
 import play.api.Logger
-import play.api.libs.json.{JsError, JsResultException, JsSuccess}
+import play.api.libs.json.{JsError, JsResultException, JsSuccess, Json}
 import play.api.mvc.{Result, _}
 import transformations.userAnswersToDes.PSPSubscriptionTransformer
 import uk.gov.hmrc.auth.core._
@@ -55,6 +55,23 @@ class SubscriptionController @Inject()(
         }
       }
     }
+  }
+
+  def getPspDetails: Action[AnyContent] = Action.async {
+    implicit request =>
+      withAuth { _ =>
+        val pspId = request.headers.get("pspId")
+        pspId match {
+          case Some(id) =>
+            subscriptionConnector.getSubscriptionDetails(id).map {
+              case Right(pspDetails) =>
+                Logger.debug(s"[Get-psp-details-transformed]$pspDetails")
+                Ok(Json.toJson(pspDetails))
+              case Left(e) => result(e)
+            }
+          case _ => Future.failed(new BadRequestException("No PSP Id in the header"))
+        }
+      }
   }
 
   private def withAuth(block: String => Future[Result])
