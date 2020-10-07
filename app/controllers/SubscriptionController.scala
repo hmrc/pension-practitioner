@@ -26,21 +26,24 @@ import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve._
 import uk.gov.hmrc.http.{Request => _, _}
 import uk.gov.hmrc.play.bootstrap.controller.BackendController
-import utils.HttpResponseHelper
+import utils.{ErrorHandler, HttpResponseHelper}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class SubscriptionController @Inject()(
-                                        override val authConnector: AuthConnector,
-                                        subscriptionConnector: SubscriptionConnector,
-                                        pspSubscriptionTransformer: PSPSubscriptionTransformer,
-                                        cc: ControllerComponents
-                                      ) extends BackendController(cc) with HttpResponseHelper with AuthorisedFunctions {
+  override val authConnector: AuthConnector,
+  subscriptionConnector: SubscriptionConnector,
+  pspSubscriptionTransformer: PSPSubscriptionTransformer,
+  cc: ControllerComponents
+) extends BackendController(cc)
+    with AuthorisedFunctions
+    with HttpResponseHelper
+    with ErrorHandler {
 
-  def subscribePsp: Action[AnyContent] = Action.async {
-    implicit request => {
-      withAuth { _ =>
+  def subscribePsp: Action[AnyContent] = Action.async { implicit request =>
+    {
+      withAuth { externalId =>
         val feJson = request.body.asJson
         Logger.debug(s"[PSP-Subscription-Incoming-Payload]$feJson")
         feJson match {
@@ -48,10 +51,18 @@ class SubscriptionController @Inject()(
             json.transform(pspSubscriptionTransformer.transformPspSubscription) match {
               case JsSuccess(data, _) =>
                 Logger.debug(s"[PSP-Subscription-Outgoing-Payload]$data")
-                subscriptionConnector.pspSubscription(data).map(result)
+                subscriptionConnector.pspSubscription(externalId, data).map {
+                  case Right(response) => Ok(response)
+                  case Left(e)         => result(e)
+                }
               case JsError(errors) => throw JsResultException(errors)
-          }
-          case _ => Future.failed(new BadRequestException("Bad Request with no request body returned for PSP subscription"))
+            }
+          case _ =>
+            Future.failed(
+              new BadRequestException(
+                "Bad Request with no request body returned for PSP subscription"
+              )
+            )
         }
       }
     }
@@ -81,7 +92,11 @@ class SubscriptionController @Inject()(
       case Some(externalId) =>
         block(externalId)
       case _ =>
-        Future.failed(new UnauthorizedException("Not Authorised - Unable to retrieve credentials - externalId"))
+        Future.failed(
+          new UnauthorizedException(
+            "Not Authorised - Unable to retrieve credentials - externalId"
+          )
+        )
     }
   }
 }

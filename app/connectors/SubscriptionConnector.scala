@@ -16,6 +16,7 @@
 
 package connectors
 
+import audit.SubscriptionAuditService
 import com.google.inject.Inject
 import config.AppConfig
 import play.Logger
@@ -32,14 +33,29 @@ import scala.concurrent.{ExecutionContext, Future}
 class SubscriptionConnector @Inject()(http: HttpClient,
                                       config: AppConfig,
                                       headerUtils: HeaderUtils,
+                                      subscriptionAuditService: SubscriptionAuditService,
                                       pspDetailsTransformer: PspDetailsTransformer
                                      ) extends HttpResponseHelper {
 
-  def pspSubscription(data: JsValue)
-                              (implicit hc: HeaderCarrier, ec: ExecutionContext, request: RequestHeader): Future[HttpResponse] = {
-
+  def pspSubscription(externalId: String, data: JsValue)
+                              (implicit hc: HeaderCarrier,
+                                ec: ExecutionContext,
+                                request: RequestHeader): Future[Either[HttpException, JsValue]] = {
     val headerCarrier: HeaderCarrier = HeaderCarrier(extraHeaders = headerUtils.integrationFrameworkHeader)
-    http.POST[JsValue, HttpResponse](config.pspSubscriptionUrl, data)(implicitly, implicitly, headerCarrier, implicitly)
+    val futureHttpResponse = http.POST[JsValue, HttpResponse](
+      config.pspSubscriptionUrl, data)(implicitly, implicitly, headerCarrier, implicitly) andThen
+      subscriptionAuditService.sendSubscribeAuditEvent(externalId, data)
+    futureHttpResponse.map(httpResponse => processResponse(httpResponse, config.pspSubscriptionUrl))
+  }
+
+  private def processResponse(response: HttpResponse, url: String)(
+    implicit request: RequestHeader, ec: ExecutionContext) : Either[HttpException, JsValue] = {
+    if (response.status == OK) {
+      Logger.info(s"POST of $url returned successfully")
+      Right(response.json)
+    } else {
+      Left(handleErrorResponse("POST", url)(response))
+    }
   }
 
   def getSubscriptionDetails(pspId: String)(implicit
