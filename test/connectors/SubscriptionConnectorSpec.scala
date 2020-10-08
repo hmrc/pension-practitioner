@@ -61,9 +61,9 @@ class SubscriptionConnectorSpec extends AsyncWordSpec with MustMatchers with Wir
       bind[HeaderUtils].toInstance(mockHeaderUtils)
     )
 
-  private val pspSubscriptionUrl = "/pension-online/subscriptions/psp"
-  private val getPspDetailsUrl = "/pension-online/subscriptions/getDetails"
   private val pspId = "psp-id"
+  private val pspSubscriptionUrl = "/pension-online/subscriptions/psp"
+  private val getPspDetailsUrl = s"/pension-online/subscriptions/psp/$pspId"
 
   private val externalId = "id"
 
