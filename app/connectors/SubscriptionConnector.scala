@@ -19,21 +19,22 @@ package connectors
 import audit.SubscriptionAuditService
 import com.google.inject.Inject
 import config.AppConfig
-import play.api.http.Status._
+import play.Logger
+import play.api.http.Status.OK
 import play.api.libs.json._
-import play.api.Logger
 import play.api.mvc.RequestHeader
+import transformations.toUserAnswers.PspDetailsTransformer
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import utils.HttpResponseHelper
 
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class SubscriptionConnector @Inject()(http: HttpClient,
                                       config: AppConfig,
                                       headerUtils: HeaderUtils,
-                                      subscriptionAuditService: SubscriptionAuditService
+                                      subscriptionAuditService: SubscriptionAuditService,
+                                      pspDetailsTransformer: PspDetailsTransformer
                                      ) extends HttpResponseHelper {
 
   def pspSubscription(externalId: String, data: JsValue)
@@ -56,4 +57,27 @@ class SubscriptionConnector @Inject()(http: HttpClient,
       Left(handleErrorResponse("POST", url)(response))
     }
   }
+
+  def getSubscriptionDetails(pspId: String)(implicit
+                                                        headerCarrier: HeaderCarrier,
+                                                        ec: ExecutionContext,
+                                                        request: RequestHeader): Future[Either[HttpResponse, JsValue]] = {
+
+    val hc: HeaderCarrier = HeaderCarrier(extraHeaders = headerUtils.integrationFrameworkHeader)
+    val url = config.subscriptionDetailsUrl.format(pspId)
+
+    http.GET[HttpResponse](url)(implicitly, hc, implicitly) map { response =>
+      response.status match {
+        case OK =>
+          Logger.debug(s"[Get-psp-details-untransformed]${response.json}")
+          Right(validateGetJson(response.json))
+        case _ => Left(response)
+      }
+    }
+  }
+
+  case class FailedMapToUserAnswersException() extends Exception
+  private def validateGetJson(json: JsValue): JsValue =
+    json.transform(pspDetailsTransformer.transformToUserAnswers).getOrElse(throw new FailedMapToUserAnswersException)
+
 }

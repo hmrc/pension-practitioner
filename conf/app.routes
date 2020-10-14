@@ -10,6 +10,7 @@ POST        /journey-cache                                              controll
 DELETE      /journey-cache                                              controllers.cache.DataCacheController.remove
 
 POST        /subscribePsp                                               controllers.SubscriptionController.subscribePsp
+GET         /getPsp                                                     controllers.SubscriptionController.getPspDetails
 POST        /authorise-psp                                              controllers.AssociationController.authorisePsp
 
 POST        /email-response/:journeyType/:requestId/:email/:pspId       controllers.EmailResponseController.retrieveStatus(journeyType: JourneyType.Name, requestId: String, email: String, pspId: String)

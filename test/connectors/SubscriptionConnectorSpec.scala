@@ -43,6 +43,8 @@ import utils.WireMockHelper
 class SubscriptionConnectorSpec extends AsyncWordSpec with MustMatchers with WireMockHelper
   with EitherValues with MockitoSugar {
 
+  import SubscriptionConnectorSpec._
+
   private implicit lazy val hc: HeaderCarrier = HeaderCarrier()
   private implicit lazy val rh: RequestHeader = FakeRequest("", "")
 
@@ -59,7 +61,9 @@ class SubscriptionConnectorSpec extends AsyncWordSpec with MustMatchers with Wir
       bind[HeaderUtils].toInstance(mockHeaderUtils)
     )
 
+  private val pspId = "psp-id"
   private val pspSubscriptionUrl = "/pension-online/subscriptions/psp"
+  private val getPspDetailsUrl = s"/pension-online/subscriptions/psp/$pspId"
 
   private val externalId = "id"
 
@@ -149,6 +153,87 @@ class SubscriptionConnectorSpec extends AsyncWordSpec with MustMatchers with Wir
     }
   }
 
+  "getPspDetails" must {
+    "return user answer json when successful response returned from API" in {
+      server.stubFor(
+        get(urlEqualTo(getPspDetailsUrl))
+          .willReturn(
+            ok
+              .withHeader("Content-Type", "application/json")
+              .withBody(pspDetailsResponse.toString())
+          )
+      )
+
+      connector.getSubscriptionDetails(pspId).map { response =>
+        response.right.get mustBe pspUserAnswers
+      }
+    }
+
+    "return a BadRequestException for a 400 INVALID_IDVALUE response" in {
+      server.stubFor(
+        get(urlEqualTo(getPspDetailsUrl))
+          .willReturn(
+            badRequest
+              .withHeader("Content-Type", "application/json")
+              .withBody(errorResponse("INVALID_IDVALUE"))
+          )
+      )
+
+
+      connector.getSubscriptionDetails(pspId).map { response =>
+        response.left.get.status mustEqual BAD_REQUEST
+        response.left.get.body must include("INVALID_IDVALUE")
+      }
+    }
+
+    "return Not Found - 404" in {
+      server.stubFor(
+        get(urlEqualTo(getPspDetailsUrl))
+          .willReturn(
+            notFound
+              .withBody(errorResponse("NOT_FOUND"))
+          )
+      )
+
+      connector.getSubscriptionDetails(pspId).map { response =>
+        response.left.get.status mustEqual NOT_FOUND
+        response.left.get.body must include("NOT_FOUND")
+      }
+    }
+
+    "throw Upstream4XX for server unavailable - 403" in {
+
+      server.stubFor(
+        get(urlEqualTo(getPspDetailsUrl))
+          .willReturn(
+            forbidden
+              .withBody(errorResponse("FORBIDDEN"))
+          )
+      )
+
+      connector.getSubscriptionDetails(pspId).map { response =>
+        response.left.get.status mustEqual FORBIDDEN
+        response.left.get.body must include("FORBIDDEN")
+      }
+    }
+
+    "throw Upstream5XX for internal server error - 500 and log the event as error" in {
+
+      server.stubFor(
+        get(urlEqualTo(getPspDetailsUrl))
+          .willReturn(
+            serverError
+              .withBody(errorResponse("SERVER_ERROR"))
+          )
+      )
+
+      connector.getSubscriptionDetails(pspId).map { response =>
+        response.left.get.status mustEqual INTERNAL_SERVER_ERROR
+        response.left.get.body must include("SERVER_ERROR")
+      }
+    }
+  }
+
   def errorResponse(code: String): String = {
     Json.stringify(
       Json.obj(
@@ -157,4 +242,58 @@ class SubscriptionConnectorSpec extends AsyncWordSpec with MustMatchers with Wir
       )
     )
   }
+}
+
+object SubscriptionConnectorSpec {
+
+  private val pspDetailsResponse = Json.obj(
+    "subscriptionTypeAndPSPIDDetails" -> Json.obj(
+      "applicationDate" -> "2019-10-17T00 ->11 ->39.789Z",
+      "subscriptionType" -> "Creation",
+      "existingPSPID" -> "Yes",
+      "pspid" -> "17948279"),
+    "legalEntityAndCustomerID" -> Json.obj(
+      "legalStatus" -> "Individual",
+      "customerType" -> "UK",
+      "idType" -> "NINO",
+      "idNumber" -> "AB277252B"),
+    "individualDetails" -> Json.obj(
+      "firstName" -> "Anthony",
+      "lastName" -> "Hood"),
+    "correspondenceAddressDetails" -> Json.obj(
+      "nonUKAddress" -> false,
+      "addressLine1" -> "24 Trinity Street",
+      "addressLine2" -> "Telford",
+      "addressLine3" -> "Shropshire",
+      "countryCode" -> "GB",
+      "postalCode" -> "TF3 4ER"),
+    "correspondenceContactDetails" -> Json.obj(
+      "telephone" -> "0044-09876542312",
+      "mobileNumber" -> "0044-09876542312",
+      "fax" -> "0044-09876542312",
+      "email" -> "abc@hmrc.gsi.gov.uk"),
+    "declaration" -> Json.obj(
+      "pspDeclarationBox1" -> false)
+  )
+
+  private val pspUserAnswers = Json.obj(
+    "individualDetails" -> Json.obj(
+      "firstName" -> "Anthony",
+      "lastName" -> "Hood"),
+    "phone" -> "0044-09876542312",
+    "registrationInfo" -> Json.obj(
+      "customerType" -> "UK",
+      "idType" -> "NINO",
+      "legalStatus" -> "Individual",
+      "idNumber" -> "AB277252B"),
+    "contactAddress" -> Json.obj(
+      "country" -> "GB",
+      "postcode" -> "TF3 4ER",
+      "addressLine1" -> "24 Trinity Street",
+      "addressLine2" -> "Telford",
+      "addressLine3" -> "Shropshire"),
+    "existingPSP" -> Json.obj(
+      "existingPSPId" -> "17948279",
+      "isExistingPSP" -> "Yes"),
+    "email" -> "abc@hmrc.gsi.gov.uk")
 }
