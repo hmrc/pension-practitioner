@@ -48,7 +48,7 @@ class SubscriptionController @Inject()(
         Logger.debug(s"[PSP-Subscription-Incoming-Payload]$feJson")
         feJson match {
           case Some(json) =>
-            json.transform(pspSubscriptionTransformer.transformPspSubscription) match {
+            json.transform(pspSubscriptionTransformer.transformPsp) match {
               case JsSuccess(data, _) =>
                 Logger.debug(s"[PSP-Subscription-Outgoing-Payload]$data")
                 subscriptionConnector.pspSubscription(externalId, data).map {
