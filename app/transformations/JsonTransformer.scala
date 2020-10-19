@@ -22,7 +22,7 @@ trait JsonTransformer {
 
   val doNothing: Reads[JsObject] = __.json.put(Json.obj())
 
-  def transformBooleanToYesNo(path: JsPath): Reads[JsString] = path.read[Boolean].map {
+  protected def transformBooleanToYesNo(path: JsPath): Reads[JsString] = path.read[Boolean].map {
     case true => JsString("Yes")
     case false => JsString("No")
   }
