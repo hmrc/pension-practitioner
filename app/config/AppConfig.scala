@@ -46,4 +46,5 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
   lazy val pspSubscriptionUrl: String = s"$ifURL${config.get[String](path = "serviceUrls.psp-subscription")}"
   lazy val subscriptionDetailsUrl: String = s"$ifURL${config.get[String](path = "serviceUrls.get-subscription-details")}"
   lazy val pspAssociationUrl: String = s"$ifURL${config.get[String](path = "serviceUrls.psp-association")}"
+  lazy val pspDeAuthorisationUrl: String = s"$ifURL${config.get[String](path = "serviceUrls.psp-de-authorisation")}"
 }

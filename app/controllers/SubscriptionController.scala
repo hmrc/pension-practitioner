@@ -26,7 +26,7 @@ import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve._
 import uk.gov.hmrc.http.{Request => _, _}
 import uk.gov.hmrc.play.bootstrap.controller.BackendController
-import utils.{ErrorHandler, HttpResponseHelper}
+import utils.{AuthUtil, ErrorHandler, HttpResponseHelper}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -35,7 +35,8 @@ class SubscriptionController @Inject()(
   override val authConnector: AuthConnector,
   subscriptionConnector: SubscriptionConnector,
   pspSubscriptionTransformer: PSPSubscriptionTransformer,
-  cc: ControllerComponents
+  cc: ControllerComponents,
+  util: AuthUtil
 ) extends BackendController(cc)
     with AuthorisedFunctions
     with HttpResponseHelper
@@ -43,7 +44,7 @@ class SubscriptionController @Inject()(
 
   def subscribePsp: Action[AnyContent] = Action.async { implicit request =>
     {
-      withAuth { externalId =>
+      util.doAuth { externalId =>
         val feJson = request.body.asJson
         Logger.debug(s"[PSP-Subscription-Incoming-Payload]$feJson")
         feJson match {
@@ -70,7 +71,7 @@ class SubscriptionController @Inject()(
 
   def getPspDetails: Action[AnyContent] = Action.async {
     implicit request =>
-      withAuth { _ =>
+      util.doAuth { _ =>
         val pspId = request.headers.get("pspId")
         pspId match {
           case Some(id) =>
@@ -83,20 +84,5 @@ class SubscriptionController @Inject()(
           case _ => Future.failed(new BadRequestException("No PSP Id in the header"))
         }
       }
-  }
-
-  private def withAuth(block: String => Future[Result])
-                      (implicit hc: HeaderCarrier): Future[Result] = {
-
-    authorised().retrieve(v2.Retrievals.externalId) {
-      case Some(externalId) =>
-        block(externalId)
-      case _ =>
-        Future.failed(
-          new UnauthorizedException(
-            "Not Authorised - Unable to retrieve credentials - externalId"
-          )
-        )
-    }
   }
 }

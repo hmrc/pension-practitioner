@@ -26,6 +26,7 @@ import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve._
 import uk.gov.hmrc.http.{Request => _, _}
 import uk.gov.hmrc.play.bootstrap.controller.BackendController
+import utils.AuthUtil
 import utils.validationUtils._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -34,12 +35,13 @@ import scala.concurrent.Future
 class RegistrationController @Inject()(
                                         override val authConnector: AuthConnector,
                                         registerConnector: RegistrationConnector,
-                                        cc: ControllerComponents
+                                        cc: ControllerComponents,
+                                        util: AuthUtil
                                       ) extends BackendController(cc) with AuthorisedFunctions {
 
   def registerWithIdIndividual: Action[AnyContent] = Action.async {
     implicit request => {
-      withAuth { externalId =>
+      util.doAuth { externalId =>
         request.headers.get("nino") match {
           case Some(nino) =>
             val registerWithIdData = Json.obj(fields = "regime" -> "PODP", "requiresNameMatch" -> false, "isAnAgent" -> false)
@@ -54,7 +56,7 @@ class RegistrationController @Inject()(
 
   def registerWithIdOrganisation: Action[AnyContent] = Action.async {
     implicit request => {
-      withAuth { externalId =>
+      util.doAuth { externalId =>
         (request.headers.get("utr"), request.body.asJson) match {
           case (Some(utr), Some(jsBody)) =>
             val registerWithIdData = Json.obj(fields = "regime" -> "PODP", "requiresNameMatch" -> true, "isAnAgent" -> false) ++
@@ -70,7 +72,7 @@ class RegistrationController @Inject()(
 
   def registrationNoIdIndividual: Action[RegisterWithoutIdIndividualRequest] = Action.async(parse.json[RegisterWithoutIdIndividualRequest]) {
     implicit request => {
-      withAuth { externalId =>
+      util.doAuth { externalId =>
         registerConnector.registrationNoIdIndividual(externalId, request.body).map { response =>
           Ok(Json.toJson(response))
         }
@@ -80,22 +82,11 @@ class RegistrationController @Inject()(
 
   def registrationNoIdOrganisation: Action[OrganisationRegistrant] = Action.async(parse.json[OrganisationRegistrant]) {
     implicit request => {
-      withAuth { externalId =>
+      util.doAuth { externalId =>
         registerConnector.registrationNoIdOrganisation(externalId, request.body).map { response =>
           Ok(Json.toJson(response))
         }
       }
-    }
-  }
-
-  private def withAuth(block: String => Future[Result])
-                      (implicit hc: HeaderCarrier): Future[Result] = {
-
-    authorised().retrieve(v2.Retrievals.externalId) {
-      case Some(externalId) =>
-        block(externalId)
-      case _ =>
-        Future.failed(new UnauthorizedException("Not Authorised - Unable to retrieve credentials - externalId"))
     }
   }
 }
