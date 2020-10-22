@@ -37,21 +37,22 @@ class AssociationConnectorSpec extends AsyncWordSpec with MustMatchers with Wire
   private lazy val connector: AssociationConnector = injector.instanceOf[AssociationConnector]
   private val pstr: String = "pstr"
 
-  private val pspAssociationUrl = s"/pension-online/association/pstr/$pstr"
+  private val pspAuthorisationUrl = s"/pension-online/association/pstr/$pstr"
+  private val pspDeAuthorisationUrl = s"/pension-online/cease-scheme/pods/$pstr"
 
-  "pspAssociation" must {
+  "authorisePsp" must {
 
     "return successfully when IF has returned OK" in {
       val data = Json.obj(fields = "Id" -> "value")
       server.stubFor(
-        post(urlEqualTo(pspAssociationUrl))
+        post(urlEqualTo(pspAuthorisationUrl))
           .withRequestBody(equalTo(Json.stringify(data)))
           .willReturn(
             ok
           )
       )
 
-      connector.associatePsp(data, pstr) map {
+      connector.authorisePsp(data, pstr) map {
         _.status mustBe OK
       }
     }
@@ -59,14 +60,14 @@ class AssociationConnectorSpec extends AsyncWordSpec with MustMatchers with Wire
     "return BAD REQUEST when IF has returned BadRequestException" in {
       val data = Json.obj(fields = "Id" -> "value")
       server.stubFor(
-        post(urlEqualTo(pspAssociationUrl))
+        post(urlEqualTo(pspAuthorisationUrl))
           .withRequestBody(equalTo(Json.stringify(data)))
           .willReturn(
             badRequest()
           )
       )
 
-      connector.associatePsp(data, pstr) map {
+      connector.authorisePsp(data, pstr) map {
         _.status mustEqual BAD_REQUEST
       }
     }
@@ -74,14 +75,14 @@ class AssociationConnectorSpec extends AsyncWordSpec with MustMatchers with Wire
     "return NOT FOUND when IF has returned NotFoundException" in {
       val data = Json.obj(fields = "Id" -> "value")
       server.stubFor(
-        post(urlEqualTo(pspAssociationUrl))
+        post(urlEqualTo(pspAuthorisationUrl))
           .withRequestBody(equalTo(Json.stringify(data)))
           .willReturn(
             notFound()
           )
       )
 
-      connector.associatePsp(data, pstr) map {
+      connector.authorisePsp(data, pstr) map {
         _.status mustEqual NOT_FOUND
       }
     }
@@ -89,13 +90,76 @@ class AssociationConnectorSpec extends AsyncWordSpec with MustMatchers with Wire
     "return Upstream5xxResponse when ETMP has returned Internal Server Error" in {
       val data = Json.obj(fields = "Id" -> "value")
       server.stubFor(
-        post(urlEqualTo(pspAssociationUrl))
+        post(urlEqualTo(pspAuthorisationUrl))
           .withRequestBody(equalTo(Json.stringify(data)))
           .willReturn(
             serverError()
           )
       )
-      connector.associatePsp(data, pstr) map {
+      connector.authorisePsp(data, pstr) map {
+        _.status mustBe INTERNAL_SERVER_ERROR
+      }
+    }
+
+  }
+
+  "deAuthorisePsp" must {
+
+    "return successfully when IF has returned OK" in {
+      val data = Json.obj(fields = "Id" -> "value")
+      server.stubFor(
+        post(urlEqualTo(pspDeAuthorisationUrl))
+          .withRequestBody(equalTo(Json.stringify(data)))
+          .willReturn(
+            ok
+          )
+      )
+
+      connector.deAuthorisePsp(data, pstr) map {
+        _.status mustBe OK
+      }
+    }
+
+    "return BAD REQUEST when IF has returned BadRequestException" in {
+      val data = Json.obj(fields = "Id" -> "value")
+      server.stubFor(
+        post(urlEqualTo(pspDeAuthorisationUrl))
+          .withRequestBody(equalTo(Json.stringify(data)))
+          .willReturn(
+            badRequest()
+          )
+      )
+
+      connector.deAuthorisePsp(data, pstr) map {
+        _.status mustEqual BAD_REQUEST
+      }
+    }
+
+    "return NOT FOUND when IF has returned NotFoundException" in {
+      val data = Json.obj(fields = "Id" -> "value")
+      server.stubFor(
+        post(urlEqualTo(pspDeAuthorisationUrl))
+          .withRequestBody(equalTo(Json.stringify(data)))
+          .willReturn(
+            notFound()
+          )
+      )
+
+      connector.deAuthorisePsp(data, pstr) map {
+        _.status mustEqual NOT_FOUND
+      }
+    }
+
+    "return Upstream5xxResponse when ETMP has returned Internal Server Error" in {
+      val data = Json.obj(fields = "Id" -> "value")
+      server.stubFor(
+        post(urlEqualTo(pspDeAuthorisationUrl))
+          .withRequestBody(equalTo(Json.stringify(data)))
+          .willReturn(
+            serverError()
+          )
+      )
+      connector.deAuthorisePsp(data, pstr) map {
         _.status mustBe INTERNAL_SERVER_ERROR
       }
     }

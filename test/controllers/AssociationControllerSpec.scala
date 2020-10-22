@@ -65,7 +65,7 @@ class AssociationControllerSpec extends AsyncWordSpec with MustMatchers with Moc
   "authorise PSP" must {
     "return OK when valid response from IF" in {
 
-      when(mockAssociationConnector.associatePsp(any(), any())(any(), any(), any()))
+      when(mockAssociationConnector.authorisePsp(any(), any())(any(), any(), any()))
         .thenReturn(Future.successful(HttpResponse(OK, response.toString)))
 
       val result = controller.authorisePsp()(fakeRequest.withHeaders(("pstr", pstr)).withJsonBody(testJson))
@@ -74,11 +74,39 @@ class AssociationControllerSpec extends AsyncWordSpec with MustMatchers with Moc
 
     "throw Upstream5XXResponse on Internal Server Error from IF" in {
 
-      when(mockAssociationConnector.associatePsp(any(), any())(any(), any(), any()))
+      when(mockAssociationConnector.authorisePsp(any(), any())(any(), any(), any()))
         .thenReturn(Future.failed(UpstreamErrorResponse(message = "Internal Server Error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR)))
 
       recoverToExceptionIf[UpstreamErrorResponse] {
         controller.authorisePsp()(fakeRequest.withHeaders(("pstr", pstr)).withJsonBody(testJson))
+      } map {
+        _.statusCode mustBe INTERNAL_SERVER_ERROR
+      }
+    }
+
+  }
+
+  "deAuthorisePsp" must {
+    "return OK when valid response from IF" in {
+
+      when(mockAssociationConnector.deAuthorisePsp(any(), any())(any(), any(), any()))
+        .thenReturn(Future.successful(
+          HttpResponse(OK, response.toString)
+        ))
+
+      val result = controller.deAuthorisePsp()(fakeRequest.withHeaders(("pstr", pstr)).withJsonBody(testJson))
+      status(result) mustBe OK
+    }
+
+    "throw Upstream5XXResponse on Internal Server Error from IF" in {
+
+      when(mockAssociationConnector.deAuthorisePsp(any(), any())(any(), any(), any()))
+        .thenReturn(Future.failed(
+          UpstreamErrorResponse(message = "Internal Server Error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR)
+        ))
+
+      recoverToExceptionIf[UpstreamErrorResponse] {
+        controller.deAuthorisePsp()(fakeRequest.withHeaders(("pstr", pstr)).withJsonBody(testJson))
       } map {
         _.statusCode mustBe INTERNAL_SERVER_ERROR
       }
