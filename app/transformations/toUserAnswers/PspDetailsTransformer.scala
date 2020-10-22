@@ -28,7 +28,17 @@ class PspDetailsTransformer extends JsonTransformer {
       transformLegalAndCustomer and
       transformName and
       transformAddress and
-      transformContactDetails).reduce
+      transformContactDetails and
+      transformWhatTypeBusiness
+      ).reduce
+
+  private def transformWhatTypeBusiness: Reads[JsObject] =
+    (__ \ 'legalEntityAndCustomerID \ 'legalStatus).read[String].flatMap {
+      case "Individual" =>
+        (__ \ 'whatTypeBusiness).json.put(JsString("yourselfAsIndividual"))
+      case _ =>
+        (__ \ 'whatTypeBusiness).json.put(JsString("companyOrPartnership"))
+    }
 
   private def transformSubscriptionDetails: Reads[JsObject] =
     ((__ \ 'existingPSP \ 'isExistingPSP).json.copyFrom((__ \ 'subscriptionTypeAndPSPIDDetails \ 'existingPSPID).json.pick) and

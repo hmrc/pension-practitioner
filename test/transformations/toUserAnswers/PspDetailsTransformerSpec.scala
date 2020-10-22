@@ -86,6 +86,14 @@ object PspDetailsTransformerSpec {
     )
   )
 
+  private val whatTypeBusinessYourself = Json.obj(
+    "whatTypeBusiness" -> "yourselfAsIndividual"
+  )
+
+  private val whatTypeBusinessCompanyOrPartnership = Json.obj(
+    "whatTypeBusiness" -> "companyOrPartnership"
+  )
+
   val uaIndividualUK: JsObject = Json.obj(
     "registrationInfo" -> Json.obj(
       "legalStatus" -> "Individual",
@@ -93,14 +101,14 @@ object PspDetailsTransformerSpec {
       "idType" -> "NINO",
       "idNumber" -> "AB123456C"
     )
-  ) ++ individualDetails ++ uaAddress ++ uaContactDetails ++ existingPsp
+  ) ++ individualDetails ++ uaAddress ++ uaContactDetails ++ existingPsp ++ whatTypeBusinessYourself
 
   private val uaIndividualNonUk: JsObject = Json.obj(
     "registrationInfo"  -> Json.obj(
       "legalStatus"  ->  "Individual",
       "customerType"  ->  "NonUK"
     )
-  ) ++ individualDetails ++ uaAddressNonUk ++ uaContactDetails ++ existingPsp
+  ) ++ individualDetails ++ uaAddressNonUk ++ uaContactDetails ++ existingPsp ++ whatTypeBusinessYourself
 
   private val uaCompanyUk: JsObject = Json.obj(
     "registrationInfo"  ->  Json.obj(
@@ -110,7 +118,7 @@ object PspDetailsTransformerSpec {
       "idNumber"  ->  "1234567890"
     ),
     "name"  ->  "Test Ltd"
-  ) ++ uaAddress ++ uaContactDetails ++ existingPsp
+  ) ++ uaAddress ++ uaContactDetails ++ existingPsp ++ whatTypeBusinessCompanyOrPartnership
 
   private val uaPartnershipNonUK: JsObject = Json.obj(
     "registrationInfo"  ->  Json.obj(
@@ -118,7 +126,7 @@ object PspDetailsTransformerSpec {
       "customerType"  ->  "NonUK"
     ),
     "name"  ->  "Testing Ltd"
-  ) ++ uaAddressNonUk ++ uaContactDetails ++ existingPsp
+  ) ++ uaAddressNonUk ++ uaContactDetails ++ existingPsp ++ whatTypeBusinessCompanyOrPartnership
 
   private val contactDetails: JsObject = Json.obj(
     "correspondenceContactDetails" -> Json.obj(
