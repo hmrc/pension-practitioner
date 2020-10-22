@@ -12,6 +12,6 @@ DELETE        /journey-cache                                               contr
 POST          /subscribePsp                                                controllers.SubscriptionController.subscribePsp
 GET           /getPsp                                                      controllers.SubscriptionController.getPspDetails
 POST          /authorise-psp                                               controllers.AssociationController.authorisePsp
-POST          /de-authorise-psp                                            controllers.DeAuthorisationController.deAuthorisePsp
+POST          /de-authorise-psp                                            controllers.AssociationController.deAuthorisePsp
 
 POST          /email-response/:journeyType/:requestId/:email/:pspId        controllers.EmailResponseController.retrieveStatus(journeyType: JourneyType.Name, requestId: String, email: String, pspId: String)

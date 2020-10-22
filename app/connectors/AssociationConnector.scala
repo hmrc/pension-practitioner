@@ -33,12 +33,21 @@ class AssociationConnector  @Inject()(httpClient: HttpClient,
                                      )
   extends HttpResponseHelper {
 
-  def associatePsp(json: JsValue, pstr: String)
+  def authorisePsp(json: JsValue, pstr: String)
                   (implicit hc: HeaderCarrier, ec: ExecutionContext, request: RequestHeader): Future[HttpResponse] = {
 
     val headerCarrier: HeaderCarrier = HeaderCarrier(extraHeaders = headerUtils.integrationFrameworkHeader)
-    val url = appConfig.pspAssociationUrl.format(pstr)
+    val url = appConfig.pspAuthorisationUrl.format(pstr)
     Logger.debug(s"[Psp-Association-Outgoing-Payload] - ${json.toString()}")
+    httpClient.POST[JsValue, HttpResponse](url, json)(implicitly, implicitly, headerCarrier, implicitly)
+  }
+
+  def deAuthorisePsp(json: JsValue, pstr: String)
+                    (implicit hc: HeaderCarrier, ec: ExecutionContext, request: RequestHeader): Future[HttpResponse] = {
+
+    val headerCarrier: HeaderCarrier = HeaderCarrier(extraHeaders = headerUtils.integrationFrameworkHeader)
+    val url = appConfig.pspDeAuthorisationUrl.format(pstr)
+    Logger.debug(s"[Psp-DeAuthorisation-Outgoing-Payload] - ${json.toString()}")
     httpClient.POST[JsValue, HttpResponse](url, json)(implicitly, implicitly, headerCarrier, implicitly)
   }
 }

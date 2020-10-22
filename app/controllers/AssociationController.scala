@@ -44,9 +44,25 @@ class AssociationController @Inject()(override val authConnector: AuthConnector,
 
         (feJson, pstrOpt) match {
           case (Some(jsValue), Some(pstr)) =>
-            associationConnector.associatePsp(jsValue, pstr).map(result)
+            associationConnector.authorisePsp(jsValue, pstr).map(result)
           case _ =>
             Future.failed(new BadRequestException("No Request Body received for psp association"))
+        }
+      }
+  }
+
+  def deAuthorisePsp: Action[AnyContent] = Action.async {
+    implicit request =>
+      util.doAuth { _ =>
+        val feJson = request.body.asJson
+        val pstrOpt = request.headers.get("pstr")
+        Logger.debug(s"[Psp-DeAuthorisation-Incoming-Payload]$feJson")
+
+        (feJson, pstrOpt) match {
+          case (Some(jsValue), Some(pstr)) =>
+            associationConnector.deAuthorisePsp(jsValue, pstr).map(result)
+          case _ =>
+            Future.failed(new BadRequestException("No Request Body received for psp deAuthorisation"))
         }
       }
   }
