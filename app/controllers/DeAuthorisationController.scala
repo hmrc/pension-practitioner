@@ -17,36 +17,38 @@
 package controllers
 
 import com.google.inject.Inject
-import connectors.AssociationConnector
+import connectors.DeAuthorisationConnector
 import play.api.Logger
-import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
-import uk.gov.hmrc.auth.core.retrieve.v2
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions}
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, UnauthorizedException, Request => _}
+import uk.gov.hmrc.http.{BadRequestException, Request => _}
 import uk.gov.hmrc.play.bootstrap.controller.BackendController
 import utils.{AuthUtil, HttpResponseHelper}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class AssociationController @Inject()(override val authConnector: AuthConnector,
-                                      associationConnector: AssociationConnector,
-                                      cc: ControllerComponents,
-                                      util: AuthUtil
-                                     ) extends BackendController(cc) with HttpResponseHelper with AuthorisedFunctions {
+class DeAuthorisationController @Inject()(override val authConnector: AuthConnector,
+                                          deAuthorisationConnector: DeAuthorisationConnector,
+                                          cc: ControllerComponents,
+                                          util: AuthUtil
+                                         )
+  extends BackendController(cc)
+    with HttpResponseHelper
+    with AuthorisedFunctions {
 
-  def authorisePsp: Action[AnyContent] = Action.async {
+  def deAuthorisePsp: Action[AnyContent] = Action.async {
     implicit request =>
       util.doAuth { _ =>
         val feJson = request.body.asJson
         val pstrOpt = request.headers.get("pstr")
-        Logger.debug(s"[Psp-Association-Incoming-Payload]$feJson")
+        Logger.debug(s"[Psp-DeAuthorisation-Incoming-Payload]$feJson")
 
         (feJson, pstrOpt) match {
           case (Some(jsValue), Some(pstr)) =>
-            associationConnector.associatePsp(jsValue, pstr).map(result)
+            deAuthorisationConnector.deAuthorisePsp(jsValue, pstr).map(result)
           case _ =>
-            Future.failed(new BadRequestException("No Request Body received for psp association"))
+            Future.failed(new BadRequestException("No Request Body received for psp deAuthorisation"))
         }
       }
   }
