@@ -277,6 +277,7 @@ object SubscriptionConnectorSpec {
   )
 
   private val pspUserAnswers = Json.obj(
+    "whatTypeBusiness" -> "yourselfAsIndividual",
     "individualDetails" -> Json.obj(
       "firstName" -> "Anthony",
       "lastName" -> "Hood"),
