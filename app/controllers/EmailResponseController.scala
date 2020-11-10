@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets
 import audit.AuditService
 import audit.EmailAuditEvent
 import audit.PSPAuthorisationEmailAuditEvent
+import audit.PSPDeauthorisationEmailAuditEvent
 import com.google.inject.Inject
 import models.enumeration.JourneyType
 import models.EmailEvents
@@ -89,7 +90,7 @@ class EmailResponseController @Inject()(
     encryptedEmail: String
   ): Action[JsValue] = Action(parser.tolerantJson) {
     implicit request =>
-      decryptAndValidateDetailsForPSPAuthorisation(encryptedPsaId, encryptedPspId, encryptedPstr, encryptedEmail) match {
+      decryptAndValidateDetailsForPSPAuthAndDeauth(encryptedPsaId, encryptedPspId, encryptedPstr, encryptedEmail) match {
         case Right(Tuple4(psaId, pspId, pstr, email)) =>
           request.body.validate[EmailEvents].fold(
             _ => BadRequest("Bad request received for psp authorisation email call back event"),
@@ -107,7 +108,32 @@ class EmailResponseController @Inject()(
       }
   }
 
-  private def decryptAndValidateDetailsForPSPAuthorisation(
+  def retrieveStatusForPSPDeauthorisation(
+    encryptedPsaId: String,
+    encryptedPspId: String,
+    encryptedPstr: String,
+    encryptedEmail: String
+  ): Action[JsValue] = Action(parser.tolerantJson) {
+    implicit request =>
+      decryptAndValidateDetailsForPSPAuthAndDeauth(encryptedPsaId, encryptedPspId, encryptedPstr, encryptedEmail) match {
+        case Right(Tuple4(psaId, pspId, pstr, email)) =>
+          request.body.validate[EmailEvents].fold(
+            _ => BadRequest("Bad request received for psp de-authorisation email call back event"),
+            valid => {
+              valid.events.filterNot(
+                _.event == Opened
+              ).foreach { event =>
+                Logger.debug(s"Email Audit event is $event")
+                auditService.sendEvent(PSPDeauthorisationEmailAuditEvent(psaId.id, pspId.id, pstr, email, event.event))
+              }
+              Ok
+            }
+          )
+        case Left(result) => result
+      }
+  }
+
+  private def decryptAndValidateDetailsForPSPAuthAndDeauth(
     encryptedPsaId: String,
     encryptedPspId: String,
     encryptedPstr: String,
