@@ -16,9 +16,6 @@
 
 package controllers
 
-import java.net.URLDecoder
-import java.nio.charset.StandardCharsets
-
 import audit.AuditService
 import audit.EmailAuditEvent
 import audit.PSPAuthorisationEmailAuditEvent
@@ -70,10 +67,8 @@ class EmailResponseController @Inject()(
   }
 
   private def validatePspIdEmail(encryptedPspId: String, encryptedEmail: String): Either[Result, (String, String)] = {
-    val decodedEncryptedPspId = URLDecoder.decode(encryptedPspId, StandardCharsets.UTF_8.toString)
-    val decodedEncryptedEmail = URLDecoder.decode(encryptedEmail, StandardCharsets.UTF_8.toString)
-    val pspId = crypto.QueryParameterCrypto.decrypt(Crypted(decodedEncryptedPspId)).value
-    val emailAddress = crypto.QueryParameterCrypto.decrypt(Crypted(decodedEncryptedEmail)).value
+    val pspId = crypto.QueryParameterCrypto.decrypt(Crypted(encryptedPspId)).value
+    val emailAddress = crypto.QueryParameterCrypto.decrypt(Crypted(encryptedEmail)).value
 
     try {
       require(emailAddress.matches(emailRegex))
@@ -139,10 +134,10 @@ class EmailResponseController @Inject()(
     encryptedPstr: String,
     encryptedEmail: String): Either[Result, (PsaId, PspId, String, String)] = {
 
-    val psaId = crypto.QueryParameterCrypto.decrypt(Crypted(URLDecoder.decode(encryptedPsaId, StandardCharsets.UTF_8.toString))).value
-    val pspId = crypto.QueryParameterCrypto.decrypt(Crypted(URLDecoder.decode(encryptedPspId, StandardCharsets.UTF_8.toString))).value
-    val pstr = crypto.QueryParameterCrypto.decrypt(Crypted(URLDecoder.decode(encryptedPstr, StandardCharsets.UTF_8.toString))).value
-    val emailAddress = crypto.QueryParameterCrypto.decrypt(Crypted(URLDecoder.decode(encryptedEmail, StandardCharsets.UTF_8.toString))).value
+    val psaId = crypto.QueryParameterCrypto.decrypt(Crypted(encryptedPsaId)).value
+    val pspId = crypto.QueryParameterCrypto.decrypt(Crypted(encryptedPspId)).value
+    val pstr = crypto.QueryParameterCrypto.decrypt(Crypted(encryptedPstr)).value
+    val emailAddress = crypto.QueryParameterCrypto.decrypt(Crypted(encryptedEmail)).value
 
     try {
       require(emailAddress.matches(emailRegex))
