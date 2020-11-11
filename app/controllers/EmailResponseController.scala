@@ -68,10 +68,8 @@ class EmailResponseController @Inject()(
   }
 
   private def validatePspIdEmail(encryptedPspId: String, encryptedEmail: String): Either[Result, (String, String)] = {
-    val decodedEncryptedPspId = URLDecoder.decode(encryptedPspId, StandardCharsets.UTF_8.toString)
-    val decodedEncryptedEmail = URLDecoder.decode(encryptedEmail, StandardCharsets.UTF_8.toString)
-    val pspId = crypto.QueryParameterCrypto.decrypt(Crypted(decodedEncryptedPspId)).value
-    val emailAddress = crypto.QueryParameterCrypto.decrypt(Crypted(decodedEncryptedEmail)).value
+    val pspId = crypto.QueryParameterCrypto.decrypt(Crypted(encryptedPspId)).value
+    val emailAddress = crypto.QueryParameterCrypto.decrypt(Crypted(encryptedEmail)).value
     val emailRegex: String = "^(?:[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"" +
       "(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")" +
       "@(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?|" +

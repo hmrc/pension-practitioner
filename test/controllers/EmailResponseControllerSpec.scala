@@ -65,10 +65,8 @@ class EmailResponseControllerSpec extends AsyncWordSpec with MustMatchers with M
 
   private val injector = application.injector
   private val controller = injector.instanceOf[EmailResponseController]
-  private val encryptedPspId = URLEncoder
-    .encode(injector.instanceOf[ApplicationCrypto].QueryParameterCrypto.encrypt(PlainText(psp)).value, StandardCharsets.UTF_8.toString)
-  private val encryptedEmail = URLEncoder
-    .encode( injector.instanceOf[ApplicationCrypto].QueryParameterCrypto.encrypt(PlainText(email)).value, StandardCharsets.UTF_8.toString)
+  private val encryptedPspId = injector.instanceOf[ApplicationCrypto].QueryParameterCrypto.encrypt(PlainText(psp)).value
+  private val encryptedEmail =  injector.instanceOf[ApplicationCrypto].QueryParameterCrypto.encrypt(PlainText(email)).value
 
   override def beforeEach(): Unit = {
     Mockito.reset(mockAuditService, mockAuthConnector)
