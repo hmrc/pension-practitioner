@@ -1,17 +1,20 @@
 # microservice specific routes
 
-POST          /register-with-id/individual                                 controllers.RegistrationController.registerWithIdIndividual
-POST          /register-with-id/organisation                               controllers.RegistrationController.registerWithIdOrganisation
-POST          /register-with-no-id/organisation                            controllers.RegistrationController.registrationNoIdOrganisation
-POST          /register-with-no-id/individual                              controllers.RegistrationController.registrationNoIdIndividual
+POST          /register-with-id/individual                                                              controllers.RegistrationController.registerWithIdIndividual
+POST          /register-with-id/organisation                                                            controllers.RegistrationController.registerWithIdOrganisation
+POST          /register-with-no-id/organisation                                                         controllers.RegistrationController.registrationNoIdOrganisation
+POST          /register-with-no-id/individual                                                           controllers.RegistrationController.registrationNoIdIndividual
 
-GET           /journey-cache                                               controllers.cache.DataCacheController.get
-POST          /journey-cache                                               controllers.cache.DataCacheController.save
-DELETE        /journey-cache                                               controllers.cache.DataCacheController.remove
+GET           /journey-cache                                                                            controllers.cache.DataCacheController.get
+POST          /journey-cache                                                                            controllers.cache.DataCacheController.save
+DELETE        /journey-cache                                                                            controllers.cache.DataCacheController.remove
 
-POST          /subscribePsp                                                controllers.SubscriptionController.subscribePsp
-GET           /getPsp                                                      controllers.SubscriptionController.getPspDetails
-POST          /authorise-psp                                               controllers.AssociationController.authorisePsp
-POST          /de-authorise-psp                                            controllers.AssociationController.deAuthorisePsp
+POST          /subscribePsp                                                                             controllers.SubscriptionController.subscribePsp
+GET           /getPsp                                                                                   controllers.SubscriptionController.getPspDetails
+POST          /authorise-psp                                                                            controllers.AssociationController.authorisePsp
+POST          /de-authorise-psp                                                                         controllers.AssociationController.deAuthorisePsp
 
-POST          /email-response/:journeyType/:requestId/:email/:pspId        controllers.EmailResponseController.retrieveStatus(journeyType: JourneyType.Name, requestId: String, email: String, pspId: String)
+POST          /email-response/:journeyType/:requestId/:email/:pspId                                     controllers.EmailResponseController.retrieveStatus(journeyType: JourneyType.Name, requestId: String, email: String, pspId: String)
+
+POST          /email-response-psp-auth/:encryptedPsaId/:encryptedPspId/:encryptedPstr/:encryptedEmail   controllers.EmailResponseController.retrieveStatusForPSPAuthorisation(encryptedPsaId, encryptedPspId, encryptedPstr, encryptedEmail)
+POST          /email-response-psp-deauth/:encryptedPsaId/:encryptedPspId/:encryptedPstr/:encryptedEmail controllers.EmailResponseController.retrieveStatusForPSPDeauthorisation(encryptedPsaId, encryptedPspId, encryptedPstr, encryptedEmail)
