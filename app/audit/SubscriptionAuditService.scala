@@ -17,26 +17,21 @@
 package audit
 
 import com.google.inject.Inject
-import play.api.http.Status
-import play.api.libs.json.Format
-import play.api.libs.json.JsValue
-import play.api.libs.json.Json
+import play.api.http.Status.OK
+import play.api.libs.json.{Format, JsValue, Json}
 import play.api.mvc.RequestHeader
-import uk.gov.hmrc.http.HttpException
-import uk.gov.hmrc.http.HttpResponse
-import uk.gov.hmrc.http.UpstreamErrorResponse
+import uk.gov.hmrc.http.{HttpException, HttpResponse, UpstreamErrorResponse}
 
 import scala.concurrent.ExecutionContext
-import scala.util.Failure
-import scala.util.Success
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 class SubscriptionAuditService @Inject()(auditService: AuditService) {
 
   def sendSubscribeAuditEvent(externalId: String, requestJson: JsValue)
                                   (implicit ec: ExecutionContext, request: RequestHeader): PartialFunction[Try[HttpResponse], Unit] = {
+
     case Success(response) =>
-      auditService.sendEvent(PSPSubscription(externalId, Status.OK, requestJson, Some(response.json)))
+      auditService.sendEvent(PSPSubscription(externalId, response.status, requestJson, Some(response.json)))
 
     case Failure(error: UpstreamErrorResponse) =>
       auditService.sendEvent(PSPSubscription(externalId, error.statusCode, requestJson, None))

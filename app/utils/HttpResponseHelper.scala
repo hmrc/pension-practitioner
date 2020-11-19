@@ -52,21 +52,13 @@ trait HttpResponseHelper extends HttpErrorFunctions {
     response.status match {
       case BAD_REQUEST =>
         if (response.body.contains("INVALID_PAYLOAD")) Logger.warn(s"INVALID_PAYLOAD returned for: ${args.headOption.getOrElse(url)} from: $url")
-        new BadRequestException(
-          badRequestMessage(httpMethod, url, response.body)
-        )
+        new BadRequestException(badRequestMessage(httpMethod, url, response.body))
       case NOT_FOUND =>
-        new NotFoundException(
-          notFoundMessage(httpMethod, url, response.body)
-        )
+        new NotFoundException(notFoundMessage(httpMethod, url, response.body))
       case status if is4xx(status) =>
-        throw UpstreamErrorResponse(
-          upstreamResponseMessage(httpMethod, url, status, response.body), status, status, response.headers
-        )
+        throw UpstreamErrorResponse(upstreamResponseMessage(httpMethod, url, status, response.body), status, status, response.headers)
       case status if is5xx(status) =>
-        throw UpstreamErrorResponse(
-          upstreamResponseMessage(httpMethod, url, status, response.body), status, BAD_GATEWAY
-        )
+        throw UpstreamErrorResponse(upstreamResponseMessage(httpMethod, url, status, response.body), status, BAD_GATEWAY)
       case _ =>
         throw new UnrecognisedHttpResponseException(httpMethod, url, response)
     }

@@ -11,6 +11,7 @@ DELETE        /journey-cache                                                    
 
 POST          /subscribePsp                                                                             controllers.SubscriptionController.subscribePsp
 GET           /getPsp                                                                                   controllers.SubscriptionController.getPspDetails
+POST          /deregisterPsp/:pspId                                                                     controllers.SubscriptionController.deregisterPsp(pspId: String)
 POST          /authorise-psp                                                                            controllers.AssociationController.authorisePsp
 POST          /de-authorise-psp                                                                         controllers.AssociationController.deAuthorisePsp
 

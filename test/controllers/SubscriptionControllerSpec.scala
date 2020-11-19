@@ -44,6 +44,8 @@ class SubscriptionControllerSpec extends AsyncWordSpec with MustMatchers with Mo
   private val mockPspSubscriptionTransformer = mock[PSPSubscriptionTransformer]
   private val authConnector: AuthConnector = mock[AuthConnector]
   private val response: JsValue = Json.obj("response-key" -> "response-value")
+  private val pspId: String = "psp-id"
+  private val deregistrationRequestJson: JsValue = Json.obj("request-key" -> "request-value")
 
   val modules: Seq[GuiceableModule] =
     Seq(
@@ -64,16 +66,16 @@ class SubscriptionControllerSpec extends AsyncWordSpec with MustMatchers with Mo
   }
 
   "subscribePsp" must {
-    "return OK when valid response from DES" in {
+    "return OK when valid response from API" in {
 
       when(mockSubscriptionConnector.pspSubscription(any(), any())(any(), any(), any()))
-        .thenReturn(Future.successful(Right(response)))
+        .thenReturn(Future.successful(HttpResponse(OK, response.toString)))
 
       val result = controller.subscribePsp()(fakeRequest.withJsonBody(uaIndividualUK))
       status(result) mustBe OK
     }
 
-    "throw Upstream5XXResponse on Internal Server Error from DES" in {
+    "throw Upstream5XXResponse on Internal Server Error from API" in {
 
       when(mockSubscriptionConnector.pspSubscription(any(), any())(any(), any(), any()))
         .thenReturn(Future.failed(UpstreamErrorResponse(message = "Internal Server Error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR)))
@@ -120,6 +122,30 @@ class SubscriptionControllerSpec extends AsyncWordSpec with MustMatchers with Mo
       status(result) mustBe NOT_FOUND
       contentAsString(result) mustBe "not found"
     }
+  }
+
+  "deregisterPsp" must {
+    "return OK when valid response from API" in {
+
+      when(mockSubscriptionConnector.pspDeregistration(any(), any())(any(), any(), any()))
+        .thenReturn(Future.successful(HttpResponse(OK, response.toString)))
+
+      val result = controller.deregisterPsp(pspId)(fakeRequest.withJsonBody(deregistrationRequestJson))
+      status(result) mustBe OK
+    }
+
+    "throw Upstream5XXResponse on Internal Server Error from API" in {
+
+      when(mockSubscriptionConnector.pspDeregistration(any(), any())(any(), any(), any()))
+        .thenReturn(Future.failed(UpstreamErrorResponse(message = "Internal Server Error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR)))
+
+      recoverToExceptionIf[UpstreamErrorResponse] {
+        controller.deregisterPsp(pspId)(fakeRequest.withJsonBody(deregistrationRequestJson))
+      } map {
+        _.statusCode mustBe INTERNAL_SERVER_ERROR
+      }
+    }
+
   }
 
   def errorResponse(code: String): String = {

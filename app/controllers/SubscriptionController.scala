@@ -20,10 +20,9 @@ import com.google.inject.Inject
 import connectors.SubscriptionConnector
 import play.api.Logger
 import play.api.libs.json.{JsError, JsResultException, JsSuccess, Json}
-import play.api.mvc.{Result, _}
+import play.api.mvc._
 import transformations.userAnswersToDes.PSPSubscriptionTransformer
 import uk.gov.hmrc.auth.core._
-import uk.gov.hmrc.auth.core.retrieve._
 import uk.gov.hmrc.http.{Request => _, _}
 import uk.gov.hmrc.play.bootstrap.controller.BackendController
 import utils.{AuthUtil, ErrorHandler, HttpResponseHelper}
@@ -43,7 +42,6 @@ class SubscriptionController @Inject()(
     with ErrorHandler {
 
   def subscribePsp: Action[AnyContent] = Action.async { implicit request =>
-    {
       util.doAuth { externalId =>
         val feJson = request.body.asJson
         Logger.debug(s"[PSP-Subscription-Incoming-Payload]$feJson")
@@ -52,21 +50,13 @@ class SubscriptionController @Inject()(
             json.transform(pspSubscriptionTransformer.transformPsp) match {
               case JsSuccess(data, _) =>
                 Logger.debug(s"[PSP-Subscription-Outgoing-Payload]$data")
-                subscriptionConnector.pspSubscription(externalId, data).map {
-                  case Right(response) => Ok(response)
-                  case Left(e)         => result(e)
-                }
+                subscriptionConnector.pspSubscription(externalId, data).map(result)
               case JsError(errors) => throw JsResultException(errors)
             }
           case _ =>
-            Future.failed(
-              new BadRequestException(
-                "Bad Request with no request body returned for PSP subscription"
-              )
-            )
+            Future.failed(new BadRequestException("Bad Request with no request body returned for PSP subscription"))
         }
       }
-    }
   }
 
   def getPspDetails: Action[AnyContent] = Action.async {
@@ -84,5 +74,18 @@ class SubscriptionController @Inject()(
           case _ => Future.failed(new BadRequestException("No PSP Id in the header"))
         }
       }
+  }
+
+  def deregisterPsp(pspId: String): Action[AnyContent] = Action.async { implicit request =>
+    util.doAuth { _ =>
+      val feJson = request.body.asJson
+      Logger.debug(s"[PSP-Deregistration-Payload]$feJson")
+      feJson match {
+        case Some(json) =>
+          subscriptionConnector.pspDeregistration(pspId, json).map(result)
+        case _ =>
+          Future.failed(new BadRequestException("Bad Request with no request body for PSP subscription"))
+      }
+    }
   }
 }
