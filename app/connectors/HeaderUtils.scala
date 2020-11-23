@@ -25,6 +25,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 class HeaderUtils @Inject()(config: AppConfig) {
   private val maxLengthCorrelationId = 32
+  private val maxLengthCorrelationIF = 36
 
   def desHeaderWithoutCorrelationId: Seq[(String, String)] = {
     Seq("Environment" -> config.desEnvironment,
@@ -43,7 +44,7 @@ class HeaderUtils @Inject()(config: AppConfig) {
   }
 
   def integrationFrameworkHeader(implicit hc: HeaderCarrier): Seq[(String, String)] = {
-    val requestId = getCorrelationId(hc.requestId.map(_.value))
+    val requestId = getCorrelationIdIF(hc.requestId.map(_.value))
 
     Seq("Environment" -> config.integrationFrameworkEnvironment,
       "Authorization" -> config.integrationFrameworkAuthorization,
@@ -56,5 +57,12 @@ class HeaderUtils @Inject()(config: AppConfig) {
       Logger.error("No Request Id found to generate Correlation Id")
       randomUUID.toString
     }.replaceAll("(govuk-tax-|-)", "").slice(0, maxLengthCorrelationId)
+  }
+
+  def getCorrelationIdIF(requestId: Option[String]): String = {
+    requestId.getOrElse {
+      Logger.error("No Request Id found to generate Correlation Id")
+      randomUUID.toString
+    }.replaceAll("(govuk-tax-)", "").slice(0, maxLengthCorrelationIF)
   }
 }
