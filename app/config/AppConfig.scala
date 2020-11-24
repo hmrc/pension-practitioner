@@ -44,7 +44,11 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
   lazy val registerWithIdIndividualUrl: String = s"$baseURL${config.get[String](path = "serviceUrls.register-with-id-individual")}"
   lazy val registerWithIdOrganisationUrl: String = s"$baseURL${config.get[String](path = "serviceUrls.register-with-id-organisation")}"
   lazy val pspSubscriptionUrl: String = s"$ifURL${config.get[String](path = "serviceUrls.psp-subscription")}"
+  lazy val pspDeregistrationUrl: String = s"$ifURL${config.get[String](path = "serviceUrls.psp-de-register")}"
   lazy val subscriptionDetailsUrl: String = s"$ifURL${config.get[String](path = "serviceUrls.get-subscription-details")}"
   lazy val pspAuthorisationUrl: String = s"$ifURL${config.get[String](path = "serviceUrls.psp-association")}"
   lazy val pspDeAuthorisationUrl: String = s"$ifURL${config.get[String](path = "serviceUrls.psp-de-authorisation")}"
+  lazy val minimalDetailsUrl: String = s"$ifURL${config.get[String]("serviceUrls.minimal-details")}"
+  lazy val listOfSchemesUrl: String = s"$ifURL${config.get[String]("serviceUrls.listOfSchemes")}"
+
 }

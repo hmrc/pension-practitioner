@@ -11,6 +11,7 @@ DELETE        /journey-cache                                                    
 
 POST          /subscribePsp                                                                             controllers.SubscriptionController.subscribePsp
 GET           /getPsp                                                                                   controllers.SubscriptionController.getPspDetails
+POST          /deregisterPsp/:pspId                                                                     controllers.SubscriptionController.deregisterPsp(pspId: String)
 POST          /authorise-psp                                                                            controllers.AssociationController.authorisePsp
 POST          /de-authorise-psp                                                                         controllers.AssociationController.deAuthorisePsp
 
@@ -18,3 +19,6 @@ POST          /email-response/:journeyType/:requestId/:email/:pspId             
 
 POST          /email-response-psp-auth/:encryptedPsaId/:encryptedPspId/:encryptedPstr/:encryptedEmail   controllers.EmailResponseController.retrieveStatusForPSPAuthorisation(encryptedPsaId, encryptedPspId, encryptedPstr, encryptedEmail)
 POST          /email-response-psp-deauth/:encryptedPsaId/:encryptedPspId/:encryptedPstr/:encryptedEmail controllers.EmailResponseController.retrieveStatusForPSPDeauthorisation(encryptedPsaId, encryptedPspId, encryptedPstr, encryptedEmail)
+
+GET           /get-minimal-details                                                                      controllers.MinimalDetailsController.getMinimalDetails
+GET           /can-deregister/:id                                                                       controllers.SubscriptionController.canDeregister(id: String)

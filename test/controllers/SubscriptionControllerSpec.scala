@@ -16,7 +16,7 @@
 
 package controllers
 
-import connectors.SubscriptionConnector
+import connectors.{SchemeConnector, SubscriptionConnector}
 import org.mockito.Matchers.any
 import org.mockito.Mockito._
 import org.scalatest.{AsyncWordSpec, BeforeAndAfter, MustMatchers}
@@ -42,8 +42,40 @@ class SubscriptionControllerSpec extends AsyncWordSpec with MustMatchers with Mo
   private val fakeRequest = FakeRequest("GET", "/")
   private val mockSubscriptionConnector = mock[SubscriptionConnector]
   private val mockPspSubscriptionTransformer = mock[PSPSubscriptionTransformer]
+  private val mockSchemeConnector = mock[SchemeConnector]
   private val authConnector: AuthConnector = mock[AuthConnector]
   private val response: JsValue = Json.obj("response-key" -> "response-value")
+  private val pspId: String = "psp-id"
+  private val deregistrationRequestJson: JsValue = Json.obj("request-key" -> "request-value")
+
+  def listOfSchemesJson(statuses: Seq[String] = Seq("Open", "Open")): JsObject = Json.obj(
+      "processingDate" -> "2001-12-17T09 ->30 ->47Z",
+      "totalSchemesRegistered" -> "1",
+      "schemeDetails" -> Json.arr(
+        Json.obj(
+        "name" -> "abcdefghi",
+        "referenceNumber" -> "S1000000456",
+        "schemeStatus" -> statuses.head,
+        "pstr" -> "10000678RE",
+        "relationShip" -> "Primary",
+        "underAppeal" -> "Yes"
+        ),
+        Json.obj(
+          "name" -> "abcdefghi",
+          "referenceNumber" -> "S1000000456",
+          "schemeStatus" -> statuses.tail,
+          "pstr" -> "10000678RE",
+          "relationShip" -> "Primary",
+          "underAppeal" -> "Yes"
+        )
+      )
+  )
+
+  def noSchemesJson: JsObject = Json.obj(
+    "processingDate" -> "2001-12-17T09 ->30 ->47Z",
+    "totalSchemesRegistered" -> "1")
+
+
 
   val modules: Seq[GuiceableModule] =
     Seq(
@@ -64,16 +96,16 @@ class SubscriptionControllerSpec extends AsyncWordSpec with MustMatchers with Mo
   }
 
   "subscribePsp" must {
-    "return OK when valid response from DES" in {
+    "return OK when valid response from API" in {
 
       when(mockSubscriptionConnector.pspSubscription(any(), any())(any(), any(), any()))
-        .thenReturn(Future.successful(Right(response)))
+        .thenReturn(Future.successful(HttpResponse(OK, response.toString)))
 
       val result = controller.subscribePsp()(fakeRequest.withJsonBody(uaIndividualUK))
       status(result) mustBe OK
     }
 
-    "throw Upstream5XXResponse on Internal Server Error from DES" in {
+    "throw Upstream5XXResponse on Internal Server Error from API" in {
 
       when(mockSubscriptionConnector.pspSubscription(any(), any())(any(), any(), any()))
         .thenReturn(Future.failed(UpstreamErrorResponse(message = "Internal Server Error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR)))
@@ -121,6 +153,75 @@ class SubscriptionControllerSpec extends AsyncWordSpec with MustMatchers with Mo
       contentAsString(result) mustBe "not found"
     }
   }
+
+  "deregisterPsp" must {
+    "return OK when valid response from API" in {
+
+      when(mockSubscriptionConnector.pspDeregistration(any(), any())(any(), any(), any()))
+        .thenReturn(Future.successful(HttpResponse(OK, response.toString)))
+
+      val result = controller.deregisterPsp(pspId)(fakeRequest.withJsonBody(deregistrationRequestJson))
+      status(result) mustBe OK
+    }
+
+    "throw Upstream5XXResponse on Internal Server Error from API" in {
+
+      when(mockSubscriptionConnector.pspDeregistration(any(), any())(any(), any(), any()))
+        .thenReturn(Future.failed(UpstreamErrorResponse(message = "Internal Server Error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR)))
+
+      recoverToExceptionIf[UpstreamErrorResponse] {
+        controller.deregisterPsp(pspId)(fakeRequest.withJsonBody(deregistrationRequestJson))
+      } map {
+        _.statusCode mustBe INTERNAL_SERVER_ERROR
+      }
+    }
+
+  }
+
+/*  "canDeregister" must {
+    "return OK and false when canDeregister called with psa ID having some schemes" in {
+      when(mockSchemeConnector.listOfSchemes(Matchers.eq(pspId))(any(), any(), any()))
+        .thenReturn(Future.successful(Right(listOfSchemesJson())))
+      val result = controller.canDeregister(pspId = pspId)(fakeRequest)
+
+      status(result) mustBe OK
+      contentAsJson(result) mustEqual JsBoolean(false)
+    }
+
+    "return OK and true when canDeregister called with psa ID having no scheme detail item at all" in {
+      when(mockSchemeConnector.listOfSchemes(Matchers.eq(pspId))(any(), any(), any()))
+        .thenReturn(Future.successful(Right(noSchemesJson)))
+      val result = controller.canDeregister(pspId = pspId)(fakeRequest)
+
+      status(result) mustBe OK
+      contentAsJson(result) mustEqual JsBoolean(true)
+    }
+
+    "return OK and false when canDeregister called with psa ID having only wound-up schemes" in {
+      when(mockSchemeConnector.listOfSchemes(Matchers.eq(pspId))(any(), any(), any()))
+        .thenReturn(Future.successful(Right(listOfSchemesJson(Seq("Wound-up", "Deregistered")))))
+      val result = controller.canDeregister(pspId = pspId)(fakeRequest)
+
+      status(result) mustBe OK
+      contentAsJson(result) mustEqual JsBoolean(false)
+    }
+
+    "return OK and false when canDeregister called with psp ID having both wound-up schemes and non-wound-up schemes" in {
+      when(mockSchemeConnector.listOfSchemes(Matchers.eq(pspId))(any(), any(), any()))
+        .thenReturn(Future.successful(Right(listOfSchemesJson(Seq("Open", "Wound-up")))))
+      val result = controller.canDeregister(pspId = pspId)(fakeRequest)
+
+      status(result) mustBe OK
+      contentAsJson(result) mustEqual JsBoolean(false)
+    }
+
+    "return http exception when non OK httpresponse returned" in {
+      when(mockSchemeConnector.listOfSchemes(Matchers.eq(pspId))(any(), any(), any()))
+        .thenReturn(Future.successful(Left(HttpResponse(BAD_REQUEST, "bad request"))))
+      val result = controller.canDeregister(pspId = pspId)(fakeRequest)
+      status(result) mustBe BAD_REQUEST
+    }
+  }*/
 
   def errorResponse(code: String): String = {
     Json.stringify(

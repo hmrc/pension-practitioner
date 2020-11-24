@@ -20,43 +20,34 @@ import audit.SubscriptionAuditService
 import com.google.inject.Inject
 import config.AppConfig
 import play.Logger
-import play.api.http.Status.OK
+import play.api.http.Status._
 import play.api.libs.json._
 import play.api.mvc.RequestHeader
 import transformations.toUserAnswers.PspDetailsTransformer
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
-import utils.HttpResponseHelper
+import utils.{HttpResponseHelper, InvalidPayloadHandler}
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Success, Try}
 
 class SubscriptionConnector @Inject()(http: HttpClient,
                                       config: AppConfig,
                                       headerUtils: HeaderUtils,
                                       subscriptionAuditService: SubscriptionAuditService,
-                                      pspDetailsTransformer: PspDetailsTransformer
+                                      pspDetailsTransformer: PspDetailsTransformer,
+                                     invalidPayloadHandler: InvalidPayloadHandler
                                      ) extends HttpResponseHelper {
 
   def pspSubscription(externalId: String, data: JsValue)
                               (implicit hc: HeaderCarrier,
                                 ec: ExecutionContext,
-                                request: RequestHeader): Future[Either[HttpException, JsValue]] = {
+                                request: RequestHeader): Future[HttpResponse] = {
     val headerCarrier: HeaderCarrier = HeaderCarrier(extraHeaders = headerUtils.integrationFrameworkHeader)
-    val futureHttpResponse = http.POST[JsValue, HttpResponse](
-      config.pspSubscriptionUrl, data)(implicitly, implicitly, headerCarrier, implicitly) andThen
-      subscriptionAuditService.sendSubscribeAuditEvent(externalId, data)
-    futureHttpResponse.map(httpResponse => processResponse(httpResponse, config.pspSubscriptionUrl))
-  }
-
-  private def processResponse(response: HttpResponse, url: String)(
-    implicit request: RequestHeader, ec: ExecutionContext) : Either[HttpException, JsValue] = {
-    if (response.status == OK) {
-      Logger.info(s"POST of $url returned successfully")
-      Right(response.json)
-    } else {
-      Left(handleErrorResponse("POST", url)(response))
+    http.POST[JsValue, HttpResponse](config.pspSubscriptionUrl, data)(implicitly, implicitly, headerCarrier, implicitly) andThen
+      subscriptionAuditService.sendSubscribeAuditEvent(externalId, data) andThen
+      logFailures("PSP Subscription", data, "/resources/schemas/pspCreateAmend.json", config.pspSubscriptionUrl)
     }
-  }
 
   def getSubscriptionDetails(pspId: String)(implicit
                                                         headerCarrier: HeaderCarrier,
@@ -76,8 +67,26 @@ class SubscriptionConnector @Inject()(http: HttpClient,
     }
   }
 
+  def pspDeregistration(pspId: String, data: JsValue)(implicit
+                                   headerCarrier: HeaderCarrier,
+                                   ec: ExecutionContext,
+                                   request: RequestHeader): Future[HttpResponse] = {
+    implicit val hc: HeaderCarrier = HeaderCarrier(extraHeaders =
+      headerUtils.integrationFrameworkHeader(implicitly[HeaderCarrier](headerCarrier)))
+    val url = config.pspDeregistrationUrl.format(pspId)
+    http.POST[JsValue, HttpResponse](url, data)(implicitly, implicitly, hc, implicitly) andThen
+    logFailures("Deregister PSP", data, "/resources/schemas/deregister1469.json", url)
+  }
+
   case class FailedMapToUserAnswersException() extends Exception
   private def validateGetJson(json: JsValue): JsValue =
     json.transform(pspDetailsTransformer.transformToUserAnswers).getOrElse(throw new FailedMapToUserAnswersException)
+
+  private def logFailures(endpoint: String, data: JsValue, schemaPath: String, args: String*): PartialFunction[Try[HttpResponse], Unit] = {
+    case Success(response) if response.status == BAD_REQUEST && response.body.contains("INVALID_PAYLOAD") =>
+      invalidPayloadHandler.logFailures(schemaPath, args.headOption.getOrElse(""))(data)
+    case Success(e: HttpResponse) => Logger.warn(s"$endpoint received error response from API", e)
+  }
+
 
 }
