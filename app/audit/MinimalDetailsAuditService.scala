@@ -46,7 +46,6 @@ trait MinimalDetailsAuditService {
         )
       )
     case Success(Left(e)) =>
-      println("\n\n >>>>>>>>>>>>>>>>>>>>>>>> 2 "+e)
       sendEvent(
         MinimalDetailsEvent(
           idType = idType,

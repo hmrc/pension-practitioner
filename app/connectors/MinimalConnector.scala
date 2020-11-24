@@ -76,7 +76,6 @@ class MinimalConnectorImpl @Inject()(httpClient: HttpClient,
 
   private def logWarning[A]: PartialFunction[Try[Either[HttpResponse, A]], Unit] = {
     case Success(Left(response)) if response.status != OK =>
-      println("\n\n >>>>>>>>>>>>>>>>>>>>>>>> 3 "+response)
       Logger.warn(s"Minimal details received error response from integration framework with status and ${response.status} details ${response.body}")
     case Failure(e) =>
       Logger.error(s"Minimal details received error response from integration framework", e)
