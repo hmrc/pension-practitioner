@@ -16,27 +16,14 @@
 
 package controllers
 
-import java.net.URLDecoder
-import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
-
-import audit.AuditService
-import audit.EmailAuditEvent
-import audit.PSPDeauthorisationEmailAuditEvent
+import audit.{AuditService, EmailAuditEvent, PSPDeauthorisationEmailAuditEvent}
+import models.{Sent, _}
 import models.enumeration.JourneyType.PSP_SUBSCRIPTION
-import models.Sent
-import models._
 import org.joda.time.DateTime
 import org.mockito.Matchers.any
-import org.mockito.Mockito.never
-import org.mockito.Mockito.times
-import org.mockito.Mockito.verify
-import org.mockito.Mockito.when
-import org.mockito.ArgumentCaptor
-import org.mockito.Mockito
-import org.scalatest.AsyncWordSpec
-import org.scalatest.BeforeAndAfterEach
-import org.scalatest.MustMatchers
+import org.mockito.{ArgumentCaptor, Mockito}
+import org.mockito.Mockito.{never, times, verify, when}
+import org.scalatest.{AsyncWordSpec, BeforeAndAfterEach, MustMatchers}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.Application
 import play.api.inject.bind
@@ -45,8 +32,7 @@ import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.auth.core._
-import uk.gov.hmrc.crypto.ApplicationCrypto
-import uk.gov.hmrc.crypto.PlainText
+import uk.gov.hmrc.crypto.{ApplicationCrypto, PlainText}
 
 import scala.concurrent.Future
 

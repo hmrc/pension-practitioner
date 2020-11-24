@@ -19,3 +19,6 @@ POST          /email-response/:journeyType/:requestId/:email/:pspId             
 
 POST          /email-response-psp-auth/:encryptedPsaId/:encryptedPspId/:encryptedPstr/:encryptedEmail   controllers.EmailResponseController.retrieveStatusForPSPAuthorisation(encryptedPsaId, encryptedPspId, encryptedPstr, encryptedEmail)
 POST          /email-response-psp-deauth/:encryptedPsaId/:encryptedPspId/:encryptedPstr/:encryptedEmail controllers.EmailResponseController.retrieveStatusForPSPDeauthorisation(encryptedPsaId, encryptedPspId, encryptedPstr, encryptedEmail)
+
+GET           /get-minimal-details                                                                      controllers.MinimalDetailsController.getMinimalDetails
+GET           /can-deregister/:id                                                                       controllers.SubscriptionController.canDeregister(id: String)

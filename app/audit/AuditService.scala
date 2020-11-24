@@ -16,7 +16,7 @@
 
 package audit
 
-import com.google.inject.Inject
+import com.google.inject.{ImplementedBy, Inject}
 import config.AppConfig
 import play.api.Logger
 import play.api.mvc.RequestHeader
@@ -28,10 +28,19 @@ import uk.gov.hmrc.play.audit.model.DataEvent
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.implicitConversions
 
-class AuditService @Inject()(
-                              config: AppConfig,
-                              connector: AuditConnector
-                            ) {
+@ImplementedBy(classOf[AuditServiceImpl])
+trait AuditService {
+
+  def sendEvent[T <: AuditEvent](event: T)(implicit
+                                           rh: RequestHeader,
+                                           ec: ExecutionContext): Unit
+
+}
+
+class AuditServiceImpl @Inject()(
+                                  config: AppConfig,
+                                  connector: AuditConnector
+                                ) extends AuditService {
 
   private implicit def toHc(request: RequestHeader): AuditHeaderCarrier =
     auditHeaderCarrier(HeaderCarrierConverter.fromHeadersAndSession(request.headers, Some(request.session)))

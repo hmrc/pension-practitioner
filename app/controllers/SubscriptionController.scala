@@ -17,9 +17,10 @@
 package controllers
 
 import com.google.inject.Inject
-import connectors.SubscriptionConnector
+import connectors.{SchemeConnector, SubscriptionConnector}
+import models.ListOfSchemes
 import play.api.Logger
-import play.api.libs.json.{JsError, JsResultException, JsSuccess, Json}
+import play.api.libs.json._
 import play.api.mvc._
 import transformations.userAnswersToDes.PSPSubscriptionTransformer
 import uk.gov.hmrc.auth.core._
@@ -31,15 +32,16 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class SubscriptionController @Inject()(
-  override val authConnector: AuthConnector,
-  subscriptionConnector: SubscriptionConnector,
-  pspSubscriptionTransformer: PSPSubscriptionTransformer,
-  cc: ControllerComponents,
-  util: AuthUtil
-) extends BackendController(cc)
-    with AuthorisedFunctions
-    with HttpResponseHelper
-    with ErrorHandler {
+                                        override val authConnector: AuthConnector,
+                                        subscriptionConnector: SubscriptionConnector,
+                                        schemeConnector: SchemeConnector,
+                                        pspSubscriptionTransformer: PSPSubscriptionTransformer,
+                                        cc: ControllerComponents,
+                                        util: AuthUtil
+                                      ) extends BackendController(cc)
+                                          with AuthorisedFunctions
+                                          with HttpResponseHelper
+                                          with ErrorHandler {
 
   def subscribePsp: Action[AnyContent] = Action.async { implicit request =>
       util.doAuth { externalId =>
@@ -87,5 +89,19 @@ class SubscriptionController @Inject()(
           Future.failed(new BadRequestException("Bad Request with no request body for PSP subscription"))
       }
     }
+  }
+
+  def canDeregister(pspId: String): Action[AnyContent] = Action.async {
+    implicit request =>
+      schemeConnector.listOfSchemes(pspId).map {
+        case Right(jsValue) =>
+          jsValue.validate[ListOfSchemes] match {
+            case JsSuccess(listOfSchemes, _) =>
+              val canDeregister = listOfSchemes.schemeDetails.exists { list => list.exists(_.schemeStatus == "Open") }
+              Ok(Json.toJson(canDeregister))
+            case JsError(errors) => throw JsResultException(errors)
+          }
+        case Left(e) => result(e)
+      }
   }
 }

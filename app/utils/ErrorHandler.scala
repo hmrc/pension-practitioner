@@ -20,7 +20,7 @@ import play.api.Logger
 import play.api.libs.json.JsResultException
 import play.api.mvc.Result
 import uk.gov.hmrc.http._
-
+import play.api.http.Status.OK
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
 
@@ -39,11 +39,11 @@ trait ErrorHandler {
       Future.failed(new Exception(e.getMessage))
   }
 
-  protected def logWarning[A](endpoint: String): PartialFunction[Try[Either[HttpException, A]], Unit] = {
-    case Success(Left(e: HttpException)) =>
-      Logger.warn(s"$endpoint received error response from DES", e)
+  protected def logWarning[A](endpoint: String): PartialFunction[Try[Either[HttpResponse, A]], Unit] = {
+    case Success(Left(response)) if response.status != OK =>
+      Logger.warn(s"$endpoint received error response from integration framework with status ${response.status} and details ${response.body}")
     case Failure(e) =>
-      Logger.error(s"$endpoint received error response from DES", e)
+      Logger.error(s"$endpoint received error response from integration framework", e)
   }
 }
 
