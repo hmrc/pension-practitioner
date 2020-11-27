@@ -78,9 +78,11 @@ class SubscriptionConnector @Inject()(http: HttpClient,
     logFailures("Deregister PSP", data, "/resources/schemas/deregister1469.json", url)
   }
 
-  case class FailedMapToUserAnswersException() extends Exception
   private def validateGetJson(json: JsValue): JsValue =
-    json.transform(pspDetailsTransformer.transformToUserAnswers).getOrElse(throw new FailedMapToUserAnswersException)
+    json.transform(pspDetailsTransformer.transformToUserAnswers) match {
+      case JsSuccess(value, _) => value
+      case JsError(errors) => throw JsResultException(errors)
+    }
 
   private def logFailures(endpoint: String, data: JsValue, schemaPath: String, args: String*): PartialFunction[Try[HttpResponse], Unit] = {
     case Success(response) if response.status == BAD_REQUEST && response.body.contains("INVALID_PAYLOAD") =>

@@ -54,13 +54,17 @@ class MinimalConnectorImpl @Inject()(httpClient: HttpClient,
 
     val hc: HeaderCarrier = HeaderCarrier(extraHeaders = headerUtils.integrationFrameworkHeader)
     val url = appConfig.minimalDetailsUrl.format(regime, idType, idValue)
-
+    println("\n\n >>>>>>>>>>>. 0 url "+url)
+    println("\n\n >>>>>>>>>>>. 0 hc "+hc)
     httpClient.GET[HttpResponse](url)(implicitly, hc, implicitly) map { response =>
       response.status match {
         case OK =>
+          println("\n\n >>>>>>>>>>>. 1")
           Logger.debug(s"[Get-psp-minimal-details-untransformed]${response.json}")
           validateGetJson(response)
-        case _ => Left(response)
+        case _ =>
+          println("\n\n >>>>>>>>>>>. 2 "+response)
+          Left(response)
       }
     } andThen sendGetMinimalDetailsEvent(idType, idValue)(auditService.sendEvent) andThen logWarning
   }

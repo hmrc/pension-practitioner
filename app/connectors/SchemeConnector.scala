@@ -39,7 +39,8 @@ trait SchemeConnector {
 
 class SchemeConnectorImpl @Inject()(
                                      http: HttpClient,
-                                     config: AppConfig
+                                     config: AppConfig,
+                                   headerUtils: HeaderUtils
                                    ) extends SchemeConnector with HttpResponseHelper with ErrorHandler {
 
   override def listOfSchemes(pspId: String)(implicit
@@ -47,10 +48,10 @@ class SchemeConnectorImpl @Inject()(
                                    ec: ExecutionContext,
                                    request: RequestHeader): Future[Either[HttpResponse, JsValue]] = {
 
-    val headers: Seq[(String, String)] = Seq(("pspId", pspId), ("Content-Type", "application/json"))
-
-    implicit val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
-    val url: String = config.listOfSchemesUrl.format("PSPID", pspId)
+    val headers: Seq[(String, String)] = Seq(("Content-Type", "application/json"))
+    implicit val hc: HeaderCarrier = HeaderCarrier(extraHeaders =
+      headerUtils.integrationFrameworkHeader(implicitly[HeaderCarrier](headerCarrier))).withExtraHeaders(headers: _*)
+    val url: String = config.listOfSchemesUrl.format("pspid", pspId)
     http.GET[HttpResponse](url)(implicitly, hc, implicitly) map { response =>
       response.status match {
         case OK => Right(response.json)

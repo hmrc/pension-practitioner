@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "title": "API#1469 Deregistration Request Schema v1.1.0",
-  "description": "API#1469 Deregistration Request Schema v1.1.0",
+  "title": "API#1469 Deregistration Request Schema",
+  "description": "API#1469 Deregistration Request Schema",
   "type": "object",
   "properties": {
     "deregistrationDate": {
