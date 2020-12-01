@@ -97,7 +97,9 @@ class SubscriptionController @Inject()(
         case Right(jsValue) =>
           jsValue.validate[ListOfSchemes] match {
             case JsSuccess(listOfSchemes, _) =>
-              val canDeregister = listOfSchemes.schemeDetails.exists { list => list.exists(_.schemeStatus == "Open") }
+              val schemes = listOfSchemes.schemeDetails.getOrElse(List.empty)
+              val canDeregister = schemes == List.empty || !schemes.exists(_.schemeStatus == "Open")
+
               Ok(Json.toJson(canDeregister))
             case JsError(errors) => throw JsResultException(errors)
           }

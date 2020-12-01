@@ -59,19 +59,21 @@ class MinimalConnectorImpl @Inject()(httpClient: HttpClient,
       response.status match {
         case OK =>
           Logger.debug(s"[Get-psp-minimal-details-untransformed]${response.json}")
-          validateGetJson(response)
+          Right(validateGetJson(response))
         case _ => Left(response)
       }
     } andThen sendGetMinimalDetailsEvent(idType, idValue)(auditService.sendEvent) andThen logWarning
   }
 
-  private def validateGetJson(response: HttpResponse): Either[HttpResponse, MinimalDetails] =
+  case object MinDetailsInvalidResponseException extends Exception
+
+  private def validateGetJson(response: HttpResponse): MinimalDetails =
     response.json.validate[MinimalDetails].fold(
       _ => {
         invalidPayloadHandler.logFailures("/resources/schemas/minimalDetails.json")(response.json)
-        Left(response)
+        throw MinDetailsInvalidResponseException
       },
-      value => Right(value)
+      value => value
     )
 
   private def logWarning[A]: PartialFunction[Try[Either[HttpResponse, A]], Unit] = {

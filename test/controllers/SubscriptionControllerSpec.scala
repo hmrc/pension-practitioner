@@ -17,6 +17,7 @@
 package controllers
 
 import connectors.{SchemeConnector, SubscriptionConnector}
+import org.mockito.Matchers
 import org.mockito.Matchers.any
 import org.mockito.Mockito._
 import org.scalatest.{AsyncWordSpec, BeforeAndAfter, MustMatchers}
@@ -32,7 +33,6 @@ import transformations.userAnswersToDes.PSPSubscriptionTransformerSpec._
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http._
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class SubscriptionControllerSpec extends AsyncWordSpec with MustMatchers with MockitoSugar with BeforeAndAfter {
@@ -55,7 +55,7 @@ class SubscriptionControllerSpec extends AsyncWordSpec with MustMatchers with Mo
         Json.obj(
         "name" -> "abcdefghi",
         "referenceNumber" -> "S1000000456",
-        "schemeStatus" -> statuses.head,
+        "schemeStatus" -> JsString(statuses.head),
         "pstr" -> "10000678RE",
         "relationShip" -> "Primary",
         "underAppeal" -> "Yes"
@@ -63,7 +63,7 @@ class SubscriptionControllerSpec extends AsyncWordSpec with MustMatchers with Mo
         Json.obj(
           "name" -> "abcdefghi",
           "referenceNumber" -> "S1000000456",
-          "schemeStatus" -> statuses.tail,
+          "schemeStatus" -> JsString(statuses(1)),
           "pstr" -> "10000678RE",
           "relationShip" -> "Primary",
           "underAppeal" -> "Yes"
@@ -80,7 +80,8 @@ class SubscriptionControllerSpec extends AsyncWordSpec with MustMatchers with Mo
   val modules: Seq[GuiceableModule] =
     Seq(
       bind[AuthConnector].toInstance(authConnector),
-      bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
+      bind[SubscriptionConnector].toInstance(mockSubscriptionConnector),
+      bind[SchemeConnector].toInstance(mockSchemeConnector)
     )
 
   val application: Application = new GuiceApplicationBuilder()
@@ -178,7 +179,7 @@ class SubscriptionControllerSpec extends AsyncWordSpec with MustMatchers with Mo
 
   }
 
-/*  "canDeregister" must {
+  "canDeregister" must {
     "return OK and false when canDeregister called with psa ID having some schemes" in {
       when(mockSchemeConnector.listOfSchemes(Matchers.eq(pspId))(any(), any(), any()))
         .thenReturn(Future.successful(Right(listOfSchemesJson())))
@@ -203,7 +204,7 @@ class SubscriptionControllerSpec extends AsyncWordSpec with MustMatchers with Mo
       val result = controller.canDeregister(pspId = pspId)(fakeRequest)
 
       status(result) mustBe OK
-      contentAsJson(result) mustEqual JsBoolean(false)
+      contentAsJson(result) mustEqual JsBoolean(true)
     }
 
     "return OK and false when canDeregister called with psp ID having both wound-up schemes and non-wound-up schemes" in {
@@ -221,7 +222,7 @@ class SubscriptionControllerSpec extends AsyncWordSpec with MustMatchers with Mo
       val result = controller.canDeregister(pspId = pspId)(fakeRequest)
       status(result) mustBe BAD_REQUEST
     }
-  }*/
+  }
 
   def errorResponse(code: String): String = {
     Json.stringify(

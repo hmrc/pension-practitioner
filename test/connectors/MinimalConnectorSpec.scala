@@ -16,14 +16,13 @@
 
 package connectors
 
-import audit.{AuditService, PSPSubscription}
+import audit.AuditService
 import com.github.tomakehurst.wiremock.client.WireMock._
 import models.{IndividualDetails, MinimalDetails}
-import org.mockito.ArgumentCaptor
 import org.mockito.Mockito.when
 import org.scalatest.{AsyncWordSpec, EitherValues, MustMatchers}
 import org.scalatestplus.mockito.MockitoSugar
-import play.api.http.Status._
+import play.api.http.Status.{BAD_REQUEST, FORBIDDEN, INTERNAL_SERVER_ERROR, NOT_FOUND}
 import play.api.inject.bind
 import play.api.inject.guice.GuiceableModule
 import play.api.libs.json.Json
@@ -56,94 +55,90 @@ class MinimalConnectorSpec extends AsyncWordSpec with MustMatchers with WireMock
   private val pspId = "psp-id"
   private val idType = "pspid"
   private val regime = "podp"
-  private val minDetailsUrl = s"/pension-online/psa-min-details/podp/pspid/$pspId"
-
-  private val externalId = "id"
-
-  private val eventCaptor = ArgumentCaptor.forClass(classOf[PSPSubscription])
+  private val minDetailsUrl = s"/pension-online/psa-min-details/$regime/$idType/$pspId"
 
   when(mockHeaderUtils.integrationFrameworkHeader).thenReturn(Nil)
 
-  "minimalDetails" must {
-    "return user answer json when successful response returned from API" in {
-      server.stubFor(
-        get(urlEqualTo(minDetailsUrl))
-          .willReturn(
-            ok
-              .withHeader("Content-Type", "application/json")
-              .withBody(minDetailsPayload.toString())
-          )
-      )
+    "minimalDetails" must {
+      "return user answer json when successful response returned from API" in {
+        server.stubFor(
+          get(urlEqualTo(minDetailsUrl))
+            .willReturn(
+              ok
+                .withHeader("Content-Type", "application/json")
+                .withBody(minDetailsPayload.toString())
+            )
+        )
 
-      connector.getMinimalDetails(pspId, idType, regime).map { response =>
-        response.right.get mustBe minDetailsIndividual
+        connector.getMinimalDetails(pspId, idType, regime).map { response =>
+          response.right.get mustBe minDetailsIndividual
+        }
+      }
+
+      "return a BadRequestException for a 400 INVALID_IDVALUE response" in {
+        server.stubFor(
+          get(urlEqualTo(minDetailsUrl))
+            .willReturn(
+              badRequest()
+                .withHeader("Content-Type", "application/json")
+                .withBody(errorResponse("INVALID_IDVALUE"))
+            )
+        )
+        recoverToExceptionIf[BadRequestException](connector.getMinimalDetails(pspId, idType, regime)) map {
+          ex =>
+            ex.responseCode mustBe BAD_REQUEST
+            ex.message must include("INVALID_IDVALUE")
+        }
+
+      }
+
+      "return Not Found - 404" in {
+        server.stubFor(
+          get(urlEqualTo(minDetailsUrl))
+            .willReturn(
+              notFound
+                .withBody(errorResponse("NOT_FOUND"))
+            )
+        )
+
+        recoverToExceptionIf[NotFoundException](connector.getMinimalDetails(pspId, idType, regime)).map { ex =>
+          ex.responseCode mustBe NOT_FOUND
+          ex.message must include("NOT_FOUND")
+        }
+      }
+
+      "throw Upstream4XX for server unavailable - 403" in {
+
+        server.stubFor(
+          get(urlEqualTo(minDetailsUrl))
+            .willReturn(
+              forbidden
+                .withBody(errorResponse("FORBIDDEN"))
+            )
+        )
+
+        recoverToExceptionIf[UpstreamErrorResponse](connector.getMinimalDetails(pspId, idType, regime)).map { response =>
+          response.statusCode mustEqual FORBIDDEN
+          response.getMessage() must include("FORBIDDEN")
+        }
+      }
+
+      "throw Upstream5XX for internal server error - 500 and log the event as error" in {
+
+        server.stubFor(
+          get(urlEqualTo(minDetailsUrl))
+            .willReturn(
+              serverError
+                .withBody(errorResponse("SERVER_ERROR"))
+            )
+        )
+
+        recoverToExceptionIf[UpstreamErrorResponse](connector.getMinimalDetails(pspId, idType, regime)).map { response =>
+          response.statusCode mustEqual INTERNAL_SERVER_ERROR
+          response.getMessage() must include("SERVER_ERROR")
+        }
       }
     }
-
-//    "return a BadRequestException for a 400 INVALID_IDVALUE response" in {
-//      server.stubFor(
-//        get(urlEqualTo(minDetailsUrl))
-//          .willReturn(
-//            badRequest
-//              .withHeader("Content-Type", "application/json")
-//              .withBody(errorResponse("INVALID_IDVALUE"))
-//          )
-//      )
-//
-//
-//      connector.getMinimalDetails(pspId, idType, regime).map { response =>
-//        response.left.get.status mustEqual BAD_REQUEST
-//        response.left.get.body must include("INVALID_IDVALUE")
-//      }
-//    }
-
-//    "return Not Found - 404" in {
-//      server.stubFor(
-//        get(urlEqualTo(minDetailsUrl))
-//          .willReturn(
-//            notFound
-//              .withBody(errorResponse("NOT_FOUND"))
-//          )
-//      )
-//
-//      connector.getMinimalDetails(pspId, idType, regime).map { response =>
-//        response.left.get.status mustEqual NOT_FOUND
-//        response.left.get.body must include("NOT_FOUND")
-//      }
-//    }
-//
-//    "throw Upstream4XX for server unavailable - 403" in {
-//
-//      server.stubFor(
-//        get(urlEqualTo(minDetailsUrl))
-//          .willReturn(
-//            forbidden
-//              .withBody(errorResponse("FORBIDDEN"))
-//          )
-//      )
-//
-//      connector.getMinimalDetails(pspId, idType, regime).map { response =>
-//        response.left.get.status mustEqual FORBIDDEN
-//        response.left.get.body must include("FORBIDDEN")
-//      }
-//    }
-//
-//    "throw Upstream5XX for internal server error - 500 and log the event as error" in {
-//
-//      server.stubFor(
-//        get(urlEqualTo(minDetailsUrl))
-//          .willReturn(
-//            serverError
-//              .withBody(errorResponse("SERVER_ERROR"))
-//          )
-//      )
-//
-//      connector.getMinimalDetails(pspId, idType, regime).map { response =>
-//        response.left.get.status mustEqual INTERNAL_SERVER_ERROR
-//        response.left.get.body must include("SERVER_ERROR")
-//      }
-//    }
-  }
 
   def errorResponse(code: String): String = {
     Json.stringify(
