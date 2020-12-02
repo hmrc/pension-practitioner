@@ -21,21 +21,21 @@ import play.api.libs.json.{Format, Json}
 case class PSPDetails(pspid: String,
                       orgOrPartName: Option[String],
                       firstName: Option[String],
-                      secondName: Option[String],
+                      middleName: Option[String],
                       lastName: Option[String],
                       relationshipStartDate: String,
-                      authorizedPSAID: String,
-                      authorizedPSAOrgOrPartName: Option[String],
-                      authorizedPSAFirstName: Option[String],
-                      authorizedPSASecondName: Option[String],
-                      authorizedPSALastName: Option[String])
+                      authorisedPSAID: String,
+                      authorisedPSAOrgOrPartName: Option[String],
+                      authorisedPSAFirstName: Option[String],
+                      authorisedPSAMiddleName: Option[String],
+                      authorisedPSALastName: Option[String])
 
 object PSPDetails {
   implicit val format: Format[PSPDetails] = Json.format[PSPDetails]
 }
 
 case class SchemeDetails(name: String, referenceNumber: String, schemeStatus: String, openDate: Option[String], pstr: Option[String] = None,
-                         relationship: Option[String], pspDetails: Option[List[PSPDetails]] = None, underAppeal: Option[String] = None)
+                         relationship: Option[String], pspDetails: Option[List[PSPDetails]] = None)
 
 object SchemeDetails {
   implicit val format: Format[SchemeDetails] = Json.format[SchemeDetails]
