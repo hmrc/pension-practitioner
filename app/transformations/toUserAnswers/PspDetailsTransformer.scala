@@ -16,10 +16,10 @@
 
 package transformations.toUserAnswers
 
-import play.api.libs.json.{JsBoolean, JsObject, JsString, Reads, __}
-import transformations.JsonTransformer
-import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
+import play.api.libs.json.Reads._
+import play.api.libs.json.{JsObject, JsString, Reads, __}
+import transformations.JsonTransformer
 
 class PspDetailsTransformer extends JsonTransformer {
 
@@ -75,8 +75,10 @@ class PspDetailsTransformer extends JsonTransformer {
   }
 
   private def transformSubscriptionDetails: Reads[JsObject] =
-    ((__ \ 'existingPSP \ 'isExistingPSP).json.copyFrom((__ \ 'subscriptionTypeAndPSPIDDetails \ 'existingPSPID).json.pick) and
-        (__ \ 'existingPSP \ 'existingPSPId).json.copyFrom((__ \ 'subscriptionTypeAndPSPIDDetails \ 'pspid).json.pick)).reduce
+    ((__ \ 'applicationDate).json.copyFrom((__ \ 'subscriptionTypeAndPSPIDDetails \ 'applicationDate).json.pick) and
+      (__ \ 'subscriptionType).json.copyFrom((__ \ 'subscriptionTypeAndPSPIDDetails \ 'subscriptionType).json.pick) and
+      (__ \ 'existingPSP \ 'isExistingPSP).json.copyFrom((__ \ 'subscriptionTypeAndPSPIDDetails \ 'existingPSPID).json.pick) and
+      (__ \ 'existingPSP \ 'existingPSPId).json.copyFrom((__ \ 'subscriptionTypeAndPSPIDDetails \ 'pspid).json.pick)).reduce
 
   private def transformLegalAndCustomer: Reads[JsObject] =
     ((__ \ 'registrationInfo \ 'legalStatus).json.copyFrom((__ \ 'legalEntityAndCustomerID \ 'legalStatus).json.pick) and
