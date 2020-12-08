@@ -83,7 +83,9 @@ object PspDetailsTransformerSpec {
     "existingPSP" -> Json.obj(
       "existingPSPId" -> "A2345678",
       "isExistingPSP" -> "Yes"
-    )
+    ),
+    "subscriptionType" -> "Creation",
+    "applicationDate" -> "2020-01-01"
   )
 
   private val whatTypeBusinessYourself = Json.obj(
@@ -170,7 +172,8 @@ object PspDetailsTransformerSpec {
     "subscriptionTypeAndPSPIDDetails" -> Json.obj(
       "existingPSPID" -> "Yes",
       "pspid" -> "A2345678",
-      "subscriptionType" -> "Creation"
+      "subscriptionType" -> "Creation",
+      "applicationDate" -> "2020-01-01"
     ),
     "sapNumber" -> "1234567890",
     "declaration" -> Json.obj(

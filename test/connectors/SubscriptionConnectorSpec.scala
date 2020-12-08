@@ -316,7 +316,7 @@ object SubscriptionConnectorSpec {
 
   private val pspDetailsResponse = Json.obj(
     "subscriptionTypeAndPSPIDDetails" -> Json.obj(
-      "applicationDate" -> "2019-10-17T00 ->11 ->39.789Z",
+      "applicationDate" -> "2020-01-01",
       "subscriptionType" -> "Creation",
       "existingPSPID" -> "Yes",
       "pspid" -> "17948279"),
@@ -364,5 +364,7 @@ object SubscriptionConnectorSpec {
     "existingPSP" -> Json.obj(
       "existingPSPId" -> "17948279",
       "isExistingPSP" -> "Yes"),
+    "subscriptionType" -> "Creation",
+    "applicationDate" -> "2020-01-01",
     "email" -> "abc@hmrc.gsi.gov.uk")
 }
