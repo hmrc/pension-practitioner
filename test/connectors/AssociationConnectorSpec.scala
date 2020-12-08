@@ -37,7 +37,7 @@ class AssociationConnectorSpec extends AsyncWordSpec with MustMatchers with Wire
   private lazy val connector: AssociationConnector = injector.instanceOf[AssociationConnector]
   private val pstr: String = "pstr"
 
-  private val pspAuthorisationUrl = s"/pension-online/association/pstr/$pstr"
+  private val pspAuthorisationUrl = s"/pension-online/association/pods/$pstr"
   private val pspDeAuthorisationUrl = s"/pension-online/cease-scheme/pods/$pstr"
 
   "authorisePsp" must {
