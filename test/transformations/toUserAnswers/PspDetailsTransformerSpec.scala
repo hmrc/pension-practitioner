@@ -88,22 +88,6 @@ object PspDetailsTransformerSpec {
     "applicationDate" -> "2020-01-01"
   )
 
-  private val whatTypeBusinessYourself = Json.obj(
-    "whatTypeBusiness" -> "yourselfAsIndividual"
-  )
-
-  private val whatTypeBusinessCompanyOrPartnership = Json.obj(
-    "whatTypeBusiness" -> "companyOrPartnership"
-  )
-
-  private val businessTypeCompany = Json.obj(
-    "businessType" -> "limitedCompany"
-  )
-
-  private val businessRegistrationTypePartnership = Json.obj(
-    "businessRegistrationType" -> "partnership"
-  )
-
   val uaIndividualUK: JsObject = Json.obj(
     "registrationInfo" -> Json.obj(
       "legalStatus" -> "Individual",
@@ -111,14 +95,14 @@ object PspDetailsTransformerSpec {
       "idType" -> "NINO",
       "idNumber" -> "AB123456C"
     )
-  ) ++ individualDetails ++ uaAddress ++ uaContactDetails ++ existingPsp ++ whatTypeBusinessYourself
+  ) ++ individualDetails ++ uaAddress ++ uaContactDetails ++ existingPsp
 
   private val uaIndividualNonUk: JsObject = Json.obj(
     "registrationInfo"  -> Json.obj(
       "legalStatus"  ->  "Individual",
       "customerType"  ->  "NonUK"
     )
-  ) ++ individualDetails ++ uaAddressNonUk ++ uaContactDetails ++ existingPsp ++ whatTypeBusinessYourself
+  ) ++ individualDetails ++ uaAddressNonUk ++ uaContactDetails ++ existingPsp
 
   private val uaCompanyUk: JsObject = Json.obj(
     "registrationInfo"  ->  Json.obj(
@@ -128,7 +112,7 @@ object PspDetailsTransformerSpec {
       "idNumber"  ->  "1234567890"
     ),
     "name"  ->  "Test Ltd"
-  ) ++ uaAddress ++ uaContactDetails ++ existingPsp ++ whatTypeBusinessCompanyOrPartnership ++ businessTypeCompany
+  ) ++ uaAddress ++ uaContactDetails ++ existingPsp
 
   private val uaPartnershipNonUK: JsObject = Json.obj(
     "registrationInfo"  ->  Json.obj(
@@ -136,7 +120,7 @@ object PspDetailsTransformerSpec {
       "customerType"  ->  "NonUK"
     ),
     "name"  ->  "Testing Ltd"
-  ) ++ uaAddressNonUk ++ uaContactDetails ++ existingPsp ++ whatTypeBusinessCompanyOrPartnership ++ businessRegistrationTypePartnership
+  ) ++ uaAddressNonUk ++ uaContactDetails ++ existingPsp
 
   private val contactDetails: JsObject = Json.obj(
     "correspondenceContactDetails" -> Json.obj(
