@@ -21,8 +21,8 @@ import play.api.mvc.PathBindable
 
 object JourneyType extends Enumeration {
   type Name = Value
-  // Only one item in this enumeration at present but more will potentially be added later
   val PSP_SUBSCRIPTION: JourneyType.Value = Value("PSPSubscription")
+  val PSP_DEREGISTRATION: JourneyType.Value = Value("PSPDeregistration")
 
   implicit val journeyTypePathBinder: PathBindable[Name] = EnumPathBinder.pathBinder(this)
 }
