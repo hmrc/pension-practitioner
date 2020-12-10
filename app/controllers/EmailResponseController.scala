@@ -20,6 +20,7 @@ import audit.AuditService
 import audit.EmailAuditEvent
 import audit.PSPAuthorisationEmailAuditEvent
 import audit.PSPDeauthorisationEmailAuditEvent
+import audit.PSPDeregistrationEmailAuditEvent
 import com.google.inject.Inject
 import models.enumeration.JourneyType
 import models.EmailEvents
@@ -128,6 +129,29 @@ class EmailResponseController @Inject()(
       }
   }
 
+  def retrieveStatusForPSPDeregistration(
+    encryptedPspId: String,
+    encryptedEmail: String
+  ): Action[JsValue] = Action(parser.tolerantJson) {
+    implicit request =>
+      decryptAndValidateDetailsForPSPDereg(encryptedPspId, encryptedEmail) match {
+        case Right(Tuple2(pspId, email)) =>
+          request.body.validate[EmailEvents].fold(
+            _ => BadRequest("Bad request received for psp de-registration email call back event"),
+            valid => {
+              valid.events.filterNot(
+                _.event == Opened
+              ).foreach { event =>
+                Logger.debug(s"Email Audit event is $event")
+                auditService.sendEvent(PSPDeregistrationEmailAuditEvent(pspId.id, email, event.event))
+              }
+              Ok
+            }
+          )
+        case Left(result) => result
+      }
+  }
+
   private def decryptAndValidateDetailsForPSPAuthAndDeauth(
     encryptedPsaId: String,
     encryptedPspId: String,
@@ -143,7 +167,22 @@ class EmailResponseController @Inject()(
       require(emailAddress.matches(emailRegex))
       Right(Tuple4(PsaId(psaId), PspId(pspId), pstr, emailAddress))
     } catch {
-      case _: IllegalArgumentException => Left(Forbidden(s"Malformed PSAID : $psaId, PSPID : $pspId, PSTR : $pstr or Email : $emailAddress"))
+      case _: IllegalArgumentException => Left(Forbidden(s"Malformed PSAID: $psaId, PSPID: $pspId, PSTR: $pstr or Email: $emailAddress"))
+    }
+  }
+
+  private def decryptAndValidateDetailsForPSPDereg(
+    encryptedPspId: String,
+    encryptedEmail: String): Either[Result, (PspId, String)] = {
+
+    val pspId = crypto.QueryParameterCrypto.decrypt(Crypted(encryptedPspId)).value
+    val emailAddress = crypto.QueryParameterCrypto.decrypt(Crypted(encryptedEmail)).value
+
+    try {
+      require(emailAddress.matches(emailRegex))
+      Right(Tuple2(PspId(pspId), emailAddress))
+    } catch {
+      case _: IllegalArgumentException => Left(Forbidden(s"Malformed PSPID: $pspId or Email: $emailAddress"))
     }
   }
 }

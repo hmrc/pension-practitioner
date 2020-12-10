@@ -94,8 +94,7 @@ class PSPSubscriptionTransformer extends JsonTransformer {
       ((__ \ 'correspondenceAddressDetails \ 'addressLine3).json.copyFrom((__ \ 'contactAddress \ 'addressLine3).json.pick) orElse doNothing) and
       ((__ \ 'correspondenceAddressDetails \ 'addressLine4).json.copyFrom((__ \ 'contactAddress \ 'addressLine4).json.pick) orElse doNothing) and
       (__ \ 'correspondenceAddressDetails \ 'countryCode).json.copyFrom((__ \ 'contactAddress \ 'country).json.pick) and
-      ((__ \ 'correspondenceAddressDetails \ 'postalCode).json.copyFrom((__ \ 'contactAddress \ 'postcode).json.pick) orElse doNothing) and
-      ((__ \ 'correspondenceAddressDetails \ 'changeFlag).json.copyFrom((__ \ 'addressChange).json.pick) orElse doNothing)).reduce
+      ((__ \ 'correspondenceAddressDetails \ 'postalCode).json.copyFrom((__ \ 'contactAddress \ 'postcode).json.pick) orElse doNothing)).reduce
 
   private def transformAddressVariation: Reads[JsObject] = (transformAddress and
     ((__ \ 'correspondenceAddressDetails \ 'changeFlag).json.copyFrom((__ \ 'addressChange).json.pick) orElse
