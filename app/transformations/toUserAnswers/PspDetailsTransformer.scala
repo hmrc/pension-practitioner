@@ -16,10 +16,10 @@
 
 package transformations.toUserAnswers
 
-import play.api.libs.json.{JsBoolean, JsObject, JsString, Reads, __}
-import transformations.JsonTransformer
-import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
+import play.api.libs.json.Reads._
+import play.api.libs.json.{JsObject, Reads, __}
+import transformations.JsonTransformer
 
 class PspDetailsTransformer extends JsonTransformer {
 
@@ -28,55 +28,13 @@ class PspDetailsTransformer extends JsonTransformer {
       transformLegalAndCustomer and
       transformName and
       transformAddress and
-      transformContactDetails and
-      transformWhatTypeBusiness and
-      transformBusinessType and
-      transformBusinessRegistrationType
-      ).reduce
-
-   private def transformWhatTypeBusiness: Reads[JsObject] =
-    (__ \ 'legalEntityAndCustomerID \ 'legalStatus).read[String].flatMap {
-      case "Individual" =>
-        (__ \ 'whatTypeBusiness).json.put(JsString("yourselfAsIndividual"))
-      case _ =>
-        (__ \ 'whatTypeBusiness).json.put(JsString("companyOrPartnership"))
-    }
-
-  private def transformBusinessType: Reads[JsObject] = {
-    (__ \ 'legalEntityAndCustomerID \ 'customerType).read[String].flatMap {
-      case "UK" =>
-        (__ \ 'legalEntityAndCustomerID \ 'legalStatus).read[String].flatMap {
-          case "Company" =>
-            (__ \ 'businessType).json.put(JsString("limitedCompany"))
-          case "Partnership" =>
-            (__ \ 'businessType).json.put(JsString("limitedPartnership"))
-          case _ =>
-            doNothing
-        }
-      case _ =>
-        doNothing
-    }
-  }
-
-  private def transformBusinessRegistrationType: Reads[JsObject] = {
-    (__ \ 'legalEntityAndCustomerID \ 'customerType).read[String].flatMap {
-      case "NonUK" =>
-        (__ \ 'legalEntityAndCustomerID \ 'legalStatus).read[String].flatMap {
-          case "Company" =>
-            (__ \ 'businessRegistrationType).json.put(JsString("company"))
-          case "Partnership" =>
-            (__ \ 'businessRegistrationType).json.put(JsString("partnership"))
-          case _ =>
-            doNothing
-        }
-      case _ =>
-        doNothing
-    }
-  }
+      transformContactDetails).reduce
 
   private def transformSubscriptionDetails: Reads[JsObject] =
-    ((__ \ 'existingPSP \ 'isExistingPSP).json.copyFrom((__ \ 'subscriptionTypeAndPSPIDDetails \ 'existingPSPID).json.pick) and
-        (__ \ 'existingPSP \ 'existingPSPId).json.copyFrom((__ \ 'subscriptionTypeAndPSPIDDetails \ 'pspid).json.pick)).reduce
+    ((__ \ 'applicationDate).json.copyFrom((__ \ 'subscriptionTypeAndPSPIDDetails \ 'applicationDate).json.pick) and
+      (__ \ 'subscriptionType).json.copyFrom((__ \ 'subscriptionTypeAndPSPIDDetails \ 'subscriptionType).json.pick) and
+      (__ \ 'existingPSP \ 'isExistingPSP).json.copyFrom((__ \ 'subscriptionTypeAndPSPIDDetails \ 'existingPSPID).json.pick) and
+      (__ \ 'existingPSP \ 'existingPSPId).json.copyFrom((__ \ 'subscriptionTypeAndPSPIDDetails \ 'pspid).json.pick)).reduce
 
   private def transformLegalAndCustomer: Reads[JsObject] =
     ((__ \ 'registrationInfo \ 'legalStatus).json.copyFrom((__ \ 'legalEntityAndCustomerID \ 'legalStatus).json.pick) and
