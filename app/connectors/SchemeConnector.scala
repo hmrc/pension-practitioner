@@ -48,15 +48,16 @@ class SchemeConnectorImpl @Inject()(
                                    ec: ExecutionContext,
                                    request: RequestHeader): Future[Either[HttpResponse, JsValue]] = {
 
-    val headers: Seq[(String, String)] = Seq(("Content-Type", "application/json"))
-    implicit val hc: HeaderCarrier = HeaderCarrier(extraHeaders =
-      headerUtils.integrationFrameworkHeader(implicitly[HeaderCarrier](headerCarrier))).withExtraHeaders(headers: _*)
-    val url: String = config.listOfSchemesUrl.format("pspid", pspId)
+    val headers = Seq(("idType", "pspid"), ("idValue", pspId), ("Content-Type", "application/json"))
+    implicit val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
+    val url: String = config.listOfSchemesUrl
+
     http.GET[HttpResponse](url)(implicitly, hc, implicitly) map { response =>
       response.status match {
         case OK => Right(response.json)
         case _ =>
-          Logger.error(s"List schemes with headers: ${hc.headers} and url $url")
+          Logger.error(s"List schemes with headers: ${hc.headers} and url $url" +
+            s" returned response ${response.status} with body ${response.body}")
           Left(response)
       }
     }
