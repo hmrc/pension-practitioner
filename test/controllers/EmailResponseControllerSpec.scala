@@ -16,26 +16,15 @@
 
 package controllers
 
-import java.net.URLDecoder
-import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
-
-import audit.AuditService
-import audit.EmailAuditEvent
+import audit.PSPDeregistrationEmailAuditEvent
+import audit.{PSPDeauthorisationEmailAuditEvent, AuditService, EmailAuditEvent}
+import models.{Sent, _}
 import models.enumeration.JourneyType.PSP_SUBSCRIPTION
-import models.Sent
-import models._
 import org.joda.time.DateTime
 import org.mockito.Matchers.any
-import org.mockito.Mockito.never
-import org.mockito.Mockito.times
-import org.mockito.Mockito.verify
-import org.mockito.Mockito.when
-import org.mockito.ArgumentCaptor
-import org.mockito.Mockito
-import org.scalatest.AsyncWordSpec
-import org.scalatest.BeforeAndAfterEach
-import org.scalatest.MustMatchers
+import org.mockito.{ArgumentCaptor, Mockito}
+import org.mockito.Mockito.{times, never, when, verify}
+import org.scalatest.{AsyncWordSpec, MustMatchers, BeforeAndAfterEach}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.Application
 import play.api.inject.bind
@@ -44,8 +33,7 @@ import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.auth.core._
-import uk.gov.hmrc.crypto.ApplicationCrypto
-import uk.gov.hmrc.crypto.PlainText
+import uk.gov.hmrc.crypto.{ApplicationCrypto, PlainText}
 
 import scala.concurrent.Future
 
@@ -65,8 +53,10 @@ class EmailResponseControllerSpec extends AsyncWordSpec with MustMatchers with M
 
   private val injector = application.injector
   private val controller = injector.instanceOf[EmailResponseController]
+  private val encryptedPsaId = injector.instanceOf[ApplicationCrypto].QueryParameterCrypto.encrypt(PlainText(psa)).value
   private val encryptedPspId = injector.instanceOf[ApplicationCrypto].QueryParameterCrypto.encrypt(PlainText(psp)).value
-  private val encryptedEmail =  injector.instanceOf[ApplicationCrypto].QueryParameterCrypto.encrypt(PlainText(email)).value
+  private val encryptedPstr = injector.instanceOf[ApplicationCrypto].QueryParameterCrypto.encrypt(PlainText(pstr)).value
+  private val encryptedEmail = injector.instanceOf[ApplicationCrypto].QueryParameterCrypto.encrypt(PlainText(email)).value
 
   override def beforeEach(): Unit = {
     Mockito.reset(mockAuditService, mockAuthConnector)
@@ -74,8 +64,7 @@ class EmailResponseControllerSpec extends AsyncWordSpec with MustMatchers with M
       .thenReturn(Future.successful(enrolments))
   }
 
-  "EmailResponseController" must {
-
+  "retrieveStatus" must {
     "respond OK when given EmailEvents" in {
       val result = controller.retrieveStatus(PSP_SUBSCRIPTION, requestId, encryptedEmail, encryptedPspId)(fakeRequest.withBody(Json.toJson(emailEvents)))
 
@@ -91,10 +80,50 @@ class EmailResponseControllerSpec extends AsyncWordSpec with MustMatchers with M
       status(result) mustBe BAD_REQUEST
     }
   }
+
+  "retrieveStatusForPSPDeauthorisation" must {
+    "respond OK when given EmailEvents" in {
+      val result = controller
+        .retrieveStatusForPSPDeauthorisation(encryptedPsaId, encryptedPspId, encryptedPstr, encryptedEmail)(fakeRequest.withBody(Json.toJson(emailEvents)))
+
+      status(result) mustBe OK
+      verify(mockAuditService, times(4)).sendEvent(eventCaptor.capture())(any(), any())
+      eventCaptor.getValue mustEqual PSPDeauthorisationEmailAuditEvent(psa, psp, pstr, email, Complained)
+    }
+
+    "respond with BAD_REQUEST when not given EmailEvents" in {
+      val result = controller
+        .retrieveStatusForPSPDeauthorisation(encryptedPsaId, encryptedPspId, encryptedPstr, encryptedEmail)(fakeRequest.withBody(Json.obj("name" -> "invalid")))
+
+      verify(mockAuditService, never()).sendEvent(any())(any(), any())
+      status(result) mustBe BAD_REQUEST
+    }
+  }
+
+  "retrieveStatusForPSPDeregistration" must {
+    "respond OK when given EmailEvents" in {
+      val result = controller
+        .retrieveStatusForPSPDeregistration(encryptedPspId, encryptedEmail)(fakeRequest.withBody(Json.toJson(emailEvents)))
+
+      status(result) mustBe OK
+      verify(mockAuditService, times(4)).sendEvent(eventCaptor.capture())(any(), any())
+      eventCaptor.getValue mustEqual PSPDeregistrationEmailAuditEvent(psp, email, Complained)
+    }
+
+    "respond with BAD_REQUEST when not given EmailEvents" in {
+      val result = controller
+        .retrieveStatusForPSPDeregistration(encryptedPspId, encryptedEmail)(fakeRequest.withBody(Json.obj("name" -> "invalid")))
+
+      verify(mockAuditService, never()).sendEvent(any())(any(), any())
+      status(result) mustBe BAD_REQUEST
+    }
+  }
 }
 
 object EmailResponseControllerSpec {
-  private val psp = "A7654321"
+  private val psa = "A8654321"
+  private val psp = "27654321"
+  private val pstr = "121212"
   private val email = "test@test.com"
   private val requestId = "test-request-id"
   private val fakeRequest = FakeRequest("", "")

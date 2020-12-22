@@ -14,16 +14,26 @@
  * limitations under the License.
  */
 
-package models.enumeration
+package audit
 
-import models.enumeration.binders.EnumPathBinder
-import play.api.mvc.PathBindable
+import models.Event
 
-object JourneyType extends Enumeration {
-  type Name = Value
-  val PSP_SUBSCRIPTION: JourneyType.Value = Value("PSPSubscription")
-  val PSP_AMENDMENT: JourneyType.Value = Value("PSPAmendment")
-  val PSP_DEREGISTRATION: JourneyType.Value = Value("PSPDeregistration")
+case class PSPAuthorisationEmailAuditEvent(
+  psaId: String,
+  pspId: String,
+  pstr: String,
+  emailAddress: String,
+  event: Event
+) extends AuditEvent {
+  override def auditType: String = "PSPAuthorisationEmailEvent"
 
-  implicit val journeyTypePathBinder: PathBindable[Name] = EnumPathBinder.pathBinder(this)
+  override def details: Map[String, String] = {
+    Map(
+      "psaId" -> psaId,
+      "pspId" -> pspId,
+      "pstr" -> pstr,
+      "emailAddress" -> emailAddress,
+      "event" -> event.toString
+    )
+  }
 }

@@ -63,6 +63,7 @@ class SubscriptionConnectorSpec extends AsyncWordSpec with MustMatchers with Wir
 
   private val pspId = "psp-id"
   private val pspSubscriptionUrl = "/pension-online/subscriptions/psp"
+  private val pspDeregistrationUrl = s"/pension-online/de-registration/podp/pspid/$pspId"
   private val getPspDetailsUrl = s"/pension-online/subscriptions/psp/$pspId"
 
   private val externalId = "id"
@@ -85,7 +86,7 @@ class SubscriptionConnectorSpec extends AsyncWordSpec with MustMatchers with Wir
       )
 
       connector.pspSubscription(externalId, data) collect {
-        case Right(_) => succeed
+        case res if res.status == OK => succeed
       }
     }
 
@@ -100,7 +101,7 @@ class SubscriptionConnectorSpec extends AsyncWordSpec with MustMatchers with Wir
       )
 
       connector.pspSubscription(externalId, data).collect {
-        case Left(_: BadRequestException) => succeed
+        case res if res.status == BAD_REQUEST => succeed
       }
     }
 
@@ -115,7 +116,7 @@ class SubscriptionConnectorSpec extends AsyncWordSpec with MustMatchers with Wir
       )
 
       connector.pspSubscription(externalId, data).collect {
-        case Left(_: NotFoundException) => succeed
+        case res if res.status == NOT_FOUND => succeed
       }
     }
 
@@ -129,7 +130,9 @@ class SubscriptionConnectorSpec extends AsyncWordSpec with MustMatchers with Wir
           )
       )
 
-      recoverToSucceededIf[Upstream5xxResponse](connector.pspSubscription(externalId, data))
+      connector.pspSubscription(externalId, data).collect {
+        case res if res.status == INTERNAL_SERVER_ERROR => succeed
+      }
     }
 
     "send a PSPSubscription audit event on success" in {
@@ -234,6 +237,71 @@ class SubscriptionConnectorSpec extends AsyncWordSpec with MustMatchers with Wir
     }
   }
 
+  "pspDeregistration" must {
+
+    "return successfully when API has returned OK" in {
+      val data = Json.obj(fields = "Id" -> "value")
+      server.stubFor(
+        post(urlEqualTo(pspDeregistrationUrl))
+          .withRequestBody(equalTo(Json.stringify(data)))
+          .willReturn(
+            ok
+              .withBody(Json.stringify(JsString("response")))
+          )
+      )
+
+      connector.pspDeregistration(pspId, data) collect {
+        case res if res.status == OK => succeed
+      }
+    }
+
+    "return BAD REQUEST when DES has returned BadRequestException" in {
+      val data = Json.obj(fields = "Id" -> "value")
+      server.stubFor(
+        post(urlEqualTo(pspDeregistrationUrl))
+          .withRequestBody(equalTo(Json.stringify(data)))
+          .willReturn(
+            badRequest()
+          )
+      )
+
+      connector.pspDeregistration(pspId, data).collect {
+        case res if res.status == BAD_REQUEST => succeed
+      }
+    }
+
+    "return NOT FOUND when DES has returned NotFoundException" in {
+      val data = Json.obj(fields = "Id" -> "value")
+      server.stubFor(
+        post(urlEqualTo(pspDeregistrationUrl))
+          .withRequestBody(equalTo(Json.stringify(data)))
+          .willReturn(
+            notFound()
+          )
+      )
+
+      connector.pspDeregistration(pspId, data).collect {
+        case res if res.status == NOT_FOUND => succeed
+      }
+    }
+
+    "throw Upstream5xxResponse when ETMP has returned Internal Server Error" in {
+      val data = Json.obj(fields = "Id" -> "value")
+      server.stubFor(
+        post(urlEqualTo(pspDeregistrationUrl))
+          .withRequestBody(equalTo(Json.stringify(data)))
+          .willReturn(
+            serverError()
+          )
+      )
+
+      connector.pspDeregistration(pspId, data).collect {
+        case res if res.status == INTERNAL_SERVER_ERROR => succeed
+      }
+    }
+
+  }
+
   def errorResponse(code: String): String = {
     Json.stringify(
       Json.obj(
@@ -248,7 +316,7 @@ object SubscriptionConnectorSpec {
 
   private val pspDetailsResponse = Json.obj(
     "subscriptionTypeAndPSPIDDetails" -> Json.obj(
-      "applicationDate" -> "2019-10-17T00 ->11 ->39.789Z",
+      "applicationDate" -> "2020-01-01",
       "subscriptionType" -> "Creation",
       "existingPSPID" -> "Yes",
       "pspid" -> "17948279"),
@@ -277,7 +345,6 @@ object SubscriptionConnectorSpec {
   )
 
   private val pspUserAnswers = Json.obj(
-    "whatTypeBusiness" -> "yourselfAsIndividual",
     "individualDetails" -> Json.obj(
       "firstName" -> "Anthony",
       "lastName" -> "Hood"),
@@ -296,5 +363,7 @@ object SubscriptionConnectorSpec {
     "existingPSP" -> Json.obj(
       "existingPSPId" -> "17948279",
       "isExistingPSP" -> "Yes"),
+    "subscriptionType" -> "Creation",
+    "applicationDate" -> "2020-01-01",
     "email" -> "abc@hmrc.gsi.gov.uk")
 }

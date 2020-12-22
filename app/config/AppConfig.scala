@@ -31,6 +31,7 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
 
   private val baseURL: String = servicesConfig.baseUrl(serviceName = "des-hod")
   private val ifURL: String = servicesConfig.baseUrl(serviceName = "if-hod")
+  lazy val baseUrlPensionsScheme: String = servicesConfig.baseUrl("pensions-scheme")
   lazy val desEnvironment: String = config.getOptional[String]("microservice.services.des-hod.env").getOrElse("local")
   lazy val authorization: String = "Bearer " + config.getOptional[String]("microservice.services.des-hod.authorizationToken").getOrElse("local")
 
@@ -44,7 +45,11 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
   lazy val registerWithIdIndividualUrl: String = s"$baseURL${config.get[String](path = "serviceUrls.register-with-id-individual")}"
   lazy val registerWithIdOrganisationUrl: String = s"$baseURL${config.get[String](path = "serviceUrls.register-with-id-organisation")}"
   lazy val pspSubscriptionUrl: String = s"$ifURL${config.get[String](path = "serviceUrls.psp-subscription")}"
+  lazy val pspDeregistrationUrl: String = s"$ifURL${config.get[String](path = "serviceUrls.psp-de-register")}"
   lazy val subscriptionDetailsUrl: String = s"$ifURL${config.get[String](path = "serviceUrls.get-subscription-details")}"
   lazy val pspAuthorisationUrl: String = s"$ifURL${config.get[String](path = "serviceUrls.psp-association")}"
   lazy val pspDeAuthorisationUrl: String = s"$ifURL${config.get[String](path = "serviceUrls.psp-de-authorisation")}"
+  lazy val minimalDetailsUrl: String = s"$ifURL${config.get[String]("serviceUrls.minimal-details")}"
+  lazy val listOfSchemesUrl: String = s"$baseUrlPensionsScheme${config.get[String]("serviceUrls.listOfSchemes")}"
+
 }
