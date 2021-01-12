@@ -29,7 +29,7 @@ import play.api.http.Status
 import play.api.http.Status._
 import play.api.inject.bind
 import play.api.inject.guice.GuiceableModule
-import play.api.libs.json.{JsNull, JsObject, JsValue, Json}
+import play.api.libs.json.{JsObject, JsValue, Json}
 import play.api.mvc.RequestHeader
 import play.api.test.FakeRequest
 import repository.DataCacheRepository
