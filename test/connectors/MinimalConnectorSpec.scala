@@ -84,10 +84,11 @@ class MinimalConnectorSpec extends AsyncWordSpec with MustMatchers with WireMock
                 .withBody(errorResponse("INVALID_IDVALUE"))
             )
         )
-        recoverToExceptionIf[BadRequestException](connector.getMinimalDetails(pspId, idType, regime)) map {
-          ex =>
-            ex.responseCode mustBe BAD_REQUEST
-            ex.message must include("INVALID_IDVALUE")
+
+        connector.getMinimalDetails(pspId, idType, regime) map {
+          response =>
+            response.left.get.body contains "INVALID_IDVALUE"
+            response.left.get.status mustBe BAD_REQUEST
         }
 
       }
@@ -101,9 +102,10 @@ class MinimalConnectorSpec extends AsyncWordSpec with MustMatchers with WireMock
             )
         )
 
-        recoverToExceptionIf[NotFoundException](connector.getMinimalDetails(pspId, idType, regime)).map { ex =>
-          ex.responseCode mustBe NOT_FOUND
-          ex.message must include("NOT_FOUND")
+        connector.getMinimalDetails(pspId, idType, regime) map {
+          response =>
+            response.left.get.body contains "NOT_FOUND"
+            response.left.get.status mustBe NOT_FOUND
         }
       }
 
@@ -117,9 +119,10 @@ class MinimalConnectorSpec extends AsyncWordSpec with MustMatchers with WireMock
             )
         )
 
-        recoverToExceptionIf[UpstreamErrorResponse](connector.getMinimalDetails(pspId, idType, regime)).map { response =>
-          response.statusCode mustEqual FORBIDDEN
-          response.getMessage() must include("FORBIDDEN")
+        connector.getMinimalDetails(pspId, idType, regime) map {
+          response =>
+            response.left.get.body contains "FORBIDDEN"
+            response.left.get.status mustBe FORBIDDEN
         }
       }
 
@@ -133,9 +136,10 @@ class MinimalConnectorSpec extends AsyncWordSpec with MustMatchers with WireMock
             )
         )
 
-        recoverToExceptionIf[UpstreamErrorResponse](connector.getMinimalDetails(pspId, idType, regime)).map { response =>
-          response.statusCode mustEqual INTERNAL_SERVER_ERROR
-          response.getMessage() must include("SERVER_ERROR")
+        connector.getMinimalDetails(pspId, idType, regime) map {
+          response =>
+            response.left.get.body contains "SERVER_ERROR"
+            response.left.get.status mustBe INTERNAL_SERVER_ERROR
         }
       }
     }

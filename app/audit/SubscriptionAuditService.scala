@@ -17,7 +17,6 @@
 package audit
 
 import com.google.inject.Inject
-import play.api.http.Status.OK
 import play.api.libs.json.{Format, JsValue, Json}
 import play.api.mvc.RequestHeader
 import uk.gov.hmrc.http.{HttpException, HttpResponse, UpstreamErrorResponse}
@@ -28,7 +27,7 @@ import scala.util.{Failure, Success, Try}
 class SubscriptionAuditService @Inject()(auditService: AuditService) {
 
   def sendSubscribeAuditEvent(externalId: String, requestJson: JsValue)
-                                  (implicit ec: ExecutionContext, request: RequestHeader): PartialFunction[Try[HttpResponse], Unit] = {
+                             (implicit ec: ExecutionContext, request: RequestHeader): PartialFunction[Try[HttpResponse], Unit] = {
 
     case Success(response) =>
       auditService.sendEvent(PSPSubscription(externalId, response.status, requestJson, Some(response.json)))
