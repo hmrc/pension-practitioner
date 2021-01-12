@@ -16,8 +16,6 @@
 
 package models.registerWithoutId
 
-import java.time.LocalDate
-
 import play.api.libs.json._
 
 case class RegisterWithoutIdIndividualRequest(firstName: String, lastName: String, address: Address)

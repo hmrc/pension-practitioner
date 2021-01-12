@@ -16,8 +16,6 @@
 
 package connectors
 
-import java.time.LocalDate
-
 import audit.{AuditService, PSPRegistration}
 import com.github.tomakehurst.wiremock.client.WireMock._
 import models.registerWithId.RegisterWithIdResponse
@@ -38,7 +36,11 @@ import repository.DataCacheRepository
 import uk.gov.hmrc.http.{HeaderCarrier, _}
 import utils.WireMockHelper
 
-class RegistrationConnectorSpec extends AsyncWordSpec with MustMatchers with WireMockHelper with MockitoSugar {
+class RegistrationConnectorSpec
+  extends AsyncWordSpec
+    with MustMatchers
+    with WireMockHelper
+    with MockitoSugar {
 
   import RegistrationConnectorSpec._
 
@@ -291,28 +293,6 @@ object RegistrationConnectorSpec {
 
   private val psaType = "LLP"
   private val testCorrelationId = "testCorrelationId"
-  private val testRegisterWithNoId: JsObject = Json.obj(
-    "regime" -> "PODP",
-    "acknowledgementReference" -> testCorrelationId,
-    "isAnAgent" -> false,
-    "isAGroup" -> false,
-    "contactDetails" -> Json.obj(
-      "phoneNumber" -> JsNull,
-      "mobileNumber" -> JsNull,
-      "faxNumber" -> JsNull,
-      "emailAddress" -> JsNull
-    ),
-    "organisation" -> Json.obj(
-      "organisationName" -> "Name"
-    ),
-    "address" -> Json.obj(
-      "addressLine1" -> "addressLine1",
-      "addressLine2" -> "addressLine2",
-      "countryCode" -> "US"
-    ),
-    "contactDetails" -> Json.obj(
-      "phoneNumber" -> JsNull, "mobileNumber" -> JsNull, "faxNumber" -> JsNull, "emailAddress" -> JsNull
-    ))
 
   private val testRegisterDataOrganisation: JsObject = Json.obj(
     "regime" -> "PODP",

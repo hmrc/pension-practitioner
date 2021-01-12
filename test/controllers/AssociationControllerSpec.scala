@@ -30,10 +30,13 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http._
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class AssociationControllerSpec extends AsyncWordSpec with MustMatchers with MockitoSugar with BeforeAndAfter {
+class AssociationControllerSpec
+  extends AsyncWordSpec
+    with MustMatchers
+    with MockitoSugar
+    with BeforeAndAfter {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
@@ -51,8 +54,8 @@ class AssociationControllerSpec extends AsyncWordSpec with MustMatchers with Moc
     )
 
   val application: Application = new GuiceApplicationBuilder()
-    .configure(conf = "auditing.enabled" -> false, "metrics.enabled" -> false, "metrics.jvm" -> false).
-    overrides(modules: _*).build()
+    .configure(conf = "auditing.enabled" -> false, "metrics.enabled" -> false, "metrics.jvm" -> false)
+    .overrides(modules: _*).build()
 
   val controller: AssociationController = application.injector.instanceOf[AssociationController]
 

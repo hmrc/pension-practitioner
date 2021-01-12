@@ -26,6 +26,7 @@ import play.api.mvc.RequestHeader
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import utils.{ErrorHandler, InvalidPayloadHandler}
+import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
@@ -33,24 +34,26 @@ import scala.util.{Failure, Success, Try}
 @ImplementedBy(classOf[MinimalConnectorImpl])
 trait MinimalConnector {
 
-  def getMinimalDetails(idValue: String, idType: String, regime: String)(implicit
-                                                                         headerCarrier: HeaderCarrier,
-                                                                         ec: ExecutionContext,
-                                                                         request: RequestHeader): Future[Either[HttpResponse, MinimalDetails]]
+  def getMinimalDetails(idValue: String, idType: String, regime: String)
+                       (implicit
+                        headerCarrier: HeaderCarrier,
+                        ec: ExecutionContext,
+                        request: RequestHeader): Future[Either[HttpResponse, MinimalDetails]]
 }
 
 @Singleton
 class MinimalConnectorImpl @Inject()(httpClient: HttpClient,
-                                         appConfig: AppConfig,
-                                         invalidPayloadHandler: InvalidPayloadHandler,
-                                         headerUtils: HeaderUtils,
-                                         auditService: AuditService)
-                                         extends MinimalConnector with ErrorHandler with MinimalDetailsAuditService {
+                                     appConfig: AppConfig,
+                                     invalidPayloadHandler: InvalidPayloadHandler,
+                                     headerUtils: HeaderUtils,
+                                     auditService: AuditService)
+  extends MinimalConnector with ErrorHandler with MinimalDetailsAuditService {
 
-  override def getMinimalDetails(idValue: String, idType: String, regime: String)(implicit
-                                                                                  headerCarrier: HeaderCarrier,
-                                                                                  ec: ExecutionContext,
-                                                                                  request: RequestHeader): Future[Either[HttpResponse, MinimalDetails]] = {
+  override def getMinimalDetails(idValue: String, idType: String, regime: String)
+                                (implicit
+                                 headerCarrier: HeaderCarrier,
+                                 ec: ExecutionContext,
+                                 request: RequestHeader): Future[Either[HttpResponse, MinimalDetails]] = {
 
     val hc: HeaderCarrier = HeaderCarrier(extraHeaders = headerUtils.integrationFrameworkHeader)
     val url = appConfig.minimalDetailsUrl.format(regime, idType, idValue)
@@ -78,7 +81,8 @@ class MinimalConnectorImpl @Inject()(httpClient: HttpClient,
 
   private def logWarning[A]: PartialFunction[Try[Either[HttpResponse, A]], Unit] = {
     case Success(Left(response)) if response.status != OK =>
-      Logger.warn(s"Minimal details received error response from integration framework with status and ${response.status} details ${response.body}")
+      Logger.warn(s"Minimal details received error response from integration " +
+        s"framework with status and ${response.status} details ${response.body}")
     case Failure(e) =>
       Logger.error(s"Minimal details received error response from integration framework", e)
   }

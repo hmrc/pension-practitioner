@@ -16,8 +16,6 @@
 
 package models.reads.registerWithoutId
 
-import java.time.LocalDate
-
 import models.registerWithoutId
 import models.registerWithoutId.{Address, RegisterWithoutIdIndividualRequest, RegisterWithoutIdResponse}
 import org.scalatest.{FlatSpec, Matchers}

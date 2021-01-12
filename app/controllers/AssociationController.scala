@@ -19,10 +19,9 @@ package controllers
 import com.google.inject.Inject
 import connectors.AssociationConnector
 import play.api.Logger
-import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
-import uk.gov.hmrc.auth.core.retrieve.v2
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions}
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, UnauthorizedException, Request => _}
+import uk.gov.hmrc.http.{BadRequestException, Request => _}
 import uk.gov.hmrc.play.bootstrap.controller.BackendController
 import utils.{AuthUtil, HttpResponseHelper}
 
