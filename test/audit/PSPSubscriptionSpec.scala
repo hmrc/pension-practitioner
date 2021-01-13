@@ -16,33 +16,30 @@
 
 package audit
 
-import models.Sent
-import models.enumeration.JourneyType
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
+import org.scalatest.{FlatSpec, Matchers}
+import play.api.libs.json.Json
 
-class EmailAuditEventSpec
+class PSPSubscriptionSpec
   extends FlatSpec
     with Matchers {
 
-  "EmailAuditEvent" should "output the correct map of data" in {
+  "PSPSubscription" should "output the correct map of data" in {
 
-    val event = EmailAuditEvent(
-      pspId = "A2500001",
-      emailAddress = "test@test.com",
-      event = Sent,
-      journeyType = JourneyType.PSP_SUBSCRIPTION,
-      requestId = "test-request-id"
+    val event = PSPSubscription(
+      externalId = "externalId",
+      status = 200,
+      request = Json.obj("some" -> "value"),
+      response = Option(Json.obj("some" -> "value")),
     )
 
     val expected = Map(
-      "email-initiation-request-id" -> "test-request-id",
-      "pspId" -> "A2500001",
-      "emailAddress" -> "test@test.com",
-      "event" -> Sent.toString
+      "externalId" -> "externalId",
+      "status" -> "200",
+      "request" -> Json.prettyPrint(Json.obj("some" -> "value")),
+      "response" -> Json.prettyPrint(Json.obj("some" -> "value")),
     )
 
-    event.auditType shouldBe "PSPSubscriptionEmailEvent"
+    event.auditType shouldBe "PSPSubscription"
     event.details shouldBe expected
   }
 }

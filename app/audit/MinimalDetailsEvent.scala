@@ -19,7 +19,7 @@ package audit
 import play.api.libs.json.{JsValue, Json, OFormat}
 
 case class MinimalDetailsEvent(
-                                idType:String,
+                                idType: String,
                                 idValue: String,
                                 name: Option[String],
                                 isSuspended: Option[Boolean],
@@ -34,7 +34,7 @@ case class MinimalDetailsEvent(
   override def details: Map[String, String] =
     Map(
       "idType" -> idType,
-      "idType" -> idValue,
+      "idValue" -> idValue,
       "name" -> name.getOrElse(""),
       "isPsaSuspended" -> isSuspended.fold("")(_.toString),
       "rlsFlag" -> rlsFlag.fold("")(_.toString),
@@ -50,5 +50,6 @@ case class MinimalDetailsEvent(
 }
 
 object MinimalDetailsEvent {
-  implicit val formatsPSASubscription: OFormat[MinimalDetailsEvent] = Json.format[MinimalDetailsEvent]
+  implicit val formatsPSASubscription: OFormat[MinimalDetailsEvent] =
+    Json.format[MinimalDetailsEvent]
 }

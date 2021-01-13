@@ -17,32 +17,31 @@
 package audit
 
 import models.Sent
-import models.enumeration.JourneyType
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
+import org.scalatest.{FlatSpec, Matchers}
 
-class EmailAuditEventSpec
+class PSPAuthorisationEmailAuditEventSpec
   extends FlatSpec
     with Matchers {
 
-  "EmailAuditEvent" should "output the correct map of data" in {
+  "PSPAuthorisationEmailAuditEvent" should "output the correct map of data" in {
 
-    val event = EmailAuditEvent(
-      pspId = "A2500001",
-      emailAddress = "test@test.com",
-      event = Sent,
-      journeyType = JourneyType.PSP_SUBSCRIPTION,
-      requestId = "test-request-id"
+    val event = PSPAuthorisationEmailAuditEvent(
+      psaId = "psaId",
+      pspId = "pspId",
+      pstr = "pstr",
+      emailAddress = "email@address",
+      event = Sent
     )
 
     val expected = Map(
-      "email-initiation-request-id" -> "test-request-id",
-      "pspId" -> "A2500001",
-      "emailAddress" -> "test@test.com",
-      "event" -> Sent.toString
+      "psaId" -> "psaId",
+      "pspId" -> "pspId",
+      "pstr" -> "pstr",
+      "emailAddress" -> "email@address",
+      "event" -> "Sent"
     )
 
-    event.auditType shouldBe "PSPSubscriptionEmailEvent"
+    event.auditType shouldBe "PSPAuthorisationEmailEvent"
     event.details shouldBe expected
   }
 }
