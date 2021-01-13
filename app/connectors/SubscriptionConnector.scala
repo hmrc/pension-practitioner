@@ -25,7 +25,7 @@ import play.api.libs.json._
 import play.api.mvc.RequestHeader
 import transformations.toUserAnswers.PspDetailsTransformer
 import uk.gov.hmrc.http._
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
+import uk.gov.hmrc.http.HttpClient
 import utils.{HttpResponseHelper, InvalidPayloadHandler}
 
 import scala.concurrent.{ExecutionContext, Future}

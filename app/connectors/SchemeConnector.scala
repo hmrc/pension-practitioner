@@ -22,8 +22,7 @@ import play.api.Logger
 import play.api.http.Status._
 import play.api.libs.json.JsValue
 import play.api.mvc.RequestHeader
-import uk.gov.hmrc.http._
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
+import uk.gov.hmrc.http.{HttpClient, _}
 import utils.{ErrorHandler, HttpResponseHelper}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -39,14 +38,13 @@ trait SchemeConnector {
 
 class SchemeConnectorImpl @Inject()(
                                      http: HttpClient,
-                                     config: AppConfig,
-                                   headerUtils: HeaderUtils
+                                     config: AppConfig
                                    ) extends SchemeConnector with HttpResponseHelper with ErrorHandler {
 
   override def listOfSchemes(pspId: String)(implicit
-                                   headerCarrier: HeaderCarrier,
-                                   ec: ExecutionContext,
-                                   request: RequestHeader): Future[Either[HttpResponse, JsValue]] = {
+                                            headerCarrier: HeaderCarrier,
+                                            ec: ExecutionContext,
+                                            request: RequestHeader): Future[Either[HttpResponse, JsValue]] = {
 
     val headers = Seq(("idType", "pspid"), ("idValue", pspId), ("Content-Type", "application/json"))
     implicit val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)

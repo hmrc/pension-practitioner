@@ -24,7 +24,7 @@ import play.api.libs.json.Json
 import play.api.mvc._
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.http.{Request => _, _}
-import uk.gov.hmrc.play.bootstrap.controller.BackendController
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.AuthUtil
 import utils.validationUtils._
 
