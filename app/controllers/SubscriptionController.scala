@@ -25,7 +25,7 @@ import play.api.mvc._
 import transformations.userAnswersToDes.PSPSubscriptionTransformer
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.http.{Request => _, _}
-import uk.gov.hmrc.play.bootstrap.controller.BackendController
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.{AuthUtil, ErrorHandler, HttpResponseHelper}
 
 import scala.concurrent.ExecutionContext.Implicits.global

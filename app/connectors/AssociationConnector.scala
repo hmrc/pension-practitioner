@@ -22,7 +22,7 @@ import play.api.Logger
 import play.api.libs.json.JsValue
 import play.api.mvc.RequestHeader
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
+import uk.gov.hmrc.http.HttpClient
 import utils.HttpResponseHelper
 
 import scala.concurrent.{ExecutionContext, Future}

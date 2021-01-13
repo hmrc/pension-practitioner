@@ -22,7 +22,7 @@ import play.api.Logger
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions}
 import uk.gov.hmrc.http.{BadRequestException, Request => _}
-import uk.gov.hmrc.play.bootstrap.controller.BackendController
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.{AuthUtil, HttpResponseHelper}
 
 import scala.concurrent.ExecutionContext.Implicits.global

@@ -24,7 +24,7 @@ import play.Logger
 import play.api.http.Status._
 import play.api.mvc.RequestHeader
 import uk.gov.hmrc.http._
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
+import uk.gov.hmrc.http.HttpClient
 import utils.{ErrorHandler, InvalidPayloadHandler}
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 
