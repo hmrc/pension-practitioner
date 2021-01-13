@@ -16,20 +16,28 @@
 
 package audit
 
-import models.Event
+import models.Sent
+import org.scalatest.{FlatSpec, Matchers}
 
-case class PSPDeregistrationEmailAuditEvent(
-                                             pspId: String,
-                                             emailAddress: String,
-                                             event: Event
-                                           ) extends AuditEvent {
-  override def auditType: String = "PSPDeregistrationEmailEvent"
+class PSPDeregistrationEmailAuditEventSpec
+  extends FlatSpec
+    with Matchers {
 
-  override def details: Map[String, String] = {
-    Map(
-      "pspId" -> pspId,
-      "emailAddress" -> emailAddress,
-      "event" -> event.toString
+  "PSPDeregistrationEmailAuditEvent" should "output the correct map of data" in {
+
+    val event = PSPDeregistrationEmailAuditEvent(
+      pspId = "pspId",
+      emailAddress = "email@address",
+      event = Sent
     )
+
+    val expected = Map(
+      "pspId" -> "pspId",
+      "emailAddress" -> "email@address",
+      "event" -> "Sent"
+    )
+
+    event.auditType shouldBe "PSPDeregistrationEmailEvent"
+    event.details shouldBe expected
   }
 }

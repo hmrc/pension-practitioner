@@ -19,12 +19,12 @@ package audit
 import models.Event
 
 case class PSPDeauthorisationEmailAuditEvent(
-  psaId: String,
-  pspId: String,
-  pstr: String,
-  emailAddress: String,
-  event: Event
-) extends AuditEvent {
+                                              psaId: String,
+                                              pspId: String,
+                                              pstr: String,
+                                              emailAddress: String,
+                                              event: Event
+                                            ) extends AuditEvent {
   override def auditType: String = "PSPDeauthorisedEmailEvent"
 
   override def details: Map[String, String] = {
