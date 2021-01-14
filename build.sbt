@@ -9,6 +9,7 @@ import scala.util.matching.Regex
 val appName = "pension-practitioner"
 
 lazy val microservice = Project(appName, file("."))
+  .disablePlugins(JUnitXmlReportPlugin)
   .enablePlugins(play.sbt.PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin, SbtArtifactory)
   .settings(
     majorVersion := 0,
