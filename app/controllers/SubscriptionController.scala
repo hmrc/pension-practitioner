@@ -39,26 +39,28 @@ class SubscriptionController @Inject()(
                                         cc: ControllerComponents,
                                         util: AuthUtil
                                       ) extends BackendController(cc)
-                                          with AuthorisedFunctions
-                                          with HttpResponseHelper
-                                          with ErrorHandler {
+  with AuthorisedFunctions
+  with HttpResponseHelper
+  with ErrorHandler {
+
+  private val logger = Logger(classOf[SubscriptionController])
 
   def subscribePsp: Action[AnyContent] = Action.async { implicit request =>
-      util.doAuth { externalId =>
-        val feJson = request.body.asJson
-        Logger.debug(s"[PSP-Subscription-Incoming-Payload]$feJson")
-        feJson match {
-          case Some(json) =>
-            json.transform(pspSubscriptionTransformer.transformPsp) match {
-              case JsSuccess(data, _) =>
-                Logger.debug(s"[PSP-Subscription-Outgoing-Payload]$data")
-                subscriptionConnector.pspSubscription(externalId, data).map(result)
-              case JsError(errors) => throw JsResultException(errors)
-            }
-          case _ =>
-            Future.failed(new BadRequestException("Bad Request with no request body returned for PSP subscription"))
-        }
+    util.doAuth { externalId =>
+      val feJson = request.body.asJson
+      logger.debug(s"[PSP-Subscription-Incoming-Payload]$feJson")
+      feJson match {
+        case Some(json) =>
+          json.transform(pspSubscriptionTransformer.transformPsp) match {
+            case JsSuccess(data, _) =>
+              logger.debug(s"[PSP-Subscription-Outgoing-Payload]$data")
+              subscriptionConnector.pspSubscription(externalId, data).map(result)
+            case JsError(errors) => throw JsResultException(errors)
+          }
+        case _ =>
+          Future.failed(new BadRequestException("Bad Request with no request body returned for PSP subscription"))
       }
+    }
   }
 
   def getPspDetails: Action[AnyContent] = Action.async {
@@ -69,7 +71,7 @@ class SubscriptionController @Inject()(
           case Some(id) =>
             subscriptionConnector.getSubscriptionDetails(id).map {
               case Right(pspDetails) =>
-                Logger.debug(s"[Get-psp-details-transformed]$pspDetails")
+                logger.debug(s"[Get-psp-details-transformed]$pspDetails")
                 Ok(Json.toJson(pspDetails))
               case Left(e) => result(e)
             }
@@ -81,7 +83,7 @@ class SubscriptionController @Inject()(
   def deregisterPsp(pspId: String): Action[AnyContent] = Action.async { implicit request =>
     util.doAuth { _ =>
       val feJson = request.body.asJson
-      Logger.debug(s"[PSP-Deregistration-Payload]$feJson")
+      logger.debug(s"[PSP-Deregistration-Payload]$feJson")
       feJson match {
         case Some(json) =>
           subscriptionConnector.pspDeregistration(pspId, json).map(result)

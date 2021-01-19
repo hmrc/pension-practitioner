@@ -20,7 +20,7 @@ import audit.{AuditService, MinimalDetailsAuditService}
 import com.google.inject.{ImplementedBy, Inject, Singleton}
 import config.AppConfig
 import models.MinimalDetails
-import play.Logger
+import play.api.Logger
 import play.api.http.Status._
 import play.api.mvc.RequestHeader
 import uk.gov.hmrc.http._
@@ -47,7 +47,11 @@ class MinimalConnectorImpl @Inject()(httpClient: HttpClient,
                                      invalidPayloadHandler: InvalidPayloadHandler,
                                      headerUtils: HeaderUtils,
                                      auditService: AuditService)
-  extends MinimalConnector with ErrorHandler with MinimalDetailsAuditService {
+  extends MinimalConnector
+    with ErrorHandler
+    with MinimalDetailsAuditService {
+
+  private val logger = Logger(classOf[MinimalConnectorImpl])
 
   override def getMinimalDetails(idValue: String, idType: String, regime: String)
                                 (implicit
@@ -61,7 +65,7 @@ class MinimalConnectorImpl @Inject()(httpClient: HttpClient,
     httpClient.GET[HttpResponse](url)(implicitly, hc, implicitly) map { response =>
       response.status match {
         case OK =>
-          Logger.debug(s"[Get-psp-minimal-details-untransformed]${response.json}")
+          logger.debug(s"[Get-psp-minimal-details-untransformed]${response.json}")
           Right(validateGetJson(response))
         case _ => Left(response)
       }
@@ -81,10 +85,10 @@ class MinimalConnectorImpl @Inject()(httpClient: HttpClient,
 
   private def logWarning[A]: PartialFunction[Try[Either[HttpResponse, A]], Unit] = {
     case Success(Left(response)) if response.status != OK =>
-      Logger.warn(s"Minimal details received error response from integration " +
+      logger.warn(s"Minimal details received error response from integration " +
         s"framework with status and ${response.status} details ${response.body}")
     case Failure(e) =>
-      Logger.error(s"Minimal details received error response from integration framework", e)
+      logger.error(s"Minimal details received error response from integration framework", e)
   }
 
 }

@@ -21,24 +21,27 @@ import config.AppConfig
 import play.api.Logger
 import play.api.libs.json.JsValue
 import play.api.mvc.RequestHeader
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
-import uk.gov.hmrc.http.HttpClient
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 import utils.HttpResponseHelper
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class AssociationConnector  @Inject()(httpClient: HttpClient,
+class AssociationConnector @Inject()(
+                                      httpClient: HttpClient,
                                       appConfig: AppConfig,
                                       headerUtils: HeaderUtils
-                                     )
+                                    )
   extends HttpResponseHelper {
+
+  private val logger = Logger(classOf[AssociationConnector])
+
 
   def authorisePsp(json: JsValue, pstr: String)
                   (implicit hc: HeaderCarrier, ec: ExecutionContext, request: RequestHeader): Future[HttpResponse] = {
 
     val headerCarrier: HeaderCarrier = HeaderCarrier(extraHeaders = headerUtils.integrationFrameworkHeader)
     val url = appConfig.pspAuthorisationUrl.format(pstr)
-    Logger.debug(s"[Psp-Association-Outgoing-Payload] - ${json.toString()}")
+    logger.debug(s"[Psp-Association-Outgoing-Payload] - ${json.toString()}")
     httpClient.POST[JsValue, HttpResponse](url, json)(implicitly, implicitly, headerCarrier, implicitly)
   }
 
@@ -47,7 +50,7 @@ class AssociationConnector  @Inject()(httpClient: HttpClient,
 
     val headerCarrier: HeaderCarrier = HeaderCarrier(extraHeaders = headerUtils.integrationFrameworkHeader)
     val url = appConfig.pspDeAuthorisationUrl.format(pstr)
-    Logger.debug(s"[Psp-DeAuthorisation-Outgoing-Payload] - ${json.toString()}")
+    logger.debug(s"[Psp-DeAuthorisation-Outgoing-Payload] - ${json.toString()}")
     httpClient.POST[JsValue, HttpResponse](url, json)(implicitly, implicitly, headerCarrier, implicitly)
   }
 }

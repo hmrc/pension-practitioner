@@ -27,11 +27,13 @@ case class IndexDef(name: String, fields: Seq[String], unique: Boolean, ttl: Opt
 
 object CollectionDiagnostics {
 
+  private val logger = Logger(classOf[Object])
+
   def logCollectionInfo(collection: JSONCollection): Unit = {
 
     indexInfo(collection) map {
       indexes =>
-        Logger.warn(
+        logger.warn(
           message = s"Diagnostic information for collection ${collection.name}\n\n" +
             s"Index definitions\n\n" +
             (indexes.map {
@@ -45,7 +47,7 @@ object CollectionDiagnostics {
     }
 
     collection.count(None, None, skip = 0, None, ReadConcern.Local).foreach { count =>
-      Logger.warn(
+      logger.warn(
         message = s"\nRow count for collection ${collection.name} : $count\n\n"
       )
     }

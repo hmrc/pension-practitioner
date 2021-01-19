@@ -28,7 +28,11 @@ import scala.util.{Failure, Success, Try}
 
 trait MinimalDetailsAuditService {
 
-  def sendGetMinimalDetailsEvent(idType: String, idValue: String)(sendEvent: MinimalDetailsEvent => Unit)
+  private val logger = Logger(classOf[MinimalDetailsAuditService])
+
+
+  def sendGetMinimalDetailsEvent(idType: String, idValue: String)
+                                (sendEvent: MinimalDetailsEvent => Unit)
                                 (implicit rh: RequestHeader, ec: ExecutionContext):
   PartialFunction[Try[Either[HttpResponse, MinimalDetails]], Unit] = {
 
@@ -59,7 +63,7 @@ trait MinimalDetailsAuditService {
         )
       )
     case Failure(t) =>
-      Logger.error("Error in MinimalDetails connector", t)
+      logger.error("Error in MinimalDetails connector", t)
   }
 
 

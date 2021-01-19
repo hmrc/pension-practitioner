@@ -19,14 +19,16 @@ package utils
 import play.api.Logger
 import play.api.libs.json.{JsResultException, JsValue, Reads}
 
-package object validationUtils {
+object ValidationUtils {
+
+  private val logger = Logger(classOf[Object])
 
   implicit class genResponse(jsValue: JsValue) {
     implicit def convertTo[A](implicit rds: Reads[A]): A = {
       jsValue.validate[A].fold(
         invalid = {
           errors =>
-            Logger.warn(s"Json contains bad data $errors")
+            logger.warn(s"Json contains bad data $errors")
             throw JsResultException(errors)
         },
         valid = { response =>
@@ -35,4 +37,5 @@ package object validationUtils {
       )
     }
   }
+
 }
