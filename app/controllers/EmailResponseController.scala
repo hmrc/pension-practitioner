@@ -18,8 +18,8 @@ package controllers
 
 import audit._
 import com.google.inject.Inject
-import models.{EmailEvents, Opened}
 import models.enumeration.JourneyType
+import models.{EmailEvents, Opened}
 import play.api.Logger
 import play.api.libs.json.JsValue
 import play.api.mvc._
@@ -36,8 +36,13 @@ class EmailResponseController @Inject()(
                                          crypto: ApplicationCrypto,
                                          parser: PlayBodyParsers,
                                          val authConnector: AuthConnector
-                                       ) extends BackendController(cc) with AuthorisedFunctions {
+                                       )
+  extends BackendController(cc)
+    with AuthorisedFunctions {
+
   import EmailResponseController._
+
+  private val logger = Logger(classOf[EmailResponseController])
 
   def retrieveStatus(journeyType: JourneyType.Name, requestId: String, email: String, encryptedPspId: String): Action[JsValue] = Action(parser.tolerantJson) {
     implicit request =>
@@ -49,7 +54,7 @@ class EmailResponseController @Inject()(
               valid.events.filterNot(
                 _.event == Opened
               ).foreach { event =>
-                Logger.debug(s"Email Audit event coming from $journeyType is $event")
+                logger.debug(s"Email Audit event coming from $journeyType is $event")
                 auditService.sendEvent(EmailAuditEvent(pspId, emailAddress, event.event, journeyType, requestId))
               }
               Ok
@@ -73,11 +78,11 @@ class EmailResponseController @Inject()(
   }
 
   def retrieveStatusForPSPAuthorisation(
-    encryptedPsaId: String,
-    encryptedPspId: String,
-    encryptedPstr: String,
-    encryptedEmail: String
-  ): Action[JsValue] = Action(parser.tolerantJson) {
+                                         encryptedPsaId: String,
+                                         encryptedPspId: String,
+                                         encryptedPstr: String,
+                                         encryptedEmail: String
+                                       ): Action[JsValue] = Action(parser.tolerantJson) {
     implicit request =>
       decryptAndValidateDetailsForPSPAuthAndDeauth(encryptedPsaId, encryptedPspId, encryptedPstr, encryptedEmail) match {
         case Right(Tuple4(psaId, pspId, pstr, email)) =>
@@ -87,7 +92,7 @@ class EmailResponseController @Inject()(
               valid.events.filterNot(
                 _.event == Opened
               ).foreach { event =>
-                Logger.debug(s"Email Audit event is $event")
+                logger.debug(s"Email Audit event is $event")
                 auditService.sendEvent(PSPAuthorisationEmailAuditEvent(psaId.id, pspId.id, pstr, email, event.event))
               }
               Ok
@@ -98,11 +103,11 @@ class EmailResponseController @Inject()(
   }
 
   def retrieveStatusForPSPDeauthorisation(
-    encryptedPsaId: String,
-    encryptedPspId: String,
-    encryptedPstr: String,
-    encryptedEmail: String
-  ): Action[JsValue] = Action(parser.tolerantJson) {
+                                           encryptedPsaId: String,
+                                           encryptedPspId: String,
+                                           encryptedPstr: String,
+                                           encryptedEmail: String
+                                         ): Action[JsValue] = Action(parser.tolerantJson) {
     implicit request =>
       decryptAndValidateDetailsForPSPAuthAndDeauth(encryptedPsaId, encryptedPspId, encryptedPstr, encryptedEmail) match {
         case Right(Tuple4(psaId, pspId, pstr, email)) =>
@@ -112,7 +117,7 @@ class EmailResponseController @Inject()(
               valid.events.filterNot(
                 _.event == Opened
               ).foreach { event =>
-                Logger.debug(s"Email Audit event is $event")
+                logger.debug(s"Email Audit event is $event")
                 auditService.sendEvent(PSPDeauthorisationEmailAuditEvent(psaId.id, pspId.id, pstr, email, event.event))
               }
               Ok
@@ -123,9 +128,9 @@ class EmailResponseController @Inject()(
   }
 
   def retrieveStatusForPSPDeregistration(
-    encryptedPspId: String,
-    encryptedEmail: String
-  ): Action[JsValue] = Action(parser.tolerantJson) {
+                                          encryptedPspId: String,
+                                          encryptedEmail: String
+                                        ): Action[JsValue] = Action(parser.tolerantJson) {
     implicit request =>
       decryptAndValidateDetailsForPSPDereg(encryptedPspId, encryptedEmail) match {
         case Right(Tuple2(pspId, email)) =>
@@ -135,7 +140,7 @@ class EmailResponseController @Inject()(
               valid.events.filterNot(
                 _.event == Opened
               ).foreach { event =>
-                Logger.debug(s"Email Audit event is $event")
+                logger.debug(s"Email Audit event is $event")
                 auditService.sendEvent(PSPDeregistrationEmailAuditEvent(pspId.id, email, event.event))
               }
               Ok
@@ -146,10 +151,10 @@ class EmailResponseController @Inject()(
   }
 
   private def decryptAndValidateDetailsForPSPAuthAndDeauth(
-    encryptedPsaId: String,
-    encryptedPspId: String,
-    encryptedPstr: String,
-    encryptedEmail: String): Either[Result, (PsaId, PspId, String, String)] = {
+                                                            encryptedPsaId: String,
+                                                            encryptedPspId: String,
+                                                            encryptedPstr: String,
+                                                            encryptedEmail: String): Either[Result, (PsaId, PspId, String, String)] = {
 
     val psaId = crypto.QueryParameterCrypto.decrypt(Crypted(encryptedPsaId)).value
     val pspId = crypto.QueryParameterCrypto.decrypt(Crypted(encryptedPspId)).value
@@ -165,8 +170,8 @@ class EmailResponseController @Inject()(
   }
 
   private def decryptAndValidateDetailsForPSPDereg(
-    encryptedPspId: String,
-    encryptedEmail: String): Either[Result, (PspId, String)] = {
+                                                    encryptedPspId: String,
+                                                    encryptedEmail: String): Either[Result, (PspId, String)] = {
 
     val pspId = crypto.QueryParameterCrypto.decrypt(Crypted(encryptedPspId)).value
     val emailAddress = crypto.QueryParameterCrypto.decrypt(Crypted(encryptedEmail)).value

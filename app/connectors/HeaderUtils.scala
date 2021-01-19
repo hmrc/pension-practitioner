@@ -16,19 +16,21 @@
 
 package connectors
 
-import java.util.UUID.randomUUID
-
 import com.google.inject.Inject
 import config.AppConfig
-import play.Logger
+import play.api.Logger
 import uk.gov.hmrc.http.HeaderCarrier
+
+import java.util.UUID.randomUUID
 
 class HeaderUtils @Inject()(config: AppConfig) {
   private val maxLengthCorrelationId = 32
   private val maxLengthCorrelationIF = 36
+  private val logger = Logger(classOf[HeaderUtils])
 
   def desHeaderWithoutCorrelationId: Seq[(String, String)] = {
-    Seq("Environment" -> config.desEnvironment,
+    Seq(
+      "Environment" -> config.desEnvironment,
       "Authorization" -> config.authorization,
       "Content-Type" -> "application/json"
     )
@@ -37,7 +39,8 @@ class HeaderUtils @Inject()(config: AppConfig) {
   def desHeader(implicit hc: HeaderCarrier): Seq[(String, String)] = {
     val requestId = getCorrelationId(hc.requestId.map(_.value))
 
-    Seq("Environment" -> config.desEnvironment,
+    Seq(
+      "Environment" -> config.desEnvironment,
       "Authorization" -> config.authorization,
       "Content-Type" -> "application/json",
       "CorrelationId" -> requestId)
@@ -46,7 +49,8 @@ class HeaderUtils @Inject()(config: AppConfig) {
   def integrationFrameworkHeader(implicit hc: HeaderCarrier): Seq[(String, String)] = {
     val requestId = getCorrelationIdIF(hc.requestId.map(_.value))
 
-    Seq("Environment" -> config.integrationFrameworkEnvironment,
+    Seq(
+      "Environment" -> config.integrationFrameworkEnvironment,
       "Authorization" -> config.integrationFrameworkAuthorization,
       "Content-Type" -> "application/json",
       "CorrelationId" -> requestId)
@@ -54,14 +58,14 @@ class HeaderUtils @Inject()(config: AppConfig) {
 
   def getCorrelationId(requestId: Option[String]): String = {
     requestId.getOrElse {
-      Logger.error("No Request Id found to generate Correlation Id")
+      logger.error("No Request Id found to generate Correlation Id")
       randomUUID.toString
     }.replaceAll("(govuk-tax-|-)", "").slice(0, maxLengthCorrelationId)
   }
 
   def getCorrelationIdIF(requestId: Option[String]): String = {
     requestId.getOrElse {
-      Logger.error("No Request Id found to generate Correlation Id")
+      logger.error("No Request Id found to generate Correlation Id")
       randomUUID.toString
     }.replaceAll("(govuk-tax-)", "").slice(0, maxLengthCorrelationIF)
   }

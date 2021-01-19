@@ -16,13 +16,12 @@
 
 package utils
 
-import play.api.Logger
 import akka.util.ByteString
+import play.api.Logger
 import play.api.http.HttpEntity
-import uk.gov.hmrc.http._
 import play.api.http.Status._
-import play.api.mvc.ResponseHeader
-import play.api.mvc.Result
+import play.api.mvc.{ResponseHeader, Result}
+import uk.gov.hmrc.http._
 
 import scala.util.matching.Regex
 
@@ -31,6 +30,8 @@ trait HttpResponseHelper extends HttpErrorFunctions {
   implicit val httpResponseReads: HttpReads[HttpResponse] = new HttpReads[HttpResponse] {
     override def read(method: String, url: String, response: HttpResponse): HttpResponse = response
   }
+
+  private val logger = Logger(classOf[HttpResponseHelper])
 
   def result(res: HttpResponse): Result = {
 
@@ -51,7 +52,8 @@ trait HttpResponseHelper extends HttpErrorFunctions {
   def handleErrorResponse(httpMethod: String, url: String, args: String*)(response: HttpResponse): HttpException =
     response.status match {
       case BAD_REQUEST =>
-        if (response.body.contains("INVALID_PAYLOAD")) Logger.warn(s"INVALID_PAYLOAD returned for: ${args.headOption.getOrElse(url)} from: $url")
+        if (response.body.contains("INVALID_PAYLOAD"))
+          logger.warn(s"INVALID_PAYLOAD returned for: ${args.headOption.getOrElse(url)} from: $url")
         new BadRequestException(badRequestMessage(httpMethod, url, response.body))
       case NOT_FOUND =>
         new NotFoundException(notFoundMessage(httpMethod, url, response.body))

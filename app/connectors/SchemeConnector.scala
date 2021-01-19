@@ -30,21 +30,28 @@ import scala.concurrent.{ExecutionContext, Future}
 @ImplementedBy(classOf[SchemeConnectorImpl])
 trait SchemeConnector {
 
-  def listOfSchemes(pspId: String)(implicit
-                                   headerCarrier: HeaderCarrier,
-                                   ec: ExecutionContext,
-                                   request: RequestHeader): Future[Either[HttpResponse, JsValue]]
+  def listOfSchemes(pspId: String)
+                   (implicit
+                    headerCarrier: HeaderCarrier,
+                    ec: ExecutionContext,
+                    request: RequestHeader): Future[Either[HttpResponse, JsValue]]
 }
 
 class SchemeConnectorImpl @Inject()(
                                      http: HttpClient,
                                      config: AppConfig
-                                   ) extends SchemeConnector with HttpResponseHelper with ErrorHandler {
+                                   )
+  extends SchemeConnector
+    with HttpResponseHelper
+    with ErrorHandler {
 
-  override def listOfSchemes(pspId: String)(implicit
-                                            headerCarrier: HeaderCarrier,
-                                            ec: ExecutionContext,
-                                            request: RequestHeader): Future[Either[HttpResponse, JsValue]] = {
+  private val logger = Logger(classOf[SchemeConnectorImpl])
+
+  override def listOfSchemes(pspId: String)
+                            (implicit
+                             headerCarrier: HeaderCarrier,
+                             ec: ExecutionContext,
+                             request: RequestHeader): Future[Either[HttpResponse, JsValue]] = {
 
     val headers = Seq(("idType", "pspid"), ("idValue", pspId), ("Content-Type", "application/json"))
     implicit val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
@@ -54,7 +61,7 @@ class SchemeConnectorImpl @Inject()(
       response.status match {
         case OK => Right(response.json)
         case _ =>
-          Logger.error(s"List schemes with headers: ${hc.headers} and url $url" +
+          logger.error(s"List schemes with headers: ${hc.headers} and url $url" +
             s" returned response ${response.status} with body ${response.body}")
           Left(response)
       }

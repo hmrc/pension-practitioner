@@ -39,11 +39,13 @@ trait ErrorHandler {
       Future.failed(new Exception(e.getMessage))
   }
 
+  private val logger = Logger(classOf[ErrorHandler])
+
   protected def logWarning[A](endpoint: String): PartialFunction[Try[Either[HttpResponse, A]], Unit] = {
     case Success(Left(response)) if response.status != OK =>
-      Logger.warn(s"$endpoint received error response from integration framework with status ${response.status} and details ${response.body}")
+      logger.warn(s"$endpoint received error response from integration framework with status ${response.status} and details ${response.body}")
     case Failure(e) =>
-      Logger.error(s"$endpoint received error response from integration framework", e)
+      logger.error(s"$endpoint received error response from integration framework", e)
   }
 }
 

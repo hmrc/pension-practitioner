@@ -26,7 +26,7 @@ import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.http.{Request => _, _}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.AuthUtil
-import utils.validationUtils._
+import utils.ValidationUtils._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -47,7 +47,8 @@ class RegistrationController @Inject()(
             registerConnector.registerWithIdIndividual(externalId, nino, registerWithIdData).map { response =>
               Ok(Json.toJson(response))
             }
-          case _ => Future.failed(new BadRequestException(s"Bad Request with missing nino for register with id call for individual"))
+          case _ =>
+            Future.failed(new BadRequestException(s"Bad Request with missing nino for register with id call for individual"))
         }
       }
     }
@@ -63,7 +64,8 @@ class RegistrationController @Inject()(
             registerConnector.registerWithIdOrganisation(externalId, utr, registerWithIdData).map { response =>
               Ok(Json.toJson(response))
             }
-          case _ => Future.failed(new BadRequestException("Bad Request with missing utr or request body for register with id call for organisation"))
+          case _ =>
+            Future.failed(new BadRequestException("Bad Request with missing utr or request body for register with id call for organisation"))
         }
       }
     }

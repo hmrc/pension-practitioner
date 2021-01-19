@@ -28,18 +28,24 @@ import utils.{AuthUtil, HttpResponseHelper}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class AssociationController @Inject()(override val authConnector: AuthConnector,
-                                      associationConnector: AssociationConnector,
-                                      cc: ControllerComponents,
-                                      util: AuthUtil
-                                     ) extends BackendController(cc) with HttpResponseHelper with AuthorisedFunctions {
+class AssociationController @Inject()(
+                                       override val authConnector: AuthConnector,
+                                       associationConnector: AssociationConnector,
+                                       cc: ControllerComponents,
+                                       util: AuthUtil
+                                     )
+  extends BackendController(cc)
+    with HttpResponseHelper
+    with AuthorisedFunctions {
+
+  private val logger = Logger(classOf[AssociationController])
 
   def authorisePsp: Action[AnyContent] = Action.async {
     implicit request =>
       util.doAuth { _ =>
         val feJson = request.body.asJson
         val pstrOpt = request.headers.get("pstr")
-        Logger.debug(s"[Psp-Association-Incoming-Payload]$feJson")
+        logger.debug(s"[Psp-Association-Incoming-Payload]$feJson")
 
         (feJson, pstrOpt) match {
           case (Some(jsValue), Some(pstr)) =>
@@ -55,7 +61,7 @@ class AssociationController @Inject()(override val authConnector: AuthConnector,
       util.doAuth { _ =>
         val feJson = request.body.asJson
         val pstrOpt = request.headers.get("pstr")
-        Logger.debug(s"[Psp-DeAuthorisation-Incoming-Payload]$feJson")
+        logger.debug(s"[Psp-DeAuthorisation-Incoming-Payload]$feJson")
 
         (feJson, pstrOpt) match {
           case (Some(jsValue), Some(pstr)) =>
