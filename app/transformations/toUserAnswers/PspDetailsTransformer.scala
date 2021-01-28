@@ -33,7 +33,7 @@ class PspDetailsTransformer extends JsonTransformer {
   private def transformSubscriptionDetails: Reads[JsObject] =
     ((__ \ 'applicationDate).json.copyFrom((__ \ 'subscriptionTypeAndPSPIDDetails \ 'applicationDate).json.pick) and
       (__ \ 'subscriptionType).json.copyFrom((__ \ 'subscriptionTypeAndPSPIDDetails \ 'subscriptionType).json.pick) and
-      (__ \ 'existingPSP \ 'isExistingPSP).json.copyFrom((__ \ 'subscriptionTypeAndPSPIDDetails \ 'existingPSPID).json.pick) and
+      ((__ \ 'existingPSP \ 'isExistingPSP).json.copyFrom((__ \ 'subscriptionTypeAndPSPIDDetails \ 'existingPSPID).json.pick) orElse doNothing) and
       (__ \ 'existingPSP \ 'existingPSPId).json.copyFrom((__ \ 'subscriptionTypeAndPSPIDDetails \ 'pspid).json.pick)).reduce
 
   private def transformLegalAndCustomer: Reads[JsObject] =
