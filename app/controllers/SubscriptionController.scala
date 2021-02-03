@@ -19,6 +19,7 @@ package controllers
 import com.google.inject.Inject
 import connectors.{SchemeConnector, SubscriptionConnector}
 import models.ListOfSchemes
+import models.enumeration.JourneyType
 import play.api.Logger
 import play.api.libs.json._
 import play.api.mvc._
@@ -45,7 +46,7 @@ class SubscriptionController @Inject()(
 
   private val logger = Logger(classOf[SubscriptionController])
 
-  def subscribePsp: Action[AnyContent] = Action.async { implicit request =>
+  def subscribePsp(journeyType: JourneyType.Name): Action[AnyContent] = Action.async { implicit request =>
     util.doAuth { externalId =>
       val feJson = request.body.asJson
       logger.debug(s"[PSP-Subscription-Incoming-Payload]$feJson")
