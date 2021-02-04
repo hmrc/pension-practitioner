@@ -17,6 +17,7 @@
 package controllers
 
 import connectors.{SchemeConnector, SubscriptionConnector}
+import models.enumeration.JourneyType
 import org.mockito.Matchers
 import org.mockito.Matchers.any
 import org.mockito.Mockito._
@@ -102,7 +103,7 @@ class SubscriptionControllerSpec extends AsyncWordSpec with MustMatchers with Mo
       when(mockSubscriptionConnector.pspSubscription(any(), any())(any(), any(), any()))
         .thenReturn(Future.successful(HttpResponse(OK, response.toString)))
 
-      val result = controller.subscribePsp()(fakeRequest.withJsonBody(uaIndividualUK))
+      val result = controller.subscribePsp(JourneyType.PSP_SUBSCRIPTION)(fakeRequest.withJsonBody(uaIndividualUK))
       status(result) mustBe OK
     }
 
@@ -112,7 +113,7 @@ class SubscriptionControllerSpec extends AsyncWordSpec with MustMatchers with Mo
         .thenReturn(Future.failed(UpstreamErrorResponse(message = "Internal Server Error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR)))
 
       recoverToExceptionIf[UpstreamErrorResponse] {
-        controller.subscribePsp()(fakeRequest.withJsonBody(uaIndividualUK))
+        controller.subscribePsp(JourneyType.PSP_SUBSCRIPTION)(fakeRequest.withJsonBody(uaIndividualUK))
       } map {
         _.statusCode mustBe INTERNAL_SERVER_ERROR
       }
