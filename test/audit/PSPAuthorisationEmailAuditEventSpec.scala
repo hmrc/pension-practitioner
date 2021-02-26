@@ -25,23 +25,36 @@ class PSPAuthorisationEmailAuditEventSpec
 
   "PSPAuthorisationEmailAuditEvent" should "output the correct map of data" in {
 
+//    {
+//      "auditSource":"manage-pensions-frontend",
+//      "auditType":"PensionSchemePractitionerAuthorisationEmailEvent",
+//      "detail":{
+//        "pensionSchemeAdiminstratorId": "A21100112",
+//        "pensionSchemePractitionerId":"21111111",
+//        "pensionSchemeTaxReference": "24000014IN",
+//        "emailAddress": "a@a.com",
+//        "event": "Sent"
+//      },
+//      "generatedAt":"2020-09-27T09:27:45.017+0000"
+//    }
+
     val event = PSPAuthorisationEmailAuditEvent(
-      psaId = "psaId",
-      pspId = "pspId",
-      pstr = "pstr",
+      psaId = "pensionSchemeAdministratorId",
+      pspId = "pensionSchemePractitionerId",
+      pstr = "pensionSchemeTaxReference",
       emailAddress = "email@address",
       event = Sent
     )
 
     val expected = Map(
-      "psaId" -> "psaId",
-      "pspId" -> "pspId",
-      "pstr" -> "pstr",
+      "pensionSchemeAdministratorId" -> "pensionSchemeAdministratorId",
+      "pensionSchemePractitionerId" -> "pensionSchemePractitionerId",
+      "pensionSchemeTaxReference" -> "pensionSchemeTaxReference",
       "emailAddress" -> "email@address",
       "event" -> "Sent"
     )
 
-    event.auditType shouldBe "PSPAuthorisationEmailEvent"
+    event.auditType shouldBe "PensionSchemePractitionerAuthorisationEmailEvent"
     event.details shouldBe expected
   }
 }
