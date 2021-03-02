@@ -32,12 +32,12 @@ class PSPDeregistrationEmailAuditEventSpec
     )
 
     val expected = Map(
-      "pspId" -> "pspId",
+      "pensionSchemePractitionerId" -> "pspId",
       "emailAddress" -> "email@address",
       "event" -> "Sent"
     )
 
-    event.auditType shouldBe "PSPDeregistrationEmailEvent"
+    event.auditType shouldBe "PensionSchemePractitionerDeregistrationEmailEvent"
     event.details shouldBe expected
   }
 }

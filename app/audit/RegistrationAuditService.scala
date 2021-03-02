@@ -80,13 +80,13 @@ case class PSPRegistration(
                             response: Option[JsValue]
                           ) extends AuditEvent {
 
-  override def auditType: String = if (withId) "PSPRegistration" else "PSPRegWithoutId"
+  override def auditType: String = if (withId) "PensionSchemePractitionerRegistration" else "PensionSchemePractitionerRegWithoutId"
 
   override def details: Map[String, String] =
     Map(
       "withId" -> withId.toString,
       "externalId" -> externalId,
-      "psaType" -> psaType,
+      "pensionSchemeAdministratorType" -> psaType,
       "found" -> found.toString,
       "isUk" -> isUk.map(_.toString).getOrElse(""),
       "status" -> status.toString,
