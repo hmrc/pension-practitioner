@@ -25,13 +25,13 @@ case class PSPAuthorisationEmailAuditEvent(
                                             emailAddress: String,
                                             event: Event
                                           ) extends AuditEvent {
-  override def auditType: String = "PSPAuthorisationEmailEvent"
+  override def auditType: String = "PensionSchemePractitionerAuthorisationEmailEvent"
 
   override def details: Map[String, String] = {
     Map(
-      "psaId" -> psaId,
-      "pspId" -> pspId,
-      "pstr" -> pstr,
+      "pensionSchemeAdministratorId" -> psaId,
+      "pensionSchemePractitionerId" -> pspId,
+      "pensionSchemeTaxReference" -> pstr,
       "emailAddress" -> emailAddress,
       "event" -> event.toString
     )

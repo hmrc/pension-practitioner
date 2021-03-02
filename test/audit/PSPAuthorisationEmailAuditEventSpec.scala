@@ -26,22 +26,22 @@ class PSPAuthorisationEmailAuditEventSpec
   "PSPAuthorisationEmailAuditEvent" should "output the correct map of data" in {
 
     val event = PSPAuthorisationEmailAuditEvent(
-      psaId = "psaId",
-      pspId = "pspId",
-      pstr = "pstr",
+      psaId = "pensionSchemeAdministratorId",
+      pspId = "pensionSchemePractitionerId",
+      pstr = "pensionSchemeTaxReference",
       emailAddress = "email@address",
       event = Sent
     )
 
     val expected = Map(
-      "psaId" -> "psaId",
-      "pspId" -> "pspId",
-      "pstr" -> "pstr",
+      "pensionSchemeAdministratorId" -> "pensionSchemeAdministratorId",
+      "pensionSchemePractitionerId" -> "pensionSchemePractitionerId",
+      "pensionSchemeTaxReference" -> "pensionSchemeTaxReference",
       "emailAddress" -> "email@address",
       "event" -> "Sent"
     )
 
-    event.auditType shouldBe "PSPAuthorisationEmailEvent"
+    event.auditType shouldBe "PensionSchemePractitionerAuthorisationEmailEvent"
     event.details shouldBe expected
   }
 }
