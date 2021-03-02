@@ -39,7 +39,7 @@ class PSPRegistrationSpec
     val expected = Map(
       "withId" -> "true",
       "externalId" -> "externalId",
-      "psaType" -> "psaType",
+      "pensionSchemeAdministratorType" -> "psaType",
       "found" -> "true",
       "isUk" -> "true",
       "status" -> "200",
@@ -47,8 +47,8 @@ class PSPRegistrationSpec
       "response" -> Json.prettyPrint(Json.obj("some" -> "value")),
     )
 
-    event(true).auditType shouldBe "PSPRegistration"
-    event(false).auditType shouldBe "PSPRegWithoutId"
+    event(true).auditType shouldBe "PensionSchemePractitionerRegistration"
+    event(false).auditType shouldBe "PensionSchemePractitionerRegWithoutId"
     event(true).details shouldBe expected
   }
 }
