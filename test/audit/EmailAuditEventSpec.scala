@@ -37,12 +37,12 @@ class EmailAuditEventSpec
 
     val expected = Map(
       "email-initiation-request-id" -> "test-request-id",
-      "pspId" -> "A2500001",
+      "pensionSchemePractitionerId" -> "A2500001",
       "emailAddress" -> "test@test.com",
       "event" -> Sent.toString
     )
 
-    event.auditType shouldBe "PSPSubscriptionEmailEvent"
+    event.auditType shouldBe "PensionSchemePractitionerSubscriptionEmailEvent"
     event.details shouldBe expected
   }
 }
