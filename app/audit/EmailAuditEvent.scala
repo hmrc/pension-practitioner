@@ -27,11 +27,13 @@ case class EmailAuditEvent(
                             requestId: String
                           ) extends AuditEvent {
 
-  override def auditType: String = s"${journeyType.toString}EmailEvent"
+  override def auditType: String =
+    s"${journeyType.toString}EmailEvent"
+      .replace("PSP", "PensionSchemePractitioner")
 
   override def details = Map(
     "email-initiation-request-id" -> requestId,
-    "pspId" -> pspId,
+    "pensionSchemePractitionerId" -> pspId,
     "emailAddress" -> emailAddress,
     "event" -> event.toString
   )
