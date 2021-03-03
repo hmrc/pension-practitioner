@@ -25,21 +25,37 @@ class PSPSubscriptionSpec
 
   "PSPSubscription" should "output the correct map of data" in {
 
+    val requestJson = Json.parse(
+      """{
+        |  "subscriptionTypeAndPSPIDDetails": {
+        |    "existingPSPID": "No",
+        |    "subscriptionType": "Creation"
+        |  }
+        |}""".stripMargin)
+
+    val requestJsonExpandedAcronym = Json.parse(
+      """{
+        |  "subscriptionTypeAndPensionSchemePractitionerIdDetails": {
+        |    "subscriptionType": "Creation",
+        |    "existingPensionSchemePractitionerId": "No"
+        |  }
+        |}""".stripMargin)
+
     val event = PSPSubscription(
       externalId = "externalId",
       status = 200,
-      request = Json.obj("some" -> "value"),
+      request = requestJson,
       response = Option(Json.obj("some" -> "value")),
     )
 
     val expected = Map(
       "externalId" -> "externalId",
       "status" -> "200",
-      "request" -> Json.prettyPrint(Json.obj("some" -> "value")),
+      "request" -> Json.prettyPrint(requestJsonExpandedAcronym),
       "response" -> Json.prettyPrint(Json.obj("some" -> "value")),
     )
 
-    event.auditType shouldBe "PSPSubscription"
+    event.auditType shouldBe "PensionSchemePractitionerSubscription"
     event.details shouldBe expected
   }
 }

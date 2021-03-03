@@ -17,12 +17,14 @@
 package audit
 
 import com.google.inject.Inject
-import play.api.libs.json.{Format, JsValue, Json}
+import play.api.libs.json.{Format, JsObject, JsValue, Json, __}
+import play.api.libs.json.Reads._
 import play.api.mvc.RequestHeader
 import uk.gov.hmrc.http.{HttpException, HttpResponse, UpstreamErrorResponse}
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
+import play.api.libs.functional.syntax._
 
 class SubscriptionAuditService @Inject()(auditService: AuditService) {
 
@@ -49,19 +51,32 @@ case class PSPSubscription(
                             response: Option[JsValue]
                           ) extends AuditEvent {
 
-  override def auditType: String = "PSPSubscription"
+  override def auditType: String = "PensionSchemePractitionerSubscription"
+
+  private val expandAcronymTransformer: JsValue => JsObject =
+    json => json.as[JsObject].transform(
+      __.json.update(
+        (
+          (__ \ "subscriptionTypeAndPensionSchemePractitionerIdDetails").json.copyFrom(
+            (__ \ "subscriptionTypeAndPSPIDDetails").json.pick
+          ) and
+            (__ \ "subscriptionTypeAndPensionSchemePractitionerIdDetails" \ "existingPensionSchemePractitionerId").json.copyFrom(
+              (__ \ "subscriptionTypeAndPSPIDDetails" \ "existingPSPID").json.pick
+            )
+          ) reduce
+      ) andThen
+        (__ \ "subscriptionTypeAndPSPIDDetails").json.prune andThen
+        (__ \ "subscriptionTypeAndPensionSchemePractitionerIdDetails" \ "existingPSPID").json.prune
+    ).getOrElse(throw ExpandAcronymTransformerFailed)
+
+  case object ExpandAcronymTransformerFailed extends Exception
 
   override def details: Map[String, String] =
     Map(
       "externalId" -> externalId,
       "status" -> status.toString,
-      "request" -> Json.prettyPrint(request),
-      "response" -> {
-        response match {
-          case Some(json) => Json.prettyPrint(json)
-          case _ => ""
-        }
-      }
+      "request" -> Json.prettyPrint(expandAcronymTransformer(request)),
+      "response" -> response.fold("")(Json.prettyPrint)
     )
 }
 

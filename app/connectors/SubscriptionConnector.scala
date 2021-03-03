@@ -41,7 +41,6 @@ class SubscriptionConnector @Inject()(
 
   private val logger = Logger(classOf[SubscriptionConnector])
 
-
   def pspSubscription(externalId: String, data: JsValue)
                      (implicit hc: HeaderCarrier,
                       ec: ExecutionContext,
@@ -52,10 +51,11 @@ class SubscriptionConnector @Inject()(
       logFailures("PSP Subscription", data, "/resources/schemas/pspCreateAmend.json", config.pspSubscriptionUrl)
   }
 
-  def getSubscriptionDetails(pspId: String)(implicit
-                                            headerCarrier: HeaderCarrier,
-                                            ec: ExecutionContext,
-                                            request: RequestHeader): Future[Either[HttpResponse, JsValue]] = {
+  def getSubscriptionDetails(pspId: String)
+                            (implicit
+                             headerCarrier: HeaderCarrier,
+                             ec: ExecutionContext,
+                             request: RequestHeader): Future[Either[HttpResponse, JsValue]] = {
 
     val hc: HeaderCarrier = HeaderCarrier(extraHeaders = headerUtils.integrationFrameworkHeader)
     val url = config.subscriptionDetailsUrl.format(pspId)
@@ -70,10 +70,11 @@ class SubscriptionConnector @Inject()(
     }
   }
 
-  def pspDeregistration(pspId: String, data: JsValue)(implicit
-                                                      headerCarrier: HeaderCarrier,
-                                                      ec: ExecutionContext,
-                                                      request: RequestHeader): Future[HttpResponse] = {
+  def pspDeregistration(pspId: String, data: JsValue)
+                       (implicit
+                        headerCarrier: HeaderCarrier,
+                        ec: ExecutionContext,
+                        request: RequestHeader): Future[HttpResponse] = {
     implicit val hc: HeaderCarrier = HeaderCarrier(extraHeaders =
       headerUtils.integrationFrameworkHeader(implicitly[HeaderCarrier](headerCarrier)))
     val url = config.pspDeregistrationUrl.format(pspId)
