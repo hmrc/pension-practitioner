@@ -17,7 +17,7 @@
 package audit
 
 import com.google.inject.Inject
-import play.api.libs.json.{Format, JsObject, JsValue, Json, __}
+import play.api.libs.json.{Format, JsObject, JsValue, Json, Reads, __}
 import play.api.libs.json.Reads._
 import play.api.mvc.RequestHeader
 import uk.gov.hmrc.http.{HttpException, HttpResponse, UpstreamErrorResponse}
@@ -53,15 +53,18 @@ case class PSPSubscription(
 
   override def auditType: String = "PensionSchemePractitionerSubscription"
 
+  val doNothing: Reads[JsObject] =
+    __.json.put(Json.obj())
+
   private val expandAcronymTransformer: JsValue => JsObject =
     json => json.as[JsObject].transform(
       __.json.update(
         (
-          (__ \ "subscriptionTypeAndPensionSchemePractitionerIdDetails").json.copyFrom(
-            (__ \ "subscriptionTypeAndPSPIDDetails").json.pick
+          ((__ \ "subscriptionTypeAndPensionSchemePractitionerIdDetails").json.copyFrom(
+            (__ \ "subscriptionTypeAndPSPIDDetails").json.pick) orElse doNothing
           ) and
-            (__ \ "subscriptionTypeAndPensionSchemePractitionerIdDetails" \ "existingPensionSchemePractitionerId").json.copyFrom(
-              (__ \ "subscriptionTypeAndPSPIDDetails" \ "existingPSPID").json.pick
+            ((__ \ "subscriptionTypeAndPensionSchemePractitionerIdDetails" \ "existingPensionSchemePractitionerId").json.copyFrom(
+              (__ \ "subscriptionTypeAndPSPIDDetails" \ "existingPSPID").json.pick) orElse doNothing
             )
           ) reduce
       ) andThen
