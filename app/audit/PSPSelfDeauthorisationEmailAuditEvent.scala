@@ -24,7 +24,7 @@ case class PSPSelfDeauthorisationEmailAuditEvent(
                                               emailAddress: String,
                                               event: Event
                                             ) extends AuditEvent {
-  override def auditType: String = "PensionSchemePractitionerDeauthorisedEmailEvent"
+  override def auditType: String = "PensionSchemePractitionerSelfDeauthorisationEmailAuditEvent"
 
   override def details: Map[String, String] = {
     Map(
