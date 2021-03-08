@@ -22,8 +22,6 @@ import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import repository.DataCacheRepository
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.logging.RequestId
 
 
 class HeaderUtilsSpec extends WordSpec with MustMatchers {
@@ -33,11 +31,7 @@ class HeaderUtilsSpec extends WordSpec with MustMatchers {
   "HeaderUtils" when {
 
     "call desHeader" must {
-
       "return all the appropriate headers" in {
-        implicit val hc: HeaderCarrier =
-          HeaderCarrier(requestId = Some(RequestId("govuk-tax-4725c811-9251-4c06-9b8f-f1d84659b2dfe")))
-
         val result = headerUtils.desHeaderWithoutCorrelationId
         result mustEqual Seq("Environment" -> "local", "Authorization" -> "Bearer test-token",
           "Content-Type" -> "application/json")

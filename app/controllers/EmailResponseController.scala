@@ -127,6 +127,30 @@ class EmailResponseController @Inject()(
       }
   }
 
+  def retrieveStatusForPSPSelfDeauthorisation(
+    encryptedPspId: String,
+    encryptedPstr: String,
+    encryptedEmail: String
+  ): Action[JsValue] = Action(parser.tolerantJson) {
+    implicit request =>
+      decryptAndValidateDetailsForPSPSelfDeauth(encryptedPspId, encryptedPstr, encryptedEmail) match {
+        case Right(Tuple3(pspId, pstr, email)) =>
+          request.body.validate[EmailEvents].fold(
+            _ => BadRequest("Bad request received for psp self-de-authorisation email call back event"),
+            valid => {
+              valid.events.filterNot(
+                _.event == Opened
+              ).foreach { event =>
+                logger.debug(s"Email Audit event is $event")
+                auditService.sendEvent(PSPSelfDeauthorisationEmailAuditEvent(pspId.id, pstr, email, event.event))
+              }
+              Ok
+            }
+          )
+        case Left(result) => result
+      }
+  }
+
   def retrieveStatusForPSPDeregistration(
                                           encryptedPspId: String,
                                           encryptedEmail: String
@@ -166,6 +190,23 @@ class EmailResponseController @Inject()(
       Right(Tuple4(PsaId(psaId), PspId(pspId), pstr, emailAddress))
     } catch {
       case _: IllegalArgumentException => Left(Forbidden(s"Malformed PSAID: $psaId, PSPID: $pspId, PSTR: $pstr or Email: $emailAddress"))
+    }
+  }
+
+  private def decryptAndValidateDetailsForPSPSelfDeauth(
+    encryptedPspId: String,
+    encryptedPstr: String,
+    encryptedEmail: String): Either[Result, (PspId, String, String)] = {
+
+    val pspId = crypto.QueryParameterCrypto.decrypt(Crypted(encryptedPspId)).value
+    val pstr = crypto.QueryParameterCrypto.decrypt(Crypted(encryptedPstr)).value
+    val emailAddress = crypto.QueryParameterCrypto.decrypt(Crypted(encryptedEmail)).value
+
+    try {
+      require(emailAddress.matches(emailRegex))
+      Right(Tuple3(PspId(pspId), pstr, emailAddress))
+    } catch {
+      case _: IllegalArgumentException => Left(Forbidden(s"Malformed PSPID: $pspId, PSTR: $pstr or Email: $emailAddress"))
     }
   }
 
