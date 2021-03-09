@@ -16,15 +16,14 @@
 
 package controllers
 
-import audit.PSPDeregistrationEmailAuditEvent
-import audit.{PSPDeauthorisationEmailAuditEvent, AuditService, EmailAuditEvent}
+import audit._
 import models.{Sent, _}
 import models.enumeration.JourneyType.PSP_SUBSCRIPTION
 import org.joda.time.DateTime
 import org.mockito.Matchers.any
 import org.mockito.{ArgumentCaptor, Mockito}
-import org.mockito.Mockito.{times, never, when, verify}
-import org.scalatest.{AsyncWordSpec, MustMatchers, BeforeAndAfterEach}
+import org.mockito.Mockito.{never, times, verify, when}
+import org.scalatest.{BeforeAndAfterEach, AsyncWordSpec, MustMatchers}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.Application
 import play.api.inject.bind
@@ -94,6 +93,25 @@ class EmailResponseControllerSpec extends AsyncWordSpec with MustMatchers with M
     "respond with BAD_REQUEST when not given EmailEvents" in {
       val result = controller
         .retrieveStatusForPSPDeauthorisation(encryptedPsaId, encryptedPspId, encryptedPstr, encryptedEmail)(fakeRequest.withBody(Json.obj("name" -> "invalid")))
+
+      verify(mockAuditService, never()).sendEvent(any())(any(), any())
+      status(result) mustBe BAD_REQUEST
+    }
+  }
+
+  "retrieveStatusForPSPSelfDeauthorisation" must {
+    "respond OK when given EmailEvents" in {
+      val result = controller
+        .retrieveStatusForPSPSelfDeauthorisation(encryptedPspId, encryptedPstr, encryptedEmail)(fakeRequest.withBody(Json.toJson(emailEvents)))
+
+      status(result) mustBe OK
+      verify(mockAuditService, times(4)).sendEvent(eventCaptor.capture())(any(), any())
+      eventCaptor.getValue mustEqual PSPSelfDeauthorisationEmailAuditEvent(psp, pstr, email, Complained)
+    }
+
+    "respond with BAD_REQUEST when not given EmailEvents" in {
+      val result = controller
+        .retrieveStatusForPSPSelfDeauthorisation(encryptedPspId, encryptedPstr, encryptedEmail)(fakeRequest.withBody(Json.obj("name" -> "invalid")))
 
       verify(mockAuditService, never()).sendEvent(any())(any(), any())
       status(result) mustBe BAD_REQUEST
