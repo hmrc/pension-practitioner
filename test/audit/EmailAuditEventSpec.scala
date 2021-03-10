@@ -36,7 +36,7 @@ class EmailAuditEventSpec
     )
 
     val expected = Map(
-      "email-initiation-request-id" -> "test-request-id",
+      "emailInitiationRequestID" -> "test-request-id",
       "pensionSchemePractitionerId" -> "A2500001",
       "emailAddress" -> "test@test.com",
       "event" -> Sent.toString

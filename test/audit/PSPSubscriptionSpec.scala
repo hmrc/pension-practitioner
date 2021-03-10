@@ -17,7 +17,7 @@
 package audit
 
 import org.scalatest.{FlatSpec, Matchers}
-import play.api.libs.json.Json
+import play.api.libs.json.{JsObject, JsValue, Json}
 
 class PSPSubscriptionSpec
   extends FlatSpec
@@ -25,34 +25,32 @@ class PSPSubscriptionSpec
 
   "PSPSubscription" should "output the correct map of data" in {
 
-    val requestJson = Json.parse(
-      """{
-        |  "subscriptionTypeAndPSPIDDetails": {
-        |    "existingPSPID": "No",
-        |    "subscriptionType": "Creation"
-        |  }
-        |}""".stripMargin)
+    val requestJson: JsValue = Json.obj(
+      "subscriptionTypeAndPSPIDDetails" -> Json.obj(
+        "existingPSPID" -> "No",
+        "subscriptionType" -> "Creation"
+      )
+    )
 
-    val requestJsonExpandedAcronym = Json.parse(
-      """{
-        |  "subscriptionTypeAndPensionSchemePractitionerIdDetails": {
-        |    "subscriptionType": "Creation",
-        |    "existingPensionSchemePractitionerId": "No"
-        |  }
-        |}""".stripMargin)
+    val requestJsonExpandedAcronym: JsObject = Json.obj(
+      "subscriptionTypeAndPensionSchemePractitionerIdDetails" -> Json.obj(
+        "subscriptionType" -> "Creation",
+        "existingPensionSchemePractitionerId" -> "No"
+      )
+    )
 
     val event = PSPSubscription(
       externalId = "externalId",
       status = 200,
       request = requestJson,
-      response = Option(Json.obj("some" -> "value")),
+      response = Some(Json.obj("some" -> "value")),
     )
 
-    val expected = Map(
+    val expected: JsObject = Json.obj(
       "externalId" -> "externalId",
       "status" -> "200",
-      "request" -> Json.prettyPrint(requestJsonExpandedAcronym),
-      "response" -> Json.prettyPrint(Json.obj("some" -> "value")),
+      "request" -> requestJsonExpandedAcronym,
+      "response" -> Json.obj("some" -> "value")
     )
 
     event.auditType shouldBe "PensionSchemePractitionerSubscription"

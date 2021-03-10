@@ -32,7 +32,7 @@ case class EmailAuditEvent(
       .replace("PSP", "PensionSchemePractitioner")
 
   override def details = Map(
-    "email-initiation-request-id" -> requestId,
+    "emailInitiationRequestID" -> requestId,
     "pensionSchemePractitionerId" -> pspId,
     "emailAddress" -> emailAddress,
     "event" -> event.toString
