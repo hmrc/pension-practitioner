@@ -17,14 +17,14 @@
 package audit
 
 import com.google.inject.Inject
-import play.api.libs.json.{Format, JsObject, JsValue, Json, Reads, __}
+import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
+import play.api.libs.json._
 import play.api.mvc.RequestHeader
 import uk.gov.hmrc.http.{HttpException, HttpResponse, UpstreamErrorResponse}
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
-import play.api.libs.functional.syntax._
 
 class SubscriptionAuditService @Inject()(auditService: AuditService) {
 
@@ -32,16 +32,14 @@ class SubscriptionAuditService @Inject()(auditService: AuditService) {
                              (implicit ec: ExecutionContext, request: RequestHeader): PartialFunction[Try[HttpResponse], Unit] = {
 
     case Success(response) =>
-      auditService.sendEvent(PSPSubscription(externalId, response.status, requestJson, Some(response.json)))
+      auditService.sendExtendedEvent(PSPSubscription(externalId, response.status, requestJson, Some(response.json)))
 
     case Failure(error: UpstreamErrorResponse) =>
-      auditService.sendEvent(PSPSubscription(externalId, error.statusCode, requestJson, None))
+      auditService.sendExtendedEvent(PSPSubscription(externalId, error.statusCode, requestJson, None))
 
     case Failure(error: HttpException) =>
-      auditService.sendEvent(PSPSubscription(externalId, error.responseCode, requestJson, None))
-
+      auditService.sendExtendedEvent(PSPSubscription(externalId, error.responseCode, requestJson, None))
   }
-
 }
 
 case class PSPSubscription(
@@ -49,7 +47,7 @@ case class PSPSubscription(
                             status: Int,
                             request: JsValue,
                             response: Option[JsValue]
-                          ) extends AuditEvent {
+                          ) extends ExtendedAuditEvent {
 
   override def auditType: String = "PensionSchemePractitionerSubscription"
 
@@ -62,10 +60,10 @@ case class PSPSubscription(
         (
           ((__ \ "subscriptionTypeAndPensionSchemePractitionerIdDetails").json.copyFrom(
             (__ \ "subscriptionTypeAndPSPIDDetails").json.pick) orElse doNothing
-          ) and
+            ) and
             ((__ \ "subscriptionTypeAndPensionSchemePractitionerIdDetails" \ "existingPensionSchemePractitionerId").json.copyFrom(
               (__ \ "subscriptionTypeAndPSPIDDetails" \ "existingPSPID").json.pick) orElse doNothing
-            )
+              )
           ) reduce
       ) andThen
         (__ \ "subscriptionTypeAndPSPIDDetails").json.prune andThen
@@ -74,13 +72,12 @@ case class PSPSubscription(
 
   case object ExpandAcronymTransformerFailed extends Exception
 
-  override def details: Map[String, String] =
-    Map(
-      "externalId" -> externalId,
-      "status" -> status.toString,
-      "request" -> Json.prettyPrint(expandAcronymTransformer(request)),
-      "response" -> response.fold("")(Json.prettyPrint)
-    )
+  override def details: JsObject = Json.obj(
+    "externalId" -> externalId,
+    "status" -> status.toString,
+    "request" -> expandAcronymTransformer(request),
+    "response" -> response
+  )
 }
 
 object PSPSubscription {

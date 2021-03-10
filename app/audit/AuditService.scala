@@ -23,7 +23,7 @@ import play.api.mvc.RequestHeader
 import uk.gov.hmrc.play.HeaderCarrierConverter
 import uk.gov.hmrc.play.audit.AuditExtensions._
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
-import uk.gov.hmrc.play.audit.model.DataEvent
+import uk.gov.hmrc.play.audit.model.{DataEvent, ExtendedDataEvent}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.implicitConversions
@@ -34,6 +34,9 @@ trait AuditService {
 
   def sendEvent[T <: AuditEvent](event: T)
                                 (implicit rh: RequestHeader, ec: ExecutionContext): Unit
+
+  def sendExtendedEvent[T <: ExtendedAuditEvent](event: T)
+                                                (implicit rh: RequestHeader, ec: ExecutionContext): Unit
 
 }
 
@@ -50,7 +53,9 @@ class AuditServiceImpl @Inject()(
 
   def sendEvent[T <: AuditEvent](event: T)
                                 (implicit rh: RequestHeader, ec: ExecutionContext): Unit = {
-    val details = rh.toAuditDetails() ++ event.details
+    val details: Map[String, String] =
+      rh.toAuditDetails() ++ event.details
+
     logger.debug(s"[AuditService][sendEvent] sending ${event.auditType}")
     val result: Future[AuditResult] = connector.sendEvent(
       DataEvent(
@@ -64,13 +69,34 @@ class AuditServiceImpl @Inject()(
       )
     )
 
-    result.onComplete {
-      case Success(_) =>
-        logger.debug(s"[AuditService][sendEvent] successfully sent ${event.auditType}")
-      case Failure(e) =>
-        logger.error(s"[AuditService][sendEvent] failed to send event ${event.auditType}", e)
-    }
-
+    onComplete(result, event.auditType)
   }
 
+  def sendExtendedEvent[T <: ExtendedAuditEvent](event: T)
+                                                (implicit rh: RequestHeader, ec: ExecutionContext): Unit = {
+
+    logger.debug(s"[AuditService][sendEvent] sending ${event.auditType}")
+    val result: Future[AuditResult] = connector.sendExtendedEvent(
+      ExtendedDataEvent(
+        auditSource = config.appName,
+        auditType = event.auditType,
+        tags = rh.toAuditTags(
+          transactionName = event.auditType,
+          path = rh.path
+        ),
+        detail = event.details
+      )
+    )
+
+    onComplete(result, event.auditType)
+  }
+
+  private def onComplete(auditResult: Future[AuditResult], auditType: String)
+                        (implicit ec: ExecutionContext): Unit =
+    auditResult onComplete {
+      case Success(_) =>
+        logger.debug(s"[AuditService][sendEvent] successfully sent $auditType")
+      case Failure(e) =>
+        logger.error(s"[AuditService][sendEvent] failed to send event $auditType", e)
+    }
 }

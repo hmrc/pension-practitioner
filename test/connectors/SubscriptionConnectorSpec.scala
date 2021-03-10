@@ -40,8 +40,12 @@ import play.api.test.FakeRequest
 import uk.gov.hmrc.http._
 import utils.WireMockHelper
 
-class SubscriptionConnectorSpec extends AsyncWordSpec with MustMatchers with WireMockHelper
-  with EitherValues with MockitoSugar {
+class SubscriptionConnectorSpec
+  extends AsyncWordSpec
+    with MustMatchers
+    with WireMockHelper
+    with EitherValues
+    with MockitoSugar {
 
   import SubscriptionConnectorSpec._
 
@@ -150,7 +154,7 @@ class SubscriptionConnectorSpec extends AsyncWordSpec with MustMatchers with Wir
       )
 
       connector.pspSubscription(externalId, data).map {_ =>
-        verify(mockAuditService, times(1)).sendEvent(eventCaptor.capture())(any(), any())
+        verify(mockAuditService, times(1)).sendExtendedEvent(eventCaptor.capture())(any(), any())
           eventCaptor.getValue mustEqual PSPSubscription(externalId, Status.OK, data, Some(response))
       }
     }
