@@ -79,8 +79,8 @@ case class PSPSubscription(
           ) reduce
       ) andThen
         (__ \ "subscriptionTypeAndPSPIDDetails").json.prune andThen
-        (__ \ "subscriptionTypeAndPSPIDDetails" \ "existingPSPID").json.prune andThen
-        (__ \ "subscriptionTypeAndPSPIDDetails" \ "pspid").json.prune
+        (__ \ "subscriptionTypeAndPensionSchemePractitionerIdDetails" \ "existingPSPID").json.prune andThen
+        (__ \ "subscriptionTypeAndPensionSchemePractitionerIdDetails" \ "pspid").json.prune
     ).getOrElse(throw ExpandAcronymTransformerFailed)
 
   case object ExpandAcronymTransformerFailed extends Exception
