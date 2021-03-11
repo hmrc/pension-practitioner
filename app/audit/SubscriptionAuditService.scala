@@ -71,16 +71,16 @@ case class PSPSubscription(
             (__ \ "subscriptionTypeAndPSPIDDetails").json.pick) orElse doNothing
             ) and (
             (__ \ "subscriptionTypeAndPensionSchemePractitionerIdDetails" \ "existingPensionSchemePractitionerId").json.copyFrom(
-              (__ \ "subscriptionTypeAndPensionSchemePractitionerIdDetails" \ "existingPSPID").json.pick) orElse doNothing
+              (__ \ "subscriptionTypeAndPSPIDDetails" \ "existingPSPID").json.pick) orElse doNothing
             ) and (
             (__ \ "subscriptionTypeAndPensionSchemePractitionerIdDetails" \ "existingPensionSchemePractitionerId").json.copyFrom(
-              (__ \ "subscriptionTypeAndPensionSchemePractitionerIdDetails" \ "pspid").json.pick) orElse doNothing
+              (__ \ "subscriptionTypeAndPSPIDDetails" \ "pspid").json.pick) orElse doNothing
             )
           ) reduce
       ) andThen
         (__ \ "subscriptionTypeAndPSPIDDetails").json.prune andThen
-        (__ \ "subscriptionTypeAndPensionSchemePractitionerIdDetails" \ "existingPSPID").json.prune andThen
-        (__ \ "subscriptionTypeAndPensionSchemePractitionerIdDetails" \ "pspid").json.prune
+        (__ \ "subscriptionTypeAndPSPIDDetails" \ "existingPSPID").json.prune andThen
+        (__ \ "subscriptionTypeAndPSPIDDetails" \ "pspid").json.prune
     ).getOrElse(throw ExpandAcronymTransformerFailed)
 
   case object ExpandAcronymTransformerFailed extends Exception
