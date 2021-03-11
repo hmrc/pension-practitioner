@@ -54,20 +54,33 @@ case class PSPSubscription(
   val doNothing: Reads[JsObject] =
     __.json.put(Json.obj())
 
-  private val expandAcronymTransformer: JsValue => JsObject =
+  private val responseExpandAcronymTransformer: JsValue => JsObject =
+    json => json.as[JsObject].transform(
+      __.json.update(
+        (__ \ "pensionSchemePractitionerId").json.copyFrom(
+          (__ \ "pspid").json.pick) orElse doNothing
+      ) andThen
+        (__ \ "pspid").json.prune
+    ).getOrElse(throw ExpandAcronymTransformerFailed)
+
+  private val requestExpandAcronymTransformer: JsValue => JsObject =
     json => json.as[JsObject].transform(
       __.json.update(
         (
           ((__ \ "subscriptionTypeAndPensionSchemePractitionerIdDetails").json.copyFrom(
             (__ \ "subscriptionTypeAndPSPIDDetails").json.pick) orElse doNothing
-            ) and
-            ((__ \ "subscriptionTypeAndPensionSchemePractitionerIdDetails" \ "existingPensionSchemePractitionerId").json.copyFrom(
-              (__ \ "subscriptionTypeAndPSPIDDetails" \ "existingPSPID").json.pick) orElse doNothing
-              )
+            ) and (
+            (__ \ "subscriptionTypeAndPensionSchemePractitionerIdDetails" \ "existingPensionSchemePractitionerId").json.copyFrom(
+              (__ \ "subscriptionTypeAndPensionSchemePractitionerIdDetails" \ "existingPSPID").json.pick) orElse doNothing
+            ) and (
+            (__ \ "subscriptionTypeAndPensionSchemePractitionerIdDetails" \ "existingPensionSchemePractitionerId").json.copyFrom(
+              (__ \ "subscriptionTypeAndPensionSchemePractitionerIdDetails" \ "pspid").json.pick) orElse doNothing
+            )
           ) reduce
       ) andThen
         (__ \ "subscriptionTypeAndPSPIDDetails").json.prune andThen
-        (__ \ "subscriptionTypeAndPensionSchemePractitionerIdDetails" \ "existingPSPID").json.prune
+        (__ \ "subscriptionTypeAndPensionSchemePractitionerIdDetails" \ "existingPSPID").json.prune andThen
+        (__ \ "subscriptionTypeAndPensionSchemePractitionerIdDetails" \ "pspid").json.prune
     ).getOrElse(throw ExpandAcronymTransformerFailed)
 
   case object ExpandAcronymTransformerFailed extends Exception
@@ -75,8 +88,8 @@ case class PSPSubscription(
   override def details: JsObject = Json.obj(
     "externalId" -> externalId,
     "status" -> status.toString,
-    "request" -> expandAcronymTransformer(request),
-    "response" -> response
+    "request" -> requestExpandAcronymTransformer(request),
+    "response" -> response.fold(Json.obj())(responseExpandAcronymTransformer)
   )
 }
 
