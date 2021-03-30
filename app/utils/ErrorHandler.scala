@@ -16,12 +16,16 @@
 
 package utils
 
+import akka.util.ByteString
 import play.api.Logger
+import play.api.http.HttpEntity
 import play.api.libs.json.JsResultException
-import play.api.mvc.Result
+import play.api.mvc.{ResponseHeader, Result}
 import uk.gov.hmrc.http._
 import play.api.http.Status.OK
+
 import scala.concurrent.Future
+import scala.util.matching.Regex
 import scala.util.{Failure, Success, Try}
 
 trait ErrorHandler {
@@ -40,6 +44,22 @@ trait ErrorHandler {
   }
 
   private val logger = Logger(classOf[ErrorHandler])
+
+  protected def result(ex: HttpException): Result = {
+
+    val responseBodyRegex: Regex = """^.*Response body:? '(.*)'$""".r
+
+    val httpEntity = ex.message match {
+      case responseBodyRegex(body) =>
+        HttpEntity.Strict(ByteString(body), Some("application/json"))
+      case message: String =>
+        HttpEntity.Strict(ByteString(message), Some("text/plain"))
+      case _ =>
+        HttpEntity.NoEntity
+    }
+
+    Result(ResponseHeader(ex.responseCode), httpEntity)
+  }
 
   protected def logWarning[A](endpoint: String): PartialFunction[Try[Either[HttpResponse, A]], Unit] = {
     case Success(Left(response)) if response.status != OK =>

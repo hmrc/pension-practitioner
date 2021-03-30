@@ -20,16 +20,18 @@ import models.enumeration.OrganisationTypeEnum
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
-case class RegisterWithIdResponse(safeId: String,
-                           sapNumber: String,
-                           isAnIndividual: Boolean,
-                           individual: Option[IndividualType] = None,
-                           organisation: Option[OrganisationType] = None,
-                           address: Address,
-                           contactDetails: ContactCommDetailsType)
+case class RegisterWithIdResponse(
+                                   safeId: String,
+                                   sapNumber: String,
+                                   isAnIndividual: Boolean,
+                                   individual: Option[IndividualType] = None,
+                                   organisation: Option[OrganisationType] = None,
+                                   address: Address,
+                                   contactDetails: ContactCommDetailsType
+                                 )
 
 object RegisterWithIdResponse {
-  implicit val reads : Reads[RegisterWithIdResponse]= Json.reads[RegisterWithIdResponse]
+  implicit val reads: Reads[RegisterWithIdResponse] = Json.reads[RegisterWithIdResponse]
   implicit val writes: Writes[RegisterWithIdResponse] = (
     (JsPath \ "safeId").write[String] and
       (JsPath \ "sapNumber").write[String] and

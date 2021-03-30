@@ -18,14 +18,14 @@ package controllers
 
 import com.google.inject.Inject
 import connectors.RegistrationConnector
-import models.registerWithId.Organisation
+import models.registerWithId.{Organisation, RegisterWithIdResponse}
 import models.registerWithoutId.{OrganisationRegistrant, RegisterWithoutIdIndividualRequest}
 import play.api.libs.json.Json
 import play.api.mvc._
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.http.{Request => _, _}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import utils.AuthUtil
+import utils.{AuthUtil, ErrorHandler}
 import utils.ValidationUtils._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -36,7 +36,10 @@ class RegistrationController @Inject()(
                                         registerConnector: RegistrationConnector,
                                         cc: ControllerComponents,
                                         util: AuthUtil
-                                      ) extends BackendController(cc) with AuthorisedFunctions {
+                                      )
+  extends BackendController(cc)
+    with ErrorHandler
+    with AuthorisedFunctions {
 
   def registerWithIdIndividual: Action[AnyContent] = Action.async {
     implicit request => {
@@ -59,16 +62,24 @@ class RegistrationController @Inject()(
       util.doAuth { externalId =>
         (request.headers.get("utr"), request.body.asJson) match {
           case (Some(utr), Some(jsBody)) =>
-            val registerWithIdData = Json.obj(fields = "regime" -> "PODP", "requiresNameMatch" -> true, "isAnAgent" -> false) ++
-              Json.obj(fields = "organisation" -> Json.toJson(jsBody.convertTo[Organisation]))
-            registerConnector.registerWithIdOrganisation(externalId, utr, registerWithIdData).map { response =>
-              Ok(Json.toJson(response))
-            }
+            val registerWithIdData =
+              Json.obj(
+                fields = "regime" -> "PODP",
+                "requiresNameMatch" -> true,
+                "isAnAgent" -> false,
+                "organisation" -> Json.toJson(jsBody.convertTo[Organisation])
+              )
+            registerConnector.registerWithIdOrganisation(externalId, utr, registerWithIdData) map handleResponse
           case _ =>
             Future.failed(new BadRequestException("Bad Request with missing utr or request body for register with id call for organisation"))
         }
       }
     }
+  }
+
+  private def handleResponse: PartialFunction[Either[HttpException, RegisterWithIdResponse], Result] = {
+    case Right(successResponse) => Ok(Json.toJson(successResponse))
+    case Left(e: HttpException) => result(e)
   }
 
   def registrationNoIdIndividual: Action[RegisterWithoutIdIndividualRequest] = Action.async(parse.json[RegisterWithoutIdIndividualRequest]) {

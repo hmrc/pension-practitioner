@@ -19,6 +19,7 @@ package audit
 import com.google.inject.Inject
 import models.registerWithoutId.RegisterWithoutIdResponse
 import models.registerWithId.{RegisterWithIdResponse, UkAddress}
+import play.api.Logger
 import play.api.http.Status
 import play.api.libs.json.{Format, JsValue, Json}
 import play.api.mvc.RequestHeader
@@ -28,6 +29,8 @@ import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
 
 class RegistrationAuditService @Inject()(auditService: AuditService) {
+
+  private val logger = Logger(classOf[RegistrationAuditService])
 
   def withIdIsUk(response: RegisterWithIdResponse): Option[Boolean] = {
     response.address match {
@@ -52,8 +55,49 @@ class RegistrationAuditService @Inject()(auditService: AuditService) {
 
   }
 
+  def sendRegisterWithIdOrgAuditEvent(
+                                    withId: Boolean,
+                                    externalId: String,
+                                    psaType: String,
+                                    requestJson: JsValue
+                                  )(
+                                    implicit ec: ExecutionContext,
+                                    request: RequestHeader
+                                  ): PartialFunction[Try[Either[HttpException, RegisterWithIdResponse]], Unit] = {
+    case Success(Right(registerWithIdResponse)) =>
+      auditService.sendEvent(
+        PSPRegistration(
+          withId = withId,
+          externalId = externalId,
+          psaType = psaType,
+          found = true,
+          isUk = withIdIsUk(registerWithIdResponse),
+          status = Status.OK,
+          request = requestJson,
+          response = Some(Json.toJson(registerWithIdResponse))
+        )
+      )
+
+    case Success(Left(error)) =>
+      auditService.sendEvent(
+        PSPRegistration(
+          withId = withId,
+          externalId = externalId,
+          psaType = psaType,
+          found = true,
+          isUk = None,
+          status = error.responseCode,
+          request = requestJson,
+          response = None
+        )
+      )
+
+    case Failure(t) =>
+      logger.error("Error in registration connector", t)
+  }
+
   def sendRegisterWithoutIdAuditEvent(withId: Boolean, externalId: String, psaType: String, requestJson: JsValue)
-                                  (implicit ec: ExecutionContext, request: RequestHeader): PartialFunction[Try[RegisterWithoutIdResponse], Unit] = {
+                                     (implicit ec: ExecutionContext, request: RequestHeader): PartialFunction[Try[RegisterWithoutIdResponse], Unit] = {
     case Success(registerWithoutIdResponse) =>
       auditService.sendEvent(PSPRegistration(withId, externalId, psaType, found = true,
         Some(false), Status.OK, requestJson, Some(Json.toJson(registerWithoutIdResponse))))

@@ -21,54 +21,154 @@ import com.google.inject.Inject
 import config.AppConfig
 import models.registerWithId.RegisterWithIdResponse
 import models.registerWithoutId.{OrganisationRegistrant, RegisterWithoutIdIndividualRequest, RegisterWithoutIdResponse}
+import play.api.http.Status._
 import play.api.libs.json._
 import play.api.mvc.RequestHeader
-import uk.gov.hmrc.http._
-import uk.gov.hmrc.http.HttpClient
-import uk.gov.hmrc.http.HttpReads.Implicits._
+import uk.gov.hmrc.http.{HttpClient, _}
+import utils.HttpResponseHelper
+
 import scala.concurrent.{ExecutionContext, Future}
 
-class RegistrationConnector @Inject()(http: HttpClient,
-                                      config: AppConfig,
-                                      headerUtils: HeaderUtils,
-                                      registrationAuditService: RegistrationAuditService
-                                     ) {
+class RegistrationConnector @Inject()(
+                                       http: HttpClient,
+                                       config: AppConfig,
+                                       headerUtils: HeaderUtils,
+                                       registrationAuditService: RegistrationAuditService
+                                     )
+  extends HttpResponseHelper {
 
   private def desHeaderCarrier: HeaderCarrier = HeaderCarrier(extraHeaders = headerUtils.desHeaderWithoutCorrelationId)
 
-  def registerWithIdIndividual(externalId: String, nino: String, registerData: JsValue)
-                              (implicit headerCarrier: HeaderCarrier, ec: ExecutionContext, request: RequestHeader): Future[RegisterWithIdResponse] = {
-    val registerWithIdUrl = config.registerWithIdIndividualUrl.format(nino)
-    http.POST[JsValue, RegisterWithIdResponse](registerWithIdUrl, registerData)(implicitly, implicitly, desHeaderCarrier, implicitly) andThen
-      registrationAuditService.sendRegisterWithIdAuditEvent(withId = true, externalId, psaType = "Individual", registerData)
-  }
+  def registerWithIdIndividual(
+                                externalId: String,
+                                nino: String,
+                                registerData: JsValue
+                              )(
+                                implicit headerCarrier: HeaderCarrier,
+                                ec: ExecutionContext,
+                                request: RequestHeader
+                              ): Future[RegisterWithIdResponse] =
+    http.POST[JsValue, RegisterWithIdResponse](
+      url = config.registerWithIdIndividualUrl.format(nino),
+      body = registerData
+    )(
+      wts = implicitly,
+      rds = implicitly,
+      hc = desHeaderCarrier,
+      ec = implicitly
+    ) andThen
+      registrationAuditService.sendRegisterWithIdAuditEvent(
+        withId = true,
+        externalId,
+        psaType = "Individual",
+        requestJson = registerData
+      )
 
-  def registerWithIdOrganisation(externalId: String, utr: String, registerData: JsValue)
-                                (implicit headerCarrier: HeaderCarrier, ec: ExecutionContext, request: RequestHeader): Future[RegisterWithIdResponse] = {
+  def registerWithIdOrganisation(
+                                  externalId: String,
+                                  utr: String,
+                                  registerData: JsValue
+                                )(
+                                  implicit headerCarrier: HeaderCarrier,
+                                  ec: ExecutionContext,
+                                  request: RequestHeader
+                                ): Future[Either[HttpException, RegisterWithIdResponse]] = {
     val registerWithIdUrl = config.registerWithIdOrganisationUrl.format(utr)
-    val organisationPsaType: String = (registerData \ "organisation" \ "organisationType").validate[String].fold(
-      _ => "Unknown", organisationType => organisationType)
-    http.POST[JsValue, RegisterWithIdResponse](registerWithIdUrl, registerData)(implicitly, implicitly, desHeaderCarrier, implicitly) andThen
-      registrationAuditService.sendRegisterWithIdAuditEvent(withId = true, externalId, organisationPsaType, registerData)
+
+    val organisationPsaType: String =
+      (registerData \ "organisation" \ "organisationType")
+        .validate[String]
+        .fold(_ => "Unknown", organisationType => organisationType)
+
+    http.POST[JsValue, HttpResponse](
+      url = registerWithIdUrl,
+      body = registerData
+    )(
+      wts = implicitly,
+      rds = implicitly[HttpReads[HttpResponse]],
+      hc = desHeaderCarrier,
+      ec = implicitly
+    ) map {
+      response =>
+        response.status match {
+          case OK =>
+            Json.parse(response.body).validate[RegisterWithIdResponse] match {
+              case JsSuccess(_, _) => Right(response.asInstanceOf[RegisterWithIdResponse])
+              case JsError(_) => Left(new HttpException("Blah", response.status))
+            }
+          case _ =>
+            Left(handleErrorResponse("POST", registerWithIdUrl)(response))
+        }
+    } andThen
+      registrationAuditService.sendRegisterWithIdOrgAuditEvent(
+        withId = true,
+        externalId = externalId,
+        psaType = organisationPsaType,
+        requestJson = registerData
+      )
   }
 
-  def registrationNoIdIndividual(externalId: String, registerData: RegisterWithoutIdIndividualRequest)
-                                (implicit headerCarrier: HeaderCarrier, ec: ExecutionContext, request: RequestHeader): Future[RegisterWithoutIdResponse] = {
+  def registrationNoIdIndividual(
+                                  externalId: String,
+                                  registerData: RegisterWithoutIdIndividualRequest
+                                )(
+                                  implicit headerCarrier: HeaderCarrier,
+                                  ec: ExecutionContext,
+                                  request: RequestHeader
+                                ): Future[RegisterWithoutIdResponse] = {
     val url = config.registerWithoutIdIndividualUrl
     val correlationId = headerUtils.getCorrelationId(headerCarrier.requestId.map(_.value))
-    val registerWithNoIdData = Json.toJson(registerData)(RegisterWithoutIdIndividualRequest.writesRegistrationNoIdIndividualRequest(correlationId))
+    val registerWithNoIdData =
+      Json.toJson(registerData)(
+        RegisterWithoutIdIndividualRequest.writesRegistrationNoIdIndividualRequest(correlationId)
+      )
 
-    http.POST[JsValue, RegisterWithoutIdResponse](url, registerWithNoIdData)(implicitly, implicitly, desHeaderCarrier, implicitly) andThen
-      registrationAuditService.sendRegisterWithoutIdAuditEvent(withId = false, externalId, psaType = "Individual", registerWithNoIdData)
+    http.POST[JsValue, RegisterWithoutIdResponse](
+      url = url,
+      body = registerWithNoIdData
+    )(
+      wts = implicitly,
+      rds = implicitly,
+      hc = desHeaderCarrier,
+      ec = implicitly
+    ) andThen
+      registrationAuditService.sendRegisterWithoutIdAuditEvent(
+        withId = false,
+        externalId = externalId,
+        psaType = "Individual",
+        requestJson = registerWithNoIdData
+      )
   }
 
-  def registrationNoIdOrganisation(externalId: String, registerData: OrganisationRegistrant)
-                                  (implicit headerCarrier: HeaderCarrier, ec: ExecutionContext, request: RequestHeader): Future[RegisterWithoutIdResponse] = {
+  def registrationNoIdOrganisation(
+                                    externalId: String,
+                                    registerData: OrganisationRegistrant
+                                  )(
+                                    implicit headerCarrier: HeaderCarrier,
+                                    ec: ExecutionContext,
+                                    request: RequestHeader
+                                  ): Future[RegisterWithoutIdResponse] = {
     val url = config.registerWithoutIdOrganisationUrl
     val correlationId = headerUtils.getCorrelationId(headerCarrier.requestId.map(_.value))
-    val registerWithNoIdData = Json.toJson(registerData)(OrganisationRegistrant.writesOrganisationRegistrantRequest(correlationId))
+    val registerWithNoIdData =
+      Json.toJson(registerData)(
+        OrganisationRegistrant.writesOrganisationRegistrantRequest(correlationId)
+      )
 
-    http.POST[JsValue, RegisterWithoutIdResponse](url, registerWithNoIdData)(implicitly, implicitly, desHeaderCarrier, implicitly) andThen
-      registrationAuditService.sendRegisterWithoutIdAuditEvent(withId = false, externalId, psaType = "Organisation", registerWithNoIdData)
+    http.POST[JsValue, RegisterWithoutIdResponse](
+      url = url,
+      body = registerWithNoIdData
+    )(
+      wts = implicitly,
+      rds = implicitly,
+      hc = desHeaderCarrier,
+      ec = implicitly
+    ) andThen
+      registrationAuditService.sendRegisterWithoutIdAuditEvent(
+        withId = false,
+        externalId = externalId,
+        psaType = "Organisation",
+        requestJson = registerWithNoIdData
+      )
   }
 }
