@@ -17,9 +17,6 @@ POST          /de-authorise-psp                                                 
 
 POST          /email-response/:journeyType/:requestId/:email/:pspId                                             controllers.EmailResponseController.retrieveStatus(journeyType: JourneyType.Name, requestId: String, email: String, pspId: String)
 
-POST          /email-response-psp-auth/:encryptedPsaId/:encryptedPspId/:encryptedPstr/:encryptedEmail           controllers.EmailResponseController.retrieveStatusForPSPAuthorisation(encryptedPsaId, encryptedPspId, encryptedPstr, encryptedEmail)
-POST          /email-response-psp-deauth/:encryptedPsaId/:encryptedPspId/:encryptedPstr/:encryptedEmail         controllers.EmailResponseController.retrieveStatusForPSPDeauthorisation(encryptedPsaId, encryptedPspId, encryptedPstr, encryptedEmail)
-POST          /email-response-psp-self-deauth/:encryptedPspId/:encryptedPstr/:encryptedEmail                    controllers.EmailResponseController.retrieveStatusForPSPSelfDeauthorisation(encryptedPspId, encryptedPstr, encryptedEmail)
 POST          /email-response-psp-dereg/:encryptedPspId/:encryptedEmail                                         controllers.EmailResponseController.retrieveStatusForPSPDeregistration(encryptedPspId, encryptedEmail)
 
 GET           /get-minimal-details                                                                              controllers.MinimalDetailsController.getMinimalDetails
