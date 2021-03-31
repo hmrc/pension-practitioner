@@ -52,9 +52,7 @@ class EmailResponseControllerSpec extends AsyncWordSpec with MustMatchers with M
 
   private val injector = application.injector
   private val controller = injector.instanceOf[EmailResponseController]
-  private val encryptedPsaId = injector.instanceOf[ApplicationCrypto].QueryParameterCrypto.encrypt(PlainText(psa)).value
   private val encryptedPspId = injector.instanceOf[ApplicationCrypto].QueryParameterCrypto.encrypt(PlainText(psp)).value
-  private val encryptedPstr = injector.instanceOf[ApplicationCrypto].QueryParameterCrypto.encrypt(PlainText(pstr)).value
   private val encryptedEmail = injector.instanceOf[ApplicationCrypto].QueryParameterCrypto.encrypt(PlainText(email)).value
 
   override def beforeEach(): Unit = {
@@ -74,44 +72,6 @@ class EmailResponseControllerSpec extends AsyncWordSpec with MustMatchers with M
 
     "respond with BAD_REQUEST when not given EmailEvents" in {
       val result = controller.retrieveStatus(PSP_SUBSCRIPTION, requestId, encryptedEmail, encryptedPspId)(fakeRequest.withBody(Json.obj("name" -> "invalid")))
-
-      verify(mockAuditService, never()).sendEvent(any())(any(), any())
-      status(result) mustBe BAD_REQUEST
-    }
-  }
-
-  "retrieveStatusForPSPDeauthorisation" must {
-    "respond OK when given EmailEvents" in {
-      val result = controller
-        .retrieveStatusForPSPDeauthorisation(encryptedPsaId, encryptedPspId, encryptedPstr, encryptedEmail)(fakeRequest.withBody(Json.toJson(emailEvents)))
-
-      status(result) mustBe OK
-      verify(mockAuditService, times(4)).sendEvent(eventCaptor.capture())(any(), any())
-      eventCaptor.getValue mustEqual PSPDeauthorisationEmailAuditEvent(psa, psp, pstr, email, Complained)
-    }
-
-    "respond with BAD_REQUEST when not given EmailEvents" in {
-      val result = controller
-        .retrieveStatusForPSPDeauthorisation(encryptedPsaId, encryptedPspId, encryptedPstr, encryptedEmail)(fakeRequest.withBody(Json.obj("name" -> "invalid")))
-
-      verify(mockAuditService, never()).sendEvent(any())(any(), any())
-      status(result) mustBe BAD_REQUEST
-    }
-  }
-
-  "retrieveStatusForPSPSelfDeauthorisation" must {
-    "respond OK when given EmailEvents" in {
-      val result = controller
-        .retrieveStatusForPSPSelfDeauthorisation(encryptedPspId, encryptedPstr, encryptedEmail)(fakeRequest.withBody(Json.toJson(emailEvents)))
-
-      status(result) mustBe OK
-      verify(mockAuditService, times(4)).sendEvent(eventCaptor.capture())(any(), any())
-      eventCaptor.getValue mustEqual PSPSelfDeauthorisationEmailAuditEvent(psp, pstr, email, Complained)
-    }
-
-    "respond with BAD_REQUEST when not given EmailEvents" in {
-      val result = controller
-        .retrieveStatusForPSPSelfDeauthorisation(encryptedPspId, encryptedPstr, encryptedEmail)(fakeRequest.withBody(Json.obj("name" -> "invalid")))
 
       verify(mockAuditService, never()).sendEvent(any())(any(), any())
       status(result) mustBe BAD_REQUEST

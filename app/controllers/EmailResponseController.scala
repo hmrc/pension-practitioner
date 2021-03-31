@@ -19,13 +19,13 @@ package controllers
 import audit._
 import com.google.inject.Inject
 import models.enumeration.JourneyType
-import models.{EmailEvents, Opened}
+import models.{Opened, EmailEvents}
 import play.api.Logger
 import play.api.libs.json.JsValue
 import play.api.mvc._
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.crypto.{ApplicationCrypto, Crypted}
-import uk.gov.hmrc.domain.{PsaId, PspId}
+import uk.gov.hmrc.domain.PspId
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -77,80 +77,6 @@ class EmailResponseController @Inject()(
     }
   }
 
-  def retrieveStatusForPSPAuthorisation(
-                                         encryptedPsaId: String,
-                                         encryptedPspId: String,
-                                         encryptedPstr: String,
-                                         encryptedEmail: String
-                                       ): Action[JsValue] = Action(parser.tolerantJson) {
-    implicit request =>
-      decryptAndValidateDetailsForPSPAuthAndDeauth(encryptedPsaId, encryptedPspId, encryptedPstr, encryptedEmail) match {
-        case Right(Tuple4(psaId, pspId, pstr, email)) =>
-          request.body.validate[EmailEvents].fold(
-            _ => BadRequest("Bad request received for psp authorisation email call back event"),
-            valid => {
-              valid.events.filterNot(
-                _.event == Opened
-              ).foreach { event =>
-                logger.debug(s"Email Audit event is $event")
-                auditService.sendEvent(PSPAuthorisationEmailAuditEvent(psaId.id, pspId.id, pstr, email, event.event))
-              }
-              Ok
-            }
-          )
-        case Left(result) => result
-      }
-  }
-
-  def retrieveStatusForPSPDeauthorisation(
-                                           encryptedPsaId: String,
-                                           encryptedPspId: String,
-                                           encryptedPstr: String,
-                                           encryptedEmail: String
-                                         ): Action[JsValue] = Action(parser.tolerantJson) {
-    implicit request =>
-      decryptAndValidateDetailsForPSPAuthAndDeauth(encryptedPsaId, encryptedPspId, encryptedPstr, encryptedEmail) match {
-        case Right(Tuple4(psaId, pspId, pstr, email)) =>
-          request.body.validate[EmailEvents].fold(
-            _ => BadRequest("Bad request received for psp de-authorisation email call back event"),
-            valid => {
-              valid.events.filterNot(
-                _.event == Opened
-              ).foreach { event =>
-                logger.debug(s"Email Audit event is $event")
-                auditService.sendEvent(PSPDeauthorisationEmailAuditEvent(psaId.id, pspId.id, pstr, email, event.event))
-              }
-              Ok
-            }
-          )
-        case Left(result) => result
-      }
-  }
-
-  def retrieveStatusForPSPSelfDeauthorisation(
-    encryptedPspId: String,
-    encryptedPstr: String,
-    encryptedEmail: String
-  ): Action[JsValue] = Action(parser.tolerantJson) {
-    implicit request =>
-      decryptAndValidateDetailsForPSPSelfDeauth(encryptedPspId, encryptedPstr, encryptedEmail) match {
-        case Right(Tuple3(pspId, pstr, email)) =>
-          request.body.validate[EmailEvents].fold(
-            _ => BadRequest("Bad request received for psp self-de-authorisation email call back event"),
-            valid => {
-              valid.events.filterNot(
-                _.event == Opened
-              ).foreach { event =>
-                logger.debug(s"Email Audit event is $event")
-                auditService.sendEvent(PSPSelfDeauthorisationEmailAuditEvent(pspId.id, pstr, email, event.event))
-              }
-              Ok
-            }
-          )
-        case Left(result) => result
-      }
-  }
-
   def retrieveStatusForPSPDeregistration(
                                           encryptedPspId: String,
                                           encryptedEmail: String
@@ -172,42 +98,6 @@ class EmailResponseController @Inject()(
           )
         case Left(result) => result
       }
-  }
-
-  private def decryptAndValidateDetailsForPSPAuthAndDeauth(
-                                                            encryptedPsaId: String,
-                                                            encryptedPspId: String,
-                                                            encryptedPstr: String,
-                                                            encryptedEmail: String): Either[Result, (PsaId, PspId, String, String)] = {
-
-    val psaId = crypto.QueryParameterCrypto.decrypt(Crypted(encryptedPsaId)).value
-    val pspId = crypto.QueryParameterCrypto.decrypt(Crypted(encryptedPspId)).value
-    val pstr = crypto.QueryParameterCrypto.decrypt(Crypted(encryptedPstr)).value
-    val emailAddress = crypto.QueryParameterCrypto.decrypt(Crypted(encryptedEmail)).value
-
-    try {
-      require(emailAddress.matches(emailRegex))
-      Right(Tuple4(PsaId(psaId), PspId(pspId), pstr, emailAddress))
-    } catch {
-      case _: IllegalArgumentException => Left(Forbidden(s"Malformed PSAID: $psaId, PSPID: $pspId, PSTR: $pstr or Email: $emailAddress"))
-    }
-  }
-
-  private def decryptAndValidateDetailsForPSPSelfDeauth(
-    encryptedPspId: String,
-    encryptedPstr: String,
-    encryptedEmail: String): Either[Result, (PspId, String, String)] = {
-
-    val pspId = crypto.QueryParameterCrypto.decrypt(Crypted(encryptedPspId)).value
-    val pstr = crypto.QueryParameterCrypto.decrypt(Crypted(encryptedPstr)).value
-    val emailAddress = crypto.QueryParameterCrypto.decrypt(Crypted(encryptedEmail)).value
-
-    try {
-      require(emailAddress.matches(emailRegex))
-      Right(Tuple3(PspId(pspId), pstr, emailAddress))
-    } catch {
-      case _: IllegalArgumentException => Left(Forbidden(s"Malformed PSPID: $pspId, PSTR: $pstr or Email: $emailAddress"))
-    }
   }
 
   private def decryptAndValidateDetailsForPSPDereg(
