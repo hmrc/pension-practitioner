@@ -17,9 +17,11 @@
 package utils
 
 import akka.util.ByteString
+import com.fasterxml.jackson.core.JsonParseException
 import play.api.Logger
 import play.api.http.HttpEntity
 import play.api.http.Status._
+import play.api.libs.json.{JsResultException, JsValue, Json, Reads}
 import play.api.mvc.{ResponseHeader, Result}
 import uk.gov.hmrc.http._
 
@@ -55,6 +57,8 @@ trait HttpResponseHelper extends HttpErrorFunctions {
         if (response.body.contains("INVALID_PAYLOAD"))
           logger.warn(s"INVALID_PAYLOAD returned for: ${args.headOption.getOrElse(url)} from: $url")
         new BadRequestException(badRequestMessage(httpMethod, url, response.body))
+      case FORBIDDEN =>
+        new BadRequestException(upstreamResponseMessage("POST", url, FORBIDDEN, response.body))
       case NOT_FOUND =>
         new NotFoundException(notFoundMessage(httpMethod, url, response.body))
       case status if is4xx(status) =>
@@ -64,6 +68,35 @@ trait HttpResponseHelper extends HttpErrorFunctions {
       case _ =>
         throw new UnrecognisedHttpResponseException(httpMethod, url, response)
     }
+
+  def parseJson(json: String, method: String, url: String): JsValue = {
+    try {
+      Json.parse(json)
+    }
+    catch {
+      case _: JsonParseException =>
+        throw new BadGatewayException(s"$method to $url returned a response that was not JSON")
+    }
+  }
+
+  def validateJson[T](json: JsValue, method: String, url: String, onInvalid: JsValue => Unit)
+                     (implicit reads: Reads[T]): T = {
+
+    json.validate[T].fold(
+      invalid => {
+        onInvalid(json)
+        throw new BadGatewayException(
+          s"$method to $url returned invalid JSON ${JsResultException(invalid).getMessage}"
+        )
+      },
+      identity
+    )
+  }
+
+  def parseAndValidateJson[T](json: String, method: String, url: String, onInvalid: JsValue => Unit)
+                             (implicit reads: Reads[T]): T = {
+    validateJson(parseJson(json, method, url), method, url, onInvalid)
+  }
 }
 
 class UnrecognisedHttpResponseException(method: String, url: String, response: HttpResponse)

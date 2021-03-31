@@ -23,7 +23,7 @@ import models.registerWithoutId._
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{times, verify, when}
 import org.mockito.{ArgumentCaptor, Mockito}
-import org.scalatest.{AsyncWordSpec, MustMatchers}
+import org.scalatest.{AsyncWordSpec, EitherValues, MustMatchers}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.http.Status
 import play.api.http.Status._
@@ -40,6 +40,7 @@ class RegistrationConnectorSpec
   extends AsyncWordSpec
     with MustMatchers
     with WireMockHelper
+    with EitherValues
     with MockitoSugar {
 
   import RegistrationConnectorSpec._
@@ -69,7 +70,8 @@ class RegistrationConnectorSpec
 
   private val eventCaptor = ArgumentCaptor.forClass(classOf[PSPRegistration])
 
-  private val testRegisterDataIndividual: JsObject = Json.obj("regime" -> "PODP", "requiresNameMatch" -> false, "isAnAgent" -> false)
+  private val testRegisterDataIndividual: JsObject =
+    Json.obj("regime" -> "PODP", "requiresNameMatch" -> false, "isAnAgent" -> false)
 
   when(mockHeaderUtils.desHeaderWithoutCorrelationId).thenReturn(Nil)
 
@@ -100,9 +102,11 @@ class RegistrationConnectorSpec
           )
       )
 
-      recoverToExceptionIf[UpstreamErrorResponse](connector.registerWithIdIndividual(externalId, testNino, testRegisterDataIndividual)) map {
+      recoverToExceptionIf[BadRequestException](
+        connector.registerWithIdIndividual(externalId, testNino, testRegisterDataIndividual)
+      ) map {
         ex =>
-          ex.statusCode mustBe BAD_REQUEST
+          ex.responseCode mustBe BAD_REQUEST
           ex.message must include("INVALID_NINO")
       }
     }
@@ -116,7 +120,9 @@ class RegistrationConnectorSpec
           )
       )
 
-      recoverToExceptionIf[UpstreamErrorResponse](connector.registerWithIdIndividual(externalId, testNino, testRegisterDataIndividual)) map {
+      recoverToExceptionIf[UpstreamErrorResponse](
+        connector.registerWithIdIndividual(externalId, testNino, testRegisterDataIndividual)
+      ) map {
         ex =>
           ex.statusCode mustBe SERVICE_UNAVAILABLE
       }
@@ -135,8 +141,16 @@ class RegistrationConnectorSpec
       )
       connector.registerWithIdIndividual(externalId, testNino, testRegisterDataIndividual).map { _ =>
         verify(mockAuditService, times(1)).sendEvent(eventCaptor.capture())(any(), any())
-        eventCaptor.getValue mustEqual PSPRegistration(withId = true, externalId, "Individual", found = true,
-          Some(true), Status.OK, testRegisterDataIndividual, Some(Json.toJson(registerIndividualResponse.as[RegisterWithIdResponse])))
+        eventCaptor.getValue mustEqual PSPRegistration(
+          withId = true,
+          externalId = externalId,
+          psaType = "Individual",
+          found = true,
+          isUk = Some(true),
+          status = Status.OK,
+          request = testRegisterDataIndividual,
+          response = Some(Json.toJson(registerIndividualResponse.as[RegisterWithIdResponse]))
+        )
       }
     }
   }
@@ -154,7 +168,7 @@ class RegistrationConnectorSpec
 
       connector.registerWithIdOrganisation(externalId, testUtr, testRegisterDataOrganisation).map {
         response =>
-          response mustBe registerOrganisationResponse.as[RegisterWithIdResponse]
+          response.right.value mustBe registerOrganisationResponse.as[RegisterWithIdResponse]
       }
     }
 
@@ -168,10 +182,10 @@ class RegistrationConnectorSpec
           )
       )
 
-      recoverToExceptionIf[UpstreamErrorResponse](connector.registerWithIdOrganisation(externalId, testUtr, testRegisterDataOrganisation)) map {
-        ex =>
-          ex.statusCode mustBe BAD_REQUEST
-          ex.message must include("INVALID_UTR")
+      connector.registerWithIdOrganisation(externalId, testUtr, testRegisterDataOrganisation) map {
+        res =>
+          res.left.value.responseCode mustBe BAD_REQUEST
+          res.left.value.message must include("INVALID_UTR")
       }
     }
 
@@ -184,7 +198,9 @@ class RegistrationConnectorSpec
           )
       )
 
-      recoverToExceptionIf[UpstreamErrorResponse](connector.registerWithIdOrganisation(externalId, testUtr, testRegisterDataOrganisation)) map {
+      recoverToExceptionIf[UpstreamErrorResponse](
+        connector.registerWithIdOrganisation(externalId, testUtr, testRegisterDataOrganisation)
+      ) map {
         ex =>
           ex.statusCode mustBe CONFLICT
       }
@@ -204,8 +220,16 @@ class RegistrationConnectorSpec
 
       connector.registerWithIdOrganisation(externalId, testUtr, testRegisterDataOrganisation).map { _ =>
         verify(mockAuditService, times(1)).sendEvent(eventCaptor.capture())(any(), any())
-        eventCaptor.getValue mustEqual PSPRegistration(withId = true, externalId, psaType, found = true,
-          Some(true), Status.OK, testRegisterDataOrganisation, Some(Json.toJson(registerOrganisationResponse.as[RegisterWithIdResponse])))
+        eventCaptor.getValue mustEqual PSPRegistration(
+          withId = true,
+          externalId = externalId,
+          psaType = psaType,
+          found = true,
+          isUk = Some(true),
+          status = Status.OK,
+          request = testRegisterDataOrganisation,
+          response = Some(Json.toJson(registerOrganisationResponse.as[RegisterWithIdResponse]))
+        )
       }
     }
   }
@@ -230,7 +254,10 @@ class RegistrationConnectorSpec
     "send a PSPRegistration audit event on success" in {
       Mockito.reset(mockAuditService)
       when(mockHeaderUtils.getCorrelationId(any())).thenReturn(testCorrelationId)
-      val regWithoutIdRequest = Json.toJson(organisationRegistrant)(OrganisationRegistrant.writesOrganisationRegistrantRequest(testCorrelationId))
+      val regWithoutIdRequest =
+        Json.toJson(organisationRegistrant)(
+          OrganisationRegistrant.writesOrganisationRegistrantRequest(testCorrelationId)
+        )
       server.stubFor(
         post(urlEqualTo(registerOrganisationWithoutIdUrl))
           .willReturn(
@@ -242,8 +269,16 @@ class RegistrationConnectorSpec
 
       connector.registrationNoIdOrganisation(externalId, organisationRegistrant).map { _ =>
         verify(mockAuditService, times(1)).sendEvent(eventCaptor.capture())(any(), any())
-        eventCaptor.getValue mustEqual PSPRegistration(withId = false, externalId, "Organisation", found = true,
-          Some(false), Status.OK, regWithoutIdRequest, Some(registerWithoutIdResponseJson))
+        eventCaptor.getValue mustEqual PSPRegistration(
+          withId = false,
+          externalId = externalId,
+          psaType = "Organisation",
+          found = true,
+          isUk = Some(false),
+          status = Status.OK,
+          request = regWithoutIdRequest,
+          response = Some(registerWithoutIdResponseJson)
+        )
       }
     }
   }
@@ -279,8 +314,16 @@ class RegistrationConnectorSpec
 
       connector.registrationNoIdIndividual(externalId, registerIndividualWithoutIdRequest).map { _ =>
         verify(mockAuditService, times(1)).sendEvent(eventCaptor.capture())(any(), any())
-        eventCaptor.getValue mustEqual PSPRegistration(withId = false, externalId, "Individual", found = true,
-          Some(false), Status.OK, registerIndividualWithoutIdRequestJson, Some(registerWithoutIdResponseJson))
+        eventCaptor.getValue mustEqual PSPRegistration(
+          withId = false,
+          externalId = externalId,
+          psaType = "Individual",
+          found = true,
+          isUk = Some(false),
+          status = Status.OK,
+          request = registerIndividualWithoutIdRequestJson,
+          response = Some(registerWithoutIdResponseJson)
+        )
       }
     }
   }
@@ -391,7 +434,9 @@ object RegistrationConnectorSpec {
     )
 
   private val registerIndividualWithoutIdRequestJson: JsValue =
-    Json.toJson(registerIndividualWithoutIdRequest)(RegisterWithoutIdIndividualRequest.writesRegistrationNoIdIndividualRequest(testCorrelationId))
+    Json.toJson(registerIndividualWithoutIdRequest)(
+      RegisterWithoutIdIndividualRequest.writesRegistrationNoIdIndividualRequest(testCorrelationId)
+    )
 
   private def errorResponse(code: String): String = {
     Json.obj(

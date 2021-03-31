@@ -38,7 +38,11 @@ import uk.gov.hmrc.http._
 
 import scala.concurrent.Future
 
-class RegistrationControllerSpec extends AsyncWordSpec with MustMatchers with MockitoSugar with BeforeAndAfter {
+class RegistrationControllerSpec
+  extends AsyncWordSpec
+    with MustMatchers
+    with MockitoSugar
+    with BeforeAndAfter {
 
   import RegistrationControllerSpec._
 
@@ -130,7 +134,7 @@ class RegistrationControllerSpec extends AsyncWordSpec with MustMatchers with Mo
 
       when(mockRegistrationConnector.registerWithIdOrganisation(
         Matchers.eq(externalId), Matchers.eq(utr), Matchers.eq(mandatoryRequestData)
-      )(any(), any(), any())).thenReturn(Future.successful(successResponse))
+      )(any(), any(), any())).thenReturn(Future.successful(Right(successResponse)))
 
       val result = controller.registerWithIdOrganisation(fakeRequestWithUtr)
 
@@ -146,7 +150,7 @@ class RegistrationControllerSpec extends AsyncWordSpec with MustMatchers with Mo
 
       when(mockRegistrationConnector.registerWithIdOrganisation(
         Matchers.eq(externalId), Matchers.eq(nino), Matchers.eq(mandatoryRequestData)
-      )(any(), any(), any())).thenReturn(Future.successful(successResponse))
+      )(any(), any(), any())).thenReturn(Future.successful(Right(successResponse)))
 
       recoverToExceptionIf[BadRequestException] {
         controller.registerWithIdOrganisation(FakeRequest("", ""))
