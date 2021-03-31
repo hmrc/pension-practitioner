@@ -37,7 +37,8 @@ class RegistrationConnector @Inject()(
                                      )
   extends HttpResponseHelper {
 
-  private def desHeaderCarrier: HeaderCarrier = HeaderCarrier(extraHeaders = headerUtils.desHeaderWithoutCorrelationId)
+  private def desHeaderCarrier: HeaderCarrier =
+    HeaderCarrier(extraHeaders = headerUtils.desHeaderWithoutCorrelationId)
 
   def registerWithIdIndividual(
                                 externalId: String,
@@ -93,8 +94,8 @@ class RegistrationConnector @Inject()(
         response.status match {
           case OK =>
             Json.parse(response.body).validate[RegisterWithIdResponse] match {
-              case JsSuccess(_, _) => Right(response.asInstanceOf[RegisterWithIdResponse])
-              case JsError(_) => Left(new HttpException("Blah", response.status))
+              case JsSuccess(value, _) => Right(value)
+              case JsError(errors) => throw JsResultException(errors)
             }
           case _ =>
             Left(handleErrorResponse("POST", registerWithIdUrl)(response))

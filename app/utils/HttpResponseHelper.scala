@@ -57,8 +57,8 @@ trait HttpResponseHelper extends HttpErrorFunctions {
         if (response.body.contains("INVALID_PAYLOAD"))
           logger.warn(s"INVALID_PAYLOAD returned for: ${args.headOption.getOrElse(url)} from: $url")
         new BadRequestException(badRequestMessage(httpMethod, url, response.body))
-      case FORBIDDEN if response.body.contains("INVALID_SUBMISSION") =>
-        new BadRequestException(upstreamResponseMessage("POST", url, BAD_REQUEST, response.body))
+      case FORBIDDEN =>
+        new BadRequestException(upstreamResponseMessage("POST", url, FORBIDDEN, response.body))
       case NOT_FOUND =>
         new NotFoundException(notFoundMessage(httpMethod, url, response.body))
       case status if is4xx(status) =>
