@@ -18,13 +18,15 @@ package utils
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.networknt.schema.{JsonSchema, JsonSchemaFactory, ValidationMessage}
-import play.api.Logger.logger
+import org.slf4j.LoggerFactory
 import play.api.libs.json._
 
 import scala.collection.JavaConverters._
 
 
 class InvalidPayloadHandler {
+
+  private val logger = LoggerFactory.getLogger("InvalidPayloadHandler")
 
   private[utils] def loadSchema(schemaFileName: String): JsonSchema = {
     val schemaUrl = getClass.getResource(schemaFileName)

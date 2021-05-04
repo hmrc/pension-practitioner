@@ -3,9 +3,8 @@ import sbt._
 object AppDependencies {
 
   val compile = Seq(
-
     "uk.gov.hmrc"             %% "simple-reactivemongo"       % "8.0.0-play-27",
-    "uk.gov.hmrc"             %% "bootstrap-backend-play-27"  % "3.4.0",
+    "uk.gov.hmrc"             %% "bootstrap-backend-play-27"  % "5.0.0",
     "com.networknt"           %  "json-schema-validator"      % "1.0.3",
     "uk.gov.hmrc"             %% "domain"                     % "5.11.0-play-27"
   )
@@ -19,5 +18,4 @@ object AppDependencies {
     "com.github.tomakehurst"  %  "wiremock-jre8"      % "2.26.0"  % "test",
     "org.scalatestplus.play"  %% "scalatestplus-play" % "3.1.2"   % "test, it"
   )
-
 }

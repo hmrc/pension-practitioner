@@ -99,9 +99,7 @@ class EmailResponseControllerSpec extends AsyncWordSpec with MustMatchers with M
 }
 
 object EmailResponseControllerSpec {
-  private val psa = "A8654321"
   private val psp = "27654321"
-  private val pstr = "121212"
   private val email = "test@test.com"
   private val requestId = "test-request-id"
   private val fakeRequest = FakeRequest("", "")
