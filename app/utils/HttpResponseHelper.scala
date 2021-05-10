@@ -29,10 +29,6 @@ import scala.util.matching.Regex
 
 trait HttpResponseHelper extends HttpErrorFunctions {
 
-  implicit val httpResponseReads: HttpReads[HttpResponse] = new HttpReads[HttpResponse] {
-    override def read(method: String, url: String, response: HttpResponse): HttpResponse = response
-  }
-
   private val logger = Logger(classOf[HttpResponseHelper])
 
   def result(res: HttpResponse): Result = {

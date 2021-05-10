@@ -102,11 +102,11 @@ class RegistrationConnectorSpec
           )
       )
 
-      recoverToExceptionIf[BadRequestException](
+      recoverToExceptionIf[UpstreamErrorResponse](
         connector.registerWithIdIndividual(externalId, testNino, testRegisterDataIndividual)
       ) map {
         ex =>
-          ex.responseCode mustBe BAD_REQUEST
+          ex.statusCode mustBe BAD_REQUEST
           ex.message must include("INVALID_NINO")
       }
     }

@@ -24,6 +24,7 @@ import play.api.libs.json.JsValue
 import play.api.mvc.RequestHeader
 import uk.gov.hmrc.http.{HttpClient, _}
 import utils.{ErrorHandler, HttpResponseHelper}
+import uk.gov.hmrc.http.HttpReads.Implicits._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -53,15 +54,19 @@ class SchemeConnectorImpl @Inject()(
                              ec: ExecutionContext,
                              request: RequestHeader): Future[Either[HttpResponse, JsValue]] = {
 
-    val headers = Seq(("idType", "pspid"), ("idValue", pspId), ("Content-Type", "application/json"))
-    implicit val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
+    val headers: Seq[(String, String)] =
+      Seq(("idType", "pspid"), ("idValue", pspId))
+    implicit val hc: HeaderCarrier =
+      headerCarrier
+        .withExtraHeaders(CacheConnector.headers(headerCarrier): _*)
+        .withExtraHeaders(headers: _*)
     val url: String = config.listOfSchemesUrl
 
     http.GET[HttpResponse](url)(implicitly, hc, implicitly) map { response =>
       response.status match {
         case OK => Right(response.json)
         case _ =>
-          logger.error(s"List schemes with headers: ${hc.headers} and url $url" +
+          logger.error(s"List schemes with headers: (idType, pspid), (idValue $pspId) and url $url" +
             s" returned response ${response.status} with body ${response.body}")
           Left(response)
       }
