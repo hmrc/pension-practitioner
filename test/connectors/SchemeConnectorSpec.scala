@@ -58,7 +58,7 @@ class SchemeConnectorSpec
 
   private val pspId = "21000000"
   private val idType = "pspid"
-  private val listOfSchemesUrl = "/pensions-scheme/if-list-of-schemes"
+  private val listOfSchemesUrl = "/pensions-scheme/list-of-schemes"
 
   when(mockHeaderUtils.integrationFrameworkHeader).thenReturn(Nil)
 
