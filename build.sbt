@@ -18,7 +18,8 @@ lazy val microservice = Project(appName, file("."))
   .settings(scalaVersion := "2.12.11")
   .settings(publishingSettings: _*)
   .settings(
-    RoutesKeys.routesImport ++= Seq("models.enumeration.JourneyType"),
+    RoutesKeys.routesImport ++= Seq("models.enumeration.JourneyType",
+      "models.FeatureToggleName"),
     PlayKeys.devSettings += "play.server.http.port" -> "8209"
   )
   .configs(IntegrationTest)
@@ -30,6 +31,9 @@ lazy val microservice = Project(appName, file("."))
     ScoverageKeys.coverageMinimum := 80,
     ScoverageKeys.coverageFailOnMinimum := true,
     ScoverageKeys.coverageHighlighting := true
+  )
+  .settings(
+    javaOptions in Test += "-Dconfig.file=conf/test.application.conf"
   )
   .settings(resolvers += Resolver.jcenterRepo)
 

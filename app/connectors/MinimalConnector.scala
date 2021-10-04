@@ -75,7 +75,7 @@ class MinimalConnectorImpl @Inject()(httpClient: HttpClient,
   case object MinDetailsInvalidResponseException extends Exception
 
   private def validateGetJson(response: HttpResponse): MinimalDetails =
-    response.json.validate[MinimalDetails].fold(
+    response.json.validate[MinimalDetails](MinimalDetails.reads).fold(
       _ => {
         invalidPayloadHandler.logFailures("/resources/schemas/minimalDetails.json")(response.json)
         throw MinDetailsInvalidResponseException

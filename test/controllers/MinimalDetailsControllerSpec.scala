@@ -17,6 +17,8 @@
 package controllers
 
 import connectors.MinimalConnector
+import models.FeatureToggle.{Disabled, Enabled}
+import models.FeatureToggleName.PspMinimalDetails
 import models._
 import org.mockito.Matchers._
 import org.mockito.Mockito._
@@ -26,6 +28,8 @@ import play.api.libs.json.Json
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import repository.MinimalDetailsCacheRepository
+import service.FeatureToggleService
 import uk.gov.hmrc.http._
 
 import scala.concurrent.Future
@@ -39,7 +43,64 @@ class MinimalDetailsControllerSpec extends AsyncWordSpec with MustMatchers {
 
       when(mockMinimalConnector.getMinimalDetails(any(), any(), any())(any(), any(), any()))
         .thenReturn(Future.successful(Right(minimalDetailsIndividualUser)))
+      when(mockFeatureToggleService.get(any()))
+        .thenReturn(Future.successful(Disabled(PspMinimalDetails)))
+      val result = controller.getMinimalDetails(fakeRequest.withHeaders(("pspId", "A2123456")))
 
+      status(result) mustBe OK
+      contentAsJson(result) mustBe Json.toJson(minimalDetailsIndividualUser)
+    }
+
+    "return OK when service returns successfully with Toggle enabled and success form Repo" in {
+
+      when(mockFeatureToggleService.get(any()))
+        .thenReturn(Future.successful(Enabled(PspMinimalDetails)))
+
+      when(mockMinimalDetailsCacheRepository.get(any())(any()))
+        .thenReturn (Future.successful {
+          Some(Json.toJson(minimalDetailsIndividualUser))
+        })
+
+
+      val result = controller.getMinimalDetails(fakeRequest.withHeaders(("pspId", "A2123456")))
+
+      status(result) mustBe OK
+      contentAsJson(result) mustBe Json.toJson(minimalDetailsIndividualUser)
+    }
+
+    "return OK when service returns successfully with Toggle enabled and Validation Error " in {
+
+      when(mockFeatureToggleService.get(any()))
+        .thenReturn(Future.successful(Enabled(PspMinimalDetails)))
+
+      when(mockMinimalDetailsCacheRepository.get(any())(any()))
+        .thenReturn(Future.successful {
+          Some(Json.obj())
+        })
+      when(mockMinimalConnector.getMinimalDetails(any(), any(), any())(any(), any(), any()))
+        .thenReturn(Future.successful(Right(minimalDetailsIndividualUser)))
+
+      when(mockMinimalDetailsCacheRepository.upsert(any(),any())(any()))
+        .thenReturn(Future.successful(true))
+      val result = controller.getMinimalDetails(fakeRequest.withHeaders(("pspId", "A2123456")))
+
+      status(result) mustBe OK
+      contentAsJson(result) mustBe Json.toJson(minimalDetailsIndividualUser)
+    }
+
+    "return OK when service returns successfully with Toggle enabled and None data " in {
+
+      when(mockFeatureToggleService.get(any()))
+        .thenReturn(Future.successful(Enabled(PspMinimalDetails)))
+      when(mockMinimalDetailsCacheRepository.get(any())(any()))
+        .thenReturn(Future.successful {
+          None
+        })
+      when(mockMinimalConnector.getMinimalDetails(any(), any(), any())(any(), any(), any()))
+        .thenReturn(Future.successful(Right(minimalDetailsIndividualUser)))
+
+      when(mockMinimalDetailsCacheRepository.upsert(any(),any())(any()))
+        .thenReturn(Future.successful(true))
       val result = controller.getMinimalDetails(fakeRequest.withHeaders(("pspId", "A2123456")))
 
       status(result) mustBe OK
@@ -50,6 +111,8 @@ class MinimalDetailsControllerSpec extends AsyncWordSpec with MustMatchers {
 
       when(mockMinimalConnector.getMinimalDetails(any(), any(), any())(any(), any(), any()))
         .thenReturn(Future.successful(Left(HttpResponse(BAD_REQUEST, "bad request"))))
+      when(mockFeatureToggleService.get(any()))
+        .thenReturn(Future.successful(Disabled(PspMinimalDetails)))
 
       val result = controller.getMinimalDetails(fakeRequest.withHeaders(("pspId", "A2123456")))
 
@@ -61,7 +124,8 @@ class MinimalDetailsControllerSpec extends AsyncWordSpec with MustMatchers {
 
       when(mockMinimalConnector.getMinimalDetails(any(), any(), any())(any(), any(), any()))
         .thenReturn(Future.successful(Left(HttpResponse(NOT_FOUND, "not found"))))
-
+      when(mockFeatureToggleService.get(any()))
+        .thenReturn(Future.successful(Disabled(PspMinimalDetails)))
       val result = controller.getMinimalDetails(fakeRequest.withHeaders(("pspId", "A2123456")))
 
       status(result) mustBe NOT_FOUND
@@ -97,6 +161,9 @@ object MinimalDetailsControllerSpec extends MockitoSugar {
     )
 
   val mockMinimalConnector: MinimalConnector = mock[MinimalConnector]
-  def controller: MinimalDetailsController = new MinimalDetailsController(mockMinimalConnector, stubControllerComponents())
+  val mockMinimalDetailsCacheRepository: MinimalDetailsCacheRepository = mock[MinimalDetailsCacheRepository]
+  val mockFeatureToggleService: FeatureToggleService = mock[FeatureToggleService]
+  def controller: MinimalDetailsController = new MinimalDetailsController(mockMinimalConnector,mockMinimalDetailsCacheRepository,
+    mockFeatureToggleService, stubControllerComponents())
 
 }
