@@ -19,9 +19,10 @@ package connectors
 import audit.AuditService
 import com.github.tomakehurst.wiremock.client.WireMock._
 import models.{IndividualDetails, MinimalDetails}
-import org.mockito.Mockito.when
-import org.scalatest.{AsyncWordSpec, EitherValues, MustMatchers}
-import org.scalatestplus.mockito.MockitoSugar
+import org.mockito.MockitoSugar
+import org.scalatest.EitherValues
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AsyncWordSpec
 import play.api.http.Status.{BAD_REQUEST, FORBIDDEN, INTERNAL_SERVER_ERROR, NOT_FOUND}
 import play.api.inject.bind
 import play.api.inject.guice.GuiceableModule
@@ -31,7 +32,7 @@ import play.api.test.FakeRequest
 import uk.gov.hmrc.http._
 import utils.WireMockHelper
 
-class MinimalConnectorSpec extends AsyncWordSpec with MustMatchers with WireMockHelper
+class MinimalConnectorSpec extends AsyncWordSpec with Matchers with WireMockHelper
   with EitherValues with MockitoSugar {
 
   import MinimalConnectorSpec._

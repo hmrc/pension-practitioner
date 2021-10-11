@@ -16,16 +16,16 @@
 
 package transformations.userAnswersToDes
 
-import org.scalatest.FreeSpec
-import org.scalatest.MustMatchers
 import org.scalatest.OptionValues
 import play.api.libs.json.JsObject
 import play.api.libs.json.Json
 import utils.TestHelpers._
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.must.Matchers
 
 class PSPSubscriptionTransformerSpec
-  extends FreeSpec
-    with MustMatchers
+  extends AnyFreeSpec
+    with Matchers
     with OptionValues {
 
   import PSPSubscriptionTransformerSpec._

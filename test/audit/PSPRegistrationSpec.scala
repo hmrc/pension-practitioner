@@ -16,11 +16,12 @@
 
 package audit
 
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
 import play.api.libs.json.Json
 
 class PSPRegistrationSpec
-  extends FlatSpec
+  extends AnyFlatSpec
     with Matchers {
 
   "PSPRegistration" should "output the correct map of data" in {

@@ -17,8 +17,10 @@
 package connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock._
-import org.scalatest.{AsyncWordSpec, EitherValues, MustMatchers}
-import org.scalatestplus.mockito.MockitoSugar
+import org.scalatest.EitherValues
+import org.mockito.MockitoSugar
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AsyncWordSpec
 import play.api.http.Status._
 import play.api.libs.json.Json
 import play.api.mvc.RequestHeader
@@ -26,7 +28,7 @@ import play.api.test.FakeRequest
 import uk.gov.hmrc.http._
 import utils.WireMockHelper
 
-class AssociationConnectorSpec extends AsyncWordSpec with MustMatchers with WireMockHelper
+class AssociationConnectorSpec extends AsyncWordSpec with Matchers with WireMockHelper
   with EitherValues with MockitoSugar {
 
   private implicit lazy val hc: HeaderCarrier = HeaderCarrier()

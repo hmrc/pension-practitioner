@@ -20,12 +20,12 @@ import akka.stream.Materializer
 import connectors.RegistrationConnector
 import models.registerWithId.RegisterWithIdResponse
 import models.registerWithoutId.{OrganisationRegistrant, RegisterWithoutIdIndividualRequest, RegisterWithoutIdResponse}
-import org.mockito.Matchers
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{reset, times, verify, when}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{AsyncWordSpec, BeforeAndAfter, MustMatchers}
-import org.scalatestplus.mockito.MockitoSugar
+import org.mockito.MockitoSugar
 import play.api.Application
 import play.api.inject.bind
 import play.api.inject.guice.{GuiceApplicationBuilder, GuiceableModule}
@@ -80,7 +80,7 @@ class RegistrationControllerSpec
       val successResponse: RegisterWithIdResponse = registerWithIdIndividualResponse.as[RegisterWithIdResponse]
 
       when(mockRegistrationConnector.registerWithIdIndividual(
-        Matchers.eq(externalId), Matchers.eq(nino), Matchers.eq(mandatoryRequestData)
+        ArgumentMatchers.eq(externalId), ArgumentMatchers.eq(nino), ArgumentMatchers.eq(mandatoryRequestData)
       )(any(), any(), any())).thenReturn(Future.successful(successResponse))
 
       val result = controller.registerWithIdIndividual(fakeRequestWithNino)
@@ -96,7 +96,7 @@ class RegistrationControllerSpec
       val successResponse: RegisterWithIdResponse = registerWithIdIndividualResponse.as[RegisterWithIdResponse]
 
       when(mockRegistrationConnector.registerWithIdIndividual(
-        Matchers.eq(externalId), Matchers.eq(nino), Matchers.eq(mandatoryRequestData)
+        ArgumentMatchers.eq(externalId), ArgumentMatchers.eq(nino), ArgumentMatchers.eq(mandatoryRequestData)
       )(any(), any(), any())).thenReturn(Future.successful(successResponse))
 
       recoverToExceptionIf[BadRequestException] {
@@ -133,7 +133,7 @@ class RegistrationControllerSpec
       val successResponse: RegisterWithIdResponse = registerWithIdOrganisationResponse.as[RegisterWithIdResponse]
 
       when(mockRegistrationConnector.registerWithIdOrganisation(
-        Matchers.eq(externalId), Matchers.eq(utr), Matchers.eq(mandatoryRequestData)
+        ArgumentMatchers.eq(externalId), ArgumentMatchers.eq(utr), ArgumentMatchers.eq(mandatoryRequestData)
       )(any(), any(), any())).thenReturn(Future.successful(Right(successResponse)))
 
       val result = controller.registerWithIdOrganisation(fakeRequestWithUtr)
@@ -149,7 +149,7 @@ class RegistrationControllerSpec
       val successResponse: RegisterWithIdResponse = registerWithIdOrganisationResponse.as[RegisterWithIdResponse]
 
       when(mockRegistrationConnector.registerWithIdOrganisation(
-        Matchers.eq(externalId), Matchers.eq(nino), Matchers.eq(mandatoryRequestData)
+        ArgumentMatchers.eq(externalId), ArgumentMatchers.eq(nino), ArgumentMatchers.eq(mandatoryRequestData)
       )(any(), any(), any())).thenReturn(Future.successful(Right(successResponse)))
 
       recoverToExceptionIf[BadRequestException] {
@@ -199,7 +199,7 @@ class RegistrationControllerSpec
       val successResponse: RegisterWithoutIdResponse = RegisterWithoutIdResponse("XE0001234567890", "1234567890")
 
       when(mockRegistrationConnector.registrationNoIdIndividual(
-        Matchers.eq(externalId), Matchers.eq(requestBody.as[RegisterWithoutIdIndividualRequest]))(any(), any(), any()))
+        ArgumentMatchers.eq(externalId), ArgumentMatchers.eq(requestBody.as[RegisterWithoutIdIndividualRequest]))(any(), any(), any()))
         .thenReturn(Future.successful(successResponse))
 
       val result = call(controller.registrationNoIdIndividual, fakeRequestWithNoIdIndBody)
@@ -255,7 +255,7 @@ class RegistrationControllerSpec
       val successResponse: RegisterWithoutIdResponse = RegisterWithoutIdResponse("XE0001234567890", "1234567890")
 
       when(mockRegistrationConnector.registrationNoIdOrganisation(
-        Matchers.eq(externalId), Matchers.eq(requestBody.as[OrganisationRegistrant]))(any(), any(), any()))
+        ArgumentMatchers.eq(externalId), ArgumentMatchers.eq(requestBody.as[OrganisationRegistrant]))(any(), any(), any()))
         .thenReturn(Future.successful(successResponse))
 
       val result = call(controller.registrationNoIdOrganisation, fakeRequestWithNoIdOrgBody)
