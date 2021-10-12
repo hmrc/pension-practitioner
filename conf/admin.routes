@@ -1,0 +1,10 @@
+#admin
+
+GET        /metrics                            @com.kenshoo.play.metrics.MetricsController.metrics
+
++nocsrf
+GET        /feature-toggles                    controllers.admin.FeatureToggleController.getAll()
++nocsrf
+GET        /feature-toggles/:toggleName        controllers.admin.FeatureToggleController.get(toggleName: FeatureToggleName)
++nocsrf
+PUT        /feature-toggles/:toggleName        controllers.admin.FeatureToggleController.put(toggleName: FeatureToggleName)
