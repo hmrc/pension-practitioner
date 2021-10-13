@@ -253,7 +253,7 @@ class RegistrationConnectorSpec
 
     "send a PSPRegistration audit event on success" in {
       Mockito.reset(mockAuditService)
-      when(mockHeaderUtils.getCorrelationId(any())).thenReturn(testCorrelationId)
+      when(mockHeaderUtils.getCorrelationId).thenReturn(testCorrelationId)
       val regWithoutIdRequest =
         Json.toJson(organisationRegistrant)(
           OrganisationRegistrant.writesOrganisationRegistrantRequest(testCorrelationId)
@@ -302,7 +302,7 @@ class RegistrationConnectorSpec
 
     "send a PSPRegistration audit event on success" in {
       Mockito.reset(mockAuditService)
-      when(mockHeaderUtils.getCorrelationId(any())).thenReturn(testCorrelationId)
+      when(mockHeaderUtils.getCorrelationId).thenReturn(testCorrelationId)
       server.stubFor(
         post(urlEqualTo(registerIndividualWithoutIdUrl))
           .willReturn(
