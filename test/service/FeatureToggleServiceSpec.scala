@@ -21,14 +21,14 @@ import models.FeatureToggle.{Disabled, Enabled}
 import models.FeatureToggleName.PspMinimalDetails
 import models.{FeatureToggle, FeatureToggleName, OperationFailed, OperationSucceeded}
 import org.mockito.ArgumentCaptor
-import org.mockito.Matchers.any
-import org.mockito.Mockito.{times, verify, when}
+import org.mockito.ArgumentMatchers.any
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.OptionValues.convertOptionToValuable
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{MustMatchers, WordSpec}
-import org.scalatestplus.mockito.MockitoSugar
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AnyWordSpec
+import org.mockito.MockitoSugar
 import play.api.cache.AsyncCacheApi
 import repository.AdminDataRepository
 
@@ -38,10 +38,10 @@ import scala.concurrent.duration.Duration
 import scala.reflect.ClassTag
 
 class FeatureToggleServiceSpec
-  extends WordSpec
+  extends AnyWordSpec
     with MockitoSugar
     with ScalaFutures
-    with MustMatchers {
+    with Matchers {
 
   implicit private val arbitraryFeatureToggleName: Arbitrary[FeatureToggleName] =
     Arbitrary {

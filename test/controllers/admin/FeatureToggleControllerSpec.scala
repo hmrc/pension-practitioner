@@ -19,10 +19,9 @@ package controllers.admin
 import models.FeatureToggle.Enabled
 import models.FeatureToggleName.PspMinimalDetails
 import models.OperationSucceeded
-import org.mockito.Matchers.any
-import org.mockito.Mockito.{reset, times, verify, when}
+import org.mockito.ArgumentMatchers.any
+import org.mockito.MockitoSugar
 import org.scalatest.BeforeAndAfterEach
-import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsBoolean, Json}
 import play.api.mvc.{AnyContentAsEmpty, ControllerComponents}
