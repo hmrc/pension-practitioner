@@ -119,7 +119,7 @@ class RegistrationConnector @Inject()(
                                   request: RequestHeader
                                 ): Future[RegisterWithoutIdResponse] = {
     val url = config.registerWithoutIdIndividualUrl
-    val correlationId = headerUtils.getCorrelationId(headerCarrier.requestId.map(_.value))
+    val correlationId = headerUtils.getCorrelationId(None)
     val registerWithNoIdData =
       Json.toJson(registerData)(
         RegisterWithoutIdIndividualRequest.writesRegistrationNoIdIndividualRequest(correlationId)
@@ -151,7 +151,7 @@ class RegistrationConnector @Inject()(
                                     request: RequestHeader
                                   ): Future[RegisterWithoutIdResponse] = {
     val url = config.registerWithoutIdOrganisationUrl
-    val correlationId = headerUtils.getCorrelationId(headerCarrier.requestId.map(_.value))
+    val correlationId = headerUtils.getCorrelationId(None)
     val registerWithNoIdData =
       Json.toJson(registerData)(
         OrganisationRegistrant.writesOrganisationRegistrantRequest(correlationId)
