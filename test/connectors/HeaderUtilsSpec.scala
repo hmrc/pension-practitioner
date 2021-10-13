@@ -17,14 +17,14 @@
 package connectors
 
 import config.AppConfig
-import org.scalatest.{MustMatchers, WordSpec}
-import org.scalatestplus.mockito.MockitoSugar
+import org.mockito.MockitoSugar
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import repository.DataCacheRepository
+import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.matchers.must.Matchers
 
-
-class HeaderUtilsSpec extends WordSpec with MustMatchers {
+class HeaderUtilsSpec extends AnyWordSpec with Matchers {
 
   import HeaderUtilsSpec._
 

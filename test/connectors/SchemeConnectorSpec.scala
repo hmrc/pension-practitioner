@@ -19,9 +19,10 @@ package connectors
 import audit.AuditService
 import com.github.tomakehurst.wiremock.client.WireMock._
 import models.SchemeDetails
-import org.mockito.Mockito.when
-import org.scalatest.{AsyncWordSpec, EitherValues, MustMatchers}
-import org.scalatestplus.mockito.MockitoSugar
+import org.mockito.MockitoSugar
+import org.scalatest.EitherValues
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AsyncWordSpec
 import play.api.inject.bind
 import play.api.inject.guice.GuiceableModule
 import play.api.libs.json.{JsValue, Json}
@@ -33,7 +34,7 @@ import utils.WireMockHelper
 
 class SchemeConnectorSpec
   extends AsyncWordSpec
-    with MustMatchers
+    with Matchers
     with WireMockHelper
     with EitherValues
     with MockitoSugar {

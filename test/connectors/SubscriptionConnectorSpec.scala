@@ -16,25 +16,18 @@
 
 package connectors
 
-import audit.AuditService
-import audit.PSPSubscription
+import audit.{AuditService, PSPSubscription}
 import com.github.tomakehurst.wiremock.client.WireMock._
-import org.mockito.ArgumentCaptor
-import org.mockito.Matchers.any
-import org.mockito.Mockito
-import org.mockito.Mockito.times
-import org.mockito.Mockito.verify
-import org.mockito.Mockito.when
-import org.scalatest.AsyncWordSpec
+import org.mockito.ArgumentMatchers.any
+import org.mockito.{ArgumentCaptor, Mockito, MockitoSugar}
 import org.scalatest.EitherValues
-import org.scalatest.MustMatchers
-import org.scalatestplus.mockito.MockitoSugar
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AsyncWordSpec
 import play.api.http.Status
 import play.api.http.Status._
 import play.api.inject.bind
 import play.api.inject.guice.GuiceableModule
-import play.api.libs.json.JsString
-import play.api.libs.json.Json
+import play.api.libs.json.{JsString, Json}
 import play.api.mvc.RequestHeader
 import play.api.test.FakeRequest
 import uk.gov.hmrc.http._
@@ -42,7 +35,7 @@ import utils.WireMockHelper
 
 class SubscriptionConnectorSpec
   extends AsyncWordSpec
-    with MustMatchers
+    with Matchers
     with WireMockHelper
     with EitherValues
     with MockitoSugar {

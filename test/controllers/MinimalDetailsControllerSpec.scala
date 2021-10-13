@@ -20,10 +20,10 @@ import connectors.MinimalConnector
 import models.FeatureToggle.{Disabled, Enabled}
 import models.FeatureToggleName.PspMinimalDetails
 import models._
-import org.mockito.Matchers._
+import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
 import org.scalatest.{AsyncWordSpec, MustMatchers}
-import org.scalatestplus.mockito.MockitoSugar
+import org.mockito.MockitoSugar
 import play.api.libs.json.Json
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest

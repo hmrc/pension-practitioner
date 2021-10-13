@@ -20,11 +20,11 @@ import audit._
 import models.{Sent, _}
 import models.enumeration.JourneyType.PSP_SUBSCRIPTION
 import org.joda.time.DateTime
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.any
 import org.mockito.{ArgumentCaptor, Mockito}
 import org.mockito.Mockito.{never, times, verify, when}
 import org.scalatest.{BeforeAndAfterEach, AsyncWordSpec, MustMatchers}
-import org.scalatestplus.mockito.MockitoSugar
+import org.mockito.MockitoSugar
 import play.api.Application
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -73,7 +73,7 @@ class EmailResponseControllerSpec extends AsyncWordSpec with MustMatchers with M
     "respond with BAD_REQUEST when not given EmailEvents" in {
       val result = controller.retrieveStatus(PSP_SUBSCRIPTION, requestId, encryptedEmail, encryptedPspId)(fakeRequest.withBody(Json.obj("name" -> "invalid")))
 
-      verify(mockAuditService, never()).sendEvent(any())(any(), any())
+      verify(mockAuditService, never).sendEvent(any())(any(), any())
       status(result) mustBe BAD_REQUEST
     }
   }
@@ -92,7 +92,7 @@ class EmailResponseControllerSpec extends AsyncWordSpec with MustMatchers with M
       val result = controller
         .retrieveStatusForPSPDeregistration(encryptedPspId, encryptedEmail)(fakeRequest.withBody(Json.obj("name" -> "invalid")))
 
-      verify(mockAuditService, never()).sendEvent(any())(any(), any())
+      verify(mockAuditService, never).sendEvent(any())(any(), any())
       status(result) mustBe BAD_REQUEST
     }
   }

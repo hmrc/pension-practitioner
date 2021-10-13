@@ -20,11 +20,11 @@ import audit.{AuditService, PSPRegistration}
 import com.github.tomakehurst.wiremock.client.WireMock._
 import models.registerWithId.RegisterWithIdResponse
 import models.registerWithoutId._
-import org.mockito.Matchers.any
-import org.mockito.Mockito.{times, verify, when}
-import org.mockito.{ArgumentCaptor, Mockito}
-import org.scalatest.{AsyncWordSpec, EitherValues, MustMatchers}
-import org.scalatestplus.mockito.MockitoSugar
+import org.mockito.ArgumentMatchers.any
+import org.mockito.{ArgumentCaptor, Mockito, MockitoSugar}
+import org.scalatest.EitherValues
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AsyncWordSpec
 import play.api.http.Status
 import play.api.http.Status._
 import play.api.inject.bind
@@ -38,7 +38,7 @@ import utils.WireMockHelper
 
 class RegistrationConnectorSpec
   extends AsyncWordSpec
-    with MustMatchers
+    with Matchers
     with WireMockHelper
     with EitherValues
     with MockitoSugar {
