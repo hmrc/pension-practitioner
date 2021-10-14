@@ -53,7 +53,9 @@ class HeaderUtils @Inject()(config: AppConfig) {
       "CorrelationId" -> getCorrelationIdIF)
   }
 
-  def getCorrelationId: String = randomUUID.toString.slice(0, maxLengthCorrelationId)
+  def getCorrelationId: String = randomUUID.toString
+    .replaceAll( "-", "")
+    .slice(0, maxLengthCorrelationId)
 
   def getCorrelationIdIF: String = randomUUID.toString.slice(0, maxLengthCorrelationIF)
 }
