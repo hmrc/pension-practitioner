@@ -19,9 +19,10 @@ package connectors
 import com.google.inject.Inject
 import config.AppConfig
 import play.api.Logger
-import play.api.libs.json.JsValue
+import play.api.http.Status.OK
+import play.api.libs.json._
 import play.api.mvc.RequestHeader
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
+import uk.gov.hmrc.http.{HttpClient, HttpResponse, HttpException, HeaderCarrier}
 import utils.HttpResponseHelper
 import uk.gov.hmrc.http.HttpReads.Implicits._
 
@@ -38,20 +39,30 @@ class AssociationConnector @Inject()(
 
 
   def authorisePsp(json: JsValue, pstr: String)
-                  (implicit hc: HeaderCarrier, ec: ExecutionContext, request: RequestHeader): Future[HttpResponse] = {
+                  (implicit hc: HeaderCarrier, ec: ExecutionContext, request: RequestHeader): Future[Either[HttpException, HttpResponse]] = {
 
     val headerCarrier: HeaderCarrier = HeaderCarrier(extraHeaders = headerUtils.integrationFrameworkHeader)
     val url = appConfig.pspAuthorisationUrl.format(pstr)
     logger.debug(s"[Psp-Association-Outgoing-Payload] - ${json.toString()}")
-    httpClient.POST[JsValue, HttpResponse](url, json)(implicitly, implicitly, headerCarrier, implicitly)
+    httpClient.POST[JsValue, HttpResponse](url, json)(implicitly, implicitly, headerCarrier, implicitly) map(
+      response => handleHttpResponseForErrors(response= response, url = url))
   }
 
   def deAuthorisePsp(json: JsValue, pstr: String)
-                    (implicit hc: HeaderCarrier, ec: ExecutionContext, request: RequestHeader): Future[HttpResponse] = {
+                    (implicit hc: HeaderCarrier, ec: ExecutionContext, request: RequestHeader): Future[Either[HttpException, HttpResponse]] = {
 
     val headerCarrier: HeaderCarrier = HeaderCarrier(extraHeaders = headerUtils.integrationFrameworkHeader)
     val url = appConfig.pspDeAuthorisationUrl.format(pstr)
     logger.debug(s"[Psp-DeAuthorisation-Outgoing-Payload] - ${json.toString()}")
-    httpClient.POST[JsValue, HttpResponse](url, json)(implicitly, implicitly, headerCarrier, implicitly)
+    httpClient.POST[JsValue, HttpResponse](url, json)(implicitly, implicitly, headerCarrier, implicitly) map(
+      response => handleHttpResponseForErrors(response= response, url = url))
+  }
+
+  private def handleHttpResponseForErrors(response: HttpResponse, url:String):Either[HttpException, HttpResponse] = {
+    response.status match {
+      case OK => Right(response)
+      case _ =>
+        Left(handleErrorResponse("POST", url)(response))
+    }
   }
 }
