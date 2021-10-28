@@ -39,49 +39,31 @@ class RegistrationAuditService @Inject()(auditService: AuditService) {
     }
   }
 
-  def sendRegisterWithIdAuditEvent(withId: Boolean, externalId: String, psaType: String, requestJson: JsValue)
-                                  (implicit ec: ExecutionContext, request: RequestHeader): PartialFunction[Try[RegisterWithIdResponse], Unit] = {
-    case Success(registerWithIdResponse) =>
-      auditService.sendEvent(PSPRegistration(withId, externalId, psaType, found = true,
-        withIdIsUk(registerWithIdResponse), Status.OK, requestJson, Some(Json.toJson(registerWithIdResponse))))
-
-    case Failure(error: UpstreamErrorResponse) =>
-      auditService.sendEvent(PSPRegistration(withId, externalId, psaType, found = true,
-        None, error.statusCode, requestJson, None))
-
-    case Failure(error: HttpException) =>
-      auditService.sendEvent(PSPRegistration(withId, externalId, psaType, found = true,
-        None, error.responseCode, requestJson, None))
-
-  }
-
-  def sendRegisterWithIdOrgAuditEvent(
-                                    withId: Boolean,
+  def sendRegisterWithoutIdAuditEvent(
                                     externalId: String,
                                     psaType: String,
                                     requestJson: JsValue
                                   )(
                                     implicit ec: ExecutionContext,
                                     request: RequestHeader
-                                  ): PartialFunction[Try[Either[HttpException, RegisterWithIdResponse]], Unit] = {
-    case Success(Right(registerWithIdResponse)) =>
+                                  ): PartialFunction[Try[Either[HttpException, RegisterWithoutIdResponse]], Unit] = {
+    case Success(Right(registerWithoutIdResponse)) =>
       auditService.sendEvent(
         PSPRegistration(
-          withId = withId,
+          withId = false,
           externalId = externalId,
           psaType = psaType,
           found = true,
-          isUk = withIdIsUk(registerWithIdResponse),
+          isUk = Some(false),
           status = Status.OK,
           request = requestJson,
-          response = Some(Json.toJson(registerWithIdResponse))
+          response = Some(Json.toJson(registerWithoutIdResponse))
         )
       )
-
     case Success(Left(error)) =>
       auditService.sendEvent(
         PSPRegistration(
-          withId = withId,
+          withId = false,
           externalId = externalId,
           psaType = psaType,
           found = true,
@@ -96,21 +78,47 @@ class RegistrationAuditService @Inject()(auditService: AuditService) {
       logger.error("Error in registration connector", t)
   }
 
-  def sendRegisterWithoutIdAuditEvent(withId: Boolean, externalId: String, psaType: String, requestJson: JsValue)
-                                     (implicit ec: ExecutionContext, request: RequestHeader): PartialFunction[Try[RegisterWithoutIdResponse], Unit] = {
-    case Success(registerWithoutIdResponse) =>
-      auditService.sendEvent(PSPRegistration(withId, externalId, psaType, found = true,
-        Some(false), Status.OK, requestJson, Some(Json.toJson(registerWithoutIdResponse))))
 
-    case Failure(error: UpstreamErrorResponse) =>
-      auditService.sendEvent(PSPRegistration(withId, externalId, psaType, found = true,
-        None, error.statusCode, requestJson, None))
+  def sendRegisterWithIdAuditEvent(
+    externalId: String,
+    psaType: String,
+    requestJson: JsValue
+  )(
+    implicit ec: ExecutionContext,
+    request: RequestHeader
+  ): PartialFunction[Try[Either[HttpException, RegisterWithIdResponse]], Unit] = {
+    case Success(Right(registerWithIdResponse)) =>
+      auditService.sendEvent(
+        PSPRegistration(
+          withId = true,
+          externalId = externalId,
+          psaType = psaType,
+          found = true,
+          isUk = withIdIsUk(registerWithIdResponse),
+          status = Status.OK,
+          request = requestJson,
+          response = Some(Json.toJson(registerWithIdResponse))
+        )
+      )
+    case Success(Left(error)) =>
+      auditService.sendEvent(
+        PSPRegistration(
+          withId = true,
+          externalId = externalId,
+          psaType = psaType,
+          found = true,
+          isUk = None,
+          status = error.responseCode,
+          request = requestJson,
+          response = None
+        )
+      )
 
-    case Failure(error: HttpException) =>
-      auditService.sendEvent(PSPRegistration(withId, externalId, psaType, found = true,
-        None, error.responseCode, requestJson, None))
-
+    case Failure(t) =>
+      logger.error("Error in registration connector", t)
   }
+
+
 }
 
 case class PSPRegistration(
