@@ -21,12 +21,12 @@ import models.registerWithoutId.RegisterWithoutIdResponse
 import models.registerWithId.{RegisterWithIdResponse, UkAddress}
 import play.api.Logger
 import play.api.http.Status
-import play.api.libs.json.{Format, JsValue, Json}
+import play.api.libs.json.{Format, Json, JsValue}
 import play.api.mvc.RequestHeader
-import uk.gov.hmrc.http.{HttpException, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{UpstreamErrorResponse, HttpException}
 
 import scala.concurrent.ExecutionContext
-import scala.util.{Failure, Success, Try}
+import scala.util.{Try, Success, Failure}
 
 class RegistrationAuditService @Inject()(auditService: AuditService) {
 
@@ -39,6 +39,7 @@ class RegistrationAuditService @Inject()(auditService: AuditService) {
     }
   }
 
+  // scalastyle:off method.length
   def sendRegisterWithoutIdAuditEvent(
                                     externalId: String,
                                     psaType: String,
@@ -73,12 +74,36 @@ class RegistrationAuditService @Inject()(auditService: AuditService) {
           response = None
         )
       )
+    case Failure(error: UpstreamErrorResponse) =>
+      auditService.sendEvent(
+        PSPRegistration(
+          withId = false,
+          externalId = externalId,
+          psaType = psaType,
+          found = true,
+          isUk = None,
+          status = error.statusCode,
+          request = requestJson,
+          response = None
+        )
+      )
 
-    case Failure(t) =>
-      logger.error("Error in registration connector", t)
+    case Failure(error: HttpException) =>
+      auditService.sendEvent(
+        PSPRegistration(
+          withId = false,
+          externalId = externalId,
+          psaType = psaType,
+          found = true,
+          isUk = None,
+          status = error.responseCode,
+          request = requestJson,
+          response = None
+        )
+      )
   }
 
-
+  // scalastyle:off method.length
   def sendRegisterWithIdAuditEvent(
     externalId: String,
     psaType: String,
@@ -114,11 +139,34 @@ class RegistrationAuditService @Inject()(auditService: AuditService) {
         )
       )
 
-    case Failure(t) =>
-      logger.error("Error in registration connector", t)
+    case Failure(error: UpstreamErrorResponse) =>
+      auditService.sendEvent(
+        PSPRegistration(
+          withId = true,
+          externalId = externalId,
+          psaType = psaType,
+          found = true,
+          isUk = None,
+          status = error.statusCode,
+          request = requestJson,
+          response = None
+        )
+      )
+
+    case Failure(error: HttpException) =>
+      auditService.sendEvent(
+        PSPRegistration(
+          withId = true,
+          externalId = externalId,
+          psaType = psaType,
+          found = true,
+          isUk = None,
+          status = error.responseCode,
+          request = requestJson,
+          response = None
+        )
+      )
   }
-
-
 }
 
 case class PSPRegistration(
