@@ -50,12 +50,12 @@ class SubscriptionConnector @Inject()(
     val url = config.pspSubscriptionUrl
 
     http.POST[JsValue, HttpResponse](url, data)(implicitly, implicitly, headerCarrier,
-      implicitly) map(response => handleHttpResponseForErrors(response = response, url = url)) andThen
+      implicitly) map(response => responseToEither(response = response, url = url)) andThen
       subscriptionAuditService.sendSubscribeAuditEvent(externalId, data) andThen
       logFailures("PSP Subscription", data, "/resources/schemas/pspCreateAmend.json", config.pspSubscriptionUrl)
   }
 
-  private def handleHttpResponseForErrors(response: HttpResponse, url:String):Either[HttpException, HttpResponse] = {
+  private def responseToEither(response: HttpResponse, url:String):Either[HttpException, HttpResponse] = {
     response.status match {
       case OK =>
         Right(response)
@@ -92,7 +92,7 @@ class SubscriptionConnector @Inject()(
       headerUtils.integrationFrameworkHeader(implicitly[HeaderCarrier](headerCarrier)))
     val url = config.pspDeregistrationUrl.format(pspId)
     http.POST[JsValue, HttpResponse](url, data)(implicitly, implicitly, hc, implicitly) map(
-      response => handleHttpResponseForErrors(response = response, url = url)) andThen
+      response => responseToEither(response = response, url = url)) andThen
       logFailures("Deregister PSP", data, "/resources/schemas/deregister1469.json", url)
   }
 

@@ -45,7 +45,7 @@ class AssociationConnector @Inject()(
     val url = appConfig.pspAuthorisationUrl.format(pstr)
     logger.debug(s"[Psp-Association-Outgoing-Payload] - ${json.toString()}")
     httpClient.POST[JsValue, HttpResponse](url, json)(implicitly, implicitly, headerCarrier, implicitly) map(
-      response => handleHttpResponseForErrors(response= response, url = url))
+      response => responseToEither(response= response, url = url))
   }
 
   def deAuthorisePsp(json: JsValue, pstr: String)
@@ -55,10 +55,10 @@ class AssociationConnector @Inject()(
     val url = appConfig.pspDeAuthorisationUrl.format(pstr)
     logger.debug(s"[Psp-DeAuthorisation-Outgoing-Payload] - ${json.toString()}")
     httpClient.POST[JsValue, HttpResponse](url, json)(implicitly, implicitly, headerCarrier, implicitly) map(
-      response => handleHttpResponseForErrors(response= response, url = url))
+      response => responseToEither(response= response, url = url))
   }
 
-  private def handleHttpResponseForErrors(response: HttpResponse, url:String):Either[HttpException, HttpResponse] = {
+  private def responseToEither(response: HttpResponse, url:String):Either[HttpException, HttpResponse] = {
     response.status match {
       case OK => Right(response)
       case _ =>
