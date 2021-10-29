@@ -126,10 +126,13 @@ class SubscriptionConnectorSpec
             serverError()
           )
       )
-
-      connector.pspSubscription(externalId, data).collect {
-        case Right(res) if res.status == INTERNAL_SERVER_ERROR => succeed
+      recoverToExceptionIf[UpstreamErrorResponse](
+        connector.pspSubscription(externalId, data)
+      ) map {
+        ex =>
+          ex.statusCode mustBe INTERNAL_SERVER_ERROR
       }
+
     }
 
     "send a PSPSubscription audit event on success" in {
