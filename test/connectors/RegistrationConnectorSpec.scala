@@ -88,7 +88,7 @@ class RegistrationConnectorSpec
 
       connector.registerWithIdIndividual(externalId, testNino, testRegisterDataIndividual).map {
         response =>
-          response mustBe registerIndividualResponse.as[RegisterWithIdResponse]
+          response mustBe Right(registerIndividualResponse.as[RegisterWithIdResponse])
       }
     }
 
@@ -102,12 +102,10 @@ class RegistrationConnectorSpec
           )
       )
 
-      recoverToExceptionIf[UpstreamErrorResponse](
-        connector.registerWithIdIndividual(externalId, testNino, testRegisterDataIndividual)
-      ) map {
-        ex =>
-          ex.statusCode mustBe BAD_REQUEST
-          ex.message must include("INVALID_NINO")
+      connector.registerWithIdIndividual(externalId, testNino, testRegisterDataIndividual).map {
+        response =>
+          response.left.value.responseCode mustBe BAD_REQUEST
+          response.left.value.message must include("INVALID_NINO")
       }
     }
 
@@ -247,7 +245,7 @@ class RegistrationConnectorSpec
 
       connector.registrationNoIdOrganisation(externalId, organisationRegistrant).map {
         response =>
-          response mustBe registerWithoutIdResponse
+          response mustBe Right(registerWithoutIdResponse)
       }
     }
 
@@ -296,7 +294,7 @@ class RegistrationConnectorSpec
 
       connector.registrationNoIdIndividual(externalId, registerIndividualWithoutIdRequest).map {
         response =>
-          response mustBe registerWithoutIdResponse
+          response mustBe Right(registerWithoutIdResponse)
       }
     }
 

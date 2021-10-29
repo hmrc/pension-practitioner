@@ -55,7 +55,10 @@ class SubscriptionController @Inject()(
           json.transform(pspSubscriptionTransformer.transformPsp) match {
             case JsSuccess(data, _) =>
               logger.debug(s"[PSP-Subscription-Outgoing-Payload]$data")
-              subscriptionConnector.pspSubscription(externalId, data).map(result)
+              subscriptionConnector.pspSubscription(externalId, data) map {
+                  case Right(response) => result(response)
+                  case Left(e) => result(e)
+                }
             case JsError(errors) => throw JsResultException(errors)
           }
         case _ =>
@@ -87,7 +90,10 @@ class SubscriptionController @Inject()(
       logger.debug(s"[PSP-Deregistration-Payload]$feJson")
       feJson match {
         case Some(json) =>
-          subscriptionConnector.pspDeregistration(pspId, json).map(result)
+          subscriptionConnector.pspDeregistration(pspId, json) map {
+            case Right(response) => result(response)
+            case Left(e) => result(e)
+          }
         case _ =>
           Future.failed(new BadRequestException("Bad Request with no request body for PSP subscription"))
       }
