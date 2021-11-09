@@ -25,11 +25,11 @@ import play.api.libs.json._
 import play.api.mvc.RequestHeader
 import transformations.toUserAnswers.PspDetailsTransformer
 import uk.gov.hmrc.http.{HttpClient, _}
-import utils.{InvalidPayloadHandler, HttpResponseHelper}
+import utils.{HttpResponseHelper, InvalidPayloadHandler}
 import uk.gov.hmrc.http.HttpReads.Implicits._
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Try, Success, Failure}
+import scala.util.{Failure, Success, Try}
 
 class SubscriptionConnector @Inject()(
                                        http: HttpClient,
@@ -45,23 +45,11 @@ class SubscriptionConnector @Inject()(
   def pspSubscription(externalId: String, data: JsValue)
                      (implicit hc: HeaderCarrier,
                       ec: ExecutionContext,
-                      request: RequestHeader): Future[Either[HttpException, HttpResponse]] = {
+                      request: RequestHeader): Future[HttpResponse] = {
     val headerCarrier: HeaderCarrier = HeaderCarrier(extraHeaders = headerUtils.integrationFrameworkHeader)
-    val url = config.pspSubscriptionUrl
-
-    http.POST[JsValue, HttpResponse](url, data)(implicitly, implicitly, headerCarrier,
-      implicitly) map(response => responseToEither(response = response, url = url)) andThen
+    http.POST[JsValue, HttpResponse](config.pspSubscriptionUrl, data)(implicitly, implicitly, headerCarrier, implicitly) andThen
       subscriptionAuditService.sendSubscribeAuditEvent(externalId, data) andThen
       logFailures("PSP Subscription", data, "/resources/schemas/pspCreateAmend.json", config.pspSubscriptionUrl)
-  }
-
-  private def responseToEither(response: HttpResponse, url:String):Either[HttpException, HttpResponse] = {
-    response.status match {
-      case OK =>
-        Right(response)
-      case _ =>
-        Left(handleErrorResponse("POST", url)(response))
-    }
   }
 
   def getSubscriptionDetails(pspId: String)
@@ -87,12 +75,11 @@ class SubscriptionConnector @Inject()(
                        (implicit
                         headerCarrier: HeaderCarrier,
                         ec: ExecutionContext,
-                        request: RequestHeader): Future[Either[HttpException, HttpResponse]] = {
+                        request: RequestHeader): Future[HttpResponse] = {
     implicit val hc: HeaderCarrier = HeaderCarrier(extraHeaders =
       headerUtils.integrationFrameworkHeader(implicitly[HeaderCarrier](headerCarrier)))
     val url = config.pspDeregistrationUrl.format(pspId)
-    http.POST[JsValue, HttpResponse](url, data)(implicitly, implicitly, hc, implicitly) map(
-      response => responseToEither(response = response, url = url)) andThen
+    http.POST[JsValue, HttpResponse](url, data)(implicitly, implicitly, hc, implicitly) andThen
       logFailures("Deregister PSP", data, "/resources/schemas/deregister1469.json", url)
   }
 
@@ -102,11 +89,11 @@ class SubscriptionConnector @Inject()(
       case JsError(errors) => throw JsResultException(errors)
     }
 
-  private def logFailures(endpoint: String, data: JsValue, schemaPath: String, args: String*):
-  PartialFunction[Try[Either[HttpException, HttpResponse]], Unit] = {
-    case Success(Right(response)) if response.status == BAD_REQUEST && response.body.contains("INVALID_PAYLOAD") =>
+  private def logFailures(endpoint: String, data: JsValue, schemaPath: String, args: String*): PartialFunction[Try[HttpResponse], Unit] = {
+    case Success(response) if response.status == BAD_REQUEST && response.body.contains("INVALID_PAYLOAD") =>
       invalidPayloadHandler.logFailures(schemaPath, args.headOption.getOrElse(""))(data)
-    case Success(Left(error)) => logger.warn(s"$endpoint received error response from API", error)
     case Failure(e: HttpResponse) => logger.warn(s"$endpoint received error response from API", e)
   }
+
+
 }

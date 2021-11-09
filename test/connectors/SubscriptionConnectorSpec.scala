@@ -83,7 +83,7 @@ class SubscriptionConnectorSpec
       )
 
       connector.pspSubscription(externalId, data) collect {
-        case Right(res) if res.status == OK => succeed
+        case res if res.status == OK => succeed
       }
     }
 
@@ -98,7 +98,7 @@ class SubscriptionConnectorSpec
       )
 
       connector.pspSubscription(externalId, data).collect {
-        case Left(res) if res.responseCode == BAD_REQUEST => succeed
+        case res if res.status == BAD_REQUEST => succeed
       }
     }
 
@@ -113,7 +113,7 @@ class SubscriptionConnectorSpec
       )
 
       connector.pspSubscription(externalId, data).collect {
-        case Left(res) if res.responseCode == NOT_FOUND => succeed
+        case res if res.status == NOT_FOUND => succeed
       }
     }
 
@@ -126,13 +126,10 @@ class SubscriptionConnectorSpec
             serverError()
           )
       )
-      recoverToExceptionIf[UpstreamErrorResponse](
-        connector.pspSubscription(externalId, data)
-      ) map {
-        ex =>
-          ex.statusCode mustBe INTERNAL_SERVER_ERROR
-      }
 
+      connector.pspSubscription(externalId, data).collect {
+        case res if res.status == INTERNAL_SERVER_ERROR => succeed
+      }
     }
 
     "send a PSPSubscription audit event on success" in {
@@ -251,7 +248,7 @@ class SubscriptionConnectorSpec
       )
 
       connector.pspDeregistration(pspId, data) collect {
-        case Right(res) if res.status == OK => succeed
+        case res if res.status == OK => succeed
       }
     }
 
@@ -266,7 +263,7 @@ class SubscriptionConnectorSpec
       )
 
       connector.pspDeregistration(pspId, data).collect {
-        case Left(res) if res.responseCode == BAD_REQUEST => succeed
+        case res if res.status == BAD_REQUEST => succeed
       }
     }
 
@@ -281,7 +278,7 @@ class SubscriptionConnectorSpec
       )
 
       connector.pspDeregistration(pspId, data).collect {
-        case Left(res) if res.responseCode == NOT_FOUND => succeed
+        case res if res.status == NOT_FOUND => succeed
       }
     }
 
@@ -295,11 +292,8 @@ class SubscriptionConnectorSpec
           )
       )
 
-      recoverToExceptionIf[UpstreamErrorResponse](
-        connector.pspDeregistration(pspId, data)
-      ) map {
-        ex =>
-          ex.statusCode mustBe INTERNAL_SERVER_ERROR
+      connector.pspDeregistration(pspId, data).collect {
+        case res if res.status == INTERNAL_SERVER_ERROR => succeed
       }
     }
 

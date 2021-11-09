@@ -21,12 +21,12 @@ import models.registerWithoutId.RegisterWithoutIdResponse
 import models.registerWithId.{RegisterWithIdResponse, UkAddress}
 import play.api.Logger
 import play.api.http.Status
-import play.api.libs.json.{Format, Json, JsValue}
+import play.api.libs.json.{Format, JsValue, Json}
 import play.api.mvc.RequestHeader
-import uk.gov.hmrc.http.{UpstreamErrorResponse, HttpException}
+import uk.gov.hmrc.http.{HttpException, UpstreamErrorResponse}
 
 import scala.concurrent.ExecutionContext
-import scala.util.{Try, Success, Failure}
+import scala.util.{Failure, Success, Try}
 
 class RegistrationAuditService @Inject()(auditService: AuditService) {
 
@@ -39,83 +39,35 @@ class RegistrationAuditService @Inject()(auditService: AuditService) {
     }
   }
 
-  // scalastyle:off method.length
-  def sendRegisterWithoutIdAuditEvent(
+  def sendRegisterWithIdAuditEvent(withId: Boolean, externalId: String, psaType: String, requestJson: JsValue)
+                                  (implicit ec: ExecutionContext, request: RequestHeader): PartialFunction[Try[RegisterWithIdResponse], Unit] = {
+    case Success(registerWithIdResponse) =>
+      auditService.sendEvent(PSPRegistration(withId, externalId, psaType, found = true,
+        withIdIsUk(registerWithIdResponse), Status.OK, requestJson, Some(Json.toJson(registerWithIdResponse))))
+
+    case Failure(error: UpstreamErrorResponse) =>
+      auditService.sendEvent(PSPRegistration(withId, externalId, psaType, found = true,
+        None, error.statusCode, requestJson, None))
+
+    case Failure(error: HttpException) =>
+      auditService.sendEvent(PSPRegistration(withId, externalId, psaType, found = true,
+        None, error.responseCode, requestJson, None))
+
+  }
+
+  def sendRegisterWithIdOrgAuditEvent(
+                                    withId: Boolean,
                                     externalId: String,
                                     psaType: String,
                                     requestJson: JsValue
                                   )(
                                     implicit ec: ExecutionContext,
                                     request: RequestHeader
-                                  ): PartialFunction[Try[Either[HttpException, RegisterWithoutIdResponse]], Unit] = {
-    case Success(Right(registerWithoutIdResponse)) =>
-      auditService.sendEvent(
-        PSPRegistration(
-          withId = false,
-          externalId = externalId,
-          psaType = psaType,
-          found = true,
-          isUk = Some(false),
-          status = Status.OK,
-          request = requestJson,
-          response = Some(Json.toJson(registerWithoutIdResponse))
-        )
-      )
-    case Success(Left(error)) =>
-      auditService.sendEvent(
-        PSPRegistration(
-          withId = false,
-          externalId = externalId,
-          psaType = psaType,
-          found = true,
-          isUk = None,
-          status = error.responseCode,
-          request = requestJson,
-          response = None
-        )
-      )
-    case Failure(error: UpstreamErrorResponse) =>
-      auditService.sendEvent(
-        PSPRegistration(
-          withId = false,
-          externalId = externalId,
-          psaType = psaType,
-          found = true,
-          isUk = None,
-          status = error.statusCode,
-          request = requestJson,
-          response = None
-        )
-      )
-
-    case Failure(error: HttpException) =>
-      auditService.sendEvent(
-        PSPRegistration(
-          withId = false,
-          externalId = externalId,
-          psaType = psaType,
-          found = true,
-          isUk = None,
-          status = error.responseCode,
-          request = requestJson,
-          response = None
-        )
-      )
-  }
-
-  // scalastyle:off method.length
-  def sendRegisterWithIdAuditEvent(
-    externalId: String,
-    psaType: String,
-    requestJson: JsValue
-  )(
-    implicit ec: ExecutionContext,
-    request: RequestHeader
-  ): PartialFunction[Try[Either[HttpException, RegisterWithIdResponse]], Unit] = {
+                                  ): PartialFunction[Try[Either[HttpException, RegisterWithIdResponse]], Unit] = {
     case Success(Right(registerWithIdResponse)) =>
       auditService.sendEvent(
         PSPRegistration(
-          withId = true,
+          withId = withId,
           externalId = externalId,
           psaType = psaType,
           found = true,
@@ -125,10 +77,11 @@ class RegistrationAuditService @Inject()(auditService: AuditService) {
           response = Some(Json.toJson(registerWithIdResponse))
         )
       )
+
     case Success(Left(error)) =>
       auditService.sendEvent(
         PSPRegistration(
-          withId = true,
+          withId = withId,
           externalId = externalId,
           psaType = psaType,
           found = true,
@@ -138,34 +91,25 @@ class RegistrationAuditService @Inject()(auditService: AuditService) {
           response = None
         )
       )
+
+    case Failure(t) =>
+      logger.error("Error in registration connector", t)
+  }
+
+  def sendRegisterWithoutIdAuditEvent(withId: Boolean, externalId: String, psaType: String, requestJson: JsValue)
+                                     (implicit ec: ExecutionContext, request: RequestHeader): PartialFunction[Try[RegisterWithoutIdResponse], Unit] = {
+    case Success(registerWithoutIdResponse) =>
+      auditService.sendEvent(PSPRegistration(withId, externalId, psaType, found = true,
+        Some(false), Status.OK, requestJson, Some(Json.toJson(registerWithoutIdResponse))))
 
     case Failure(error: UpstreamErrorResponse) =>
-      auditService.sendEvent(
-        PSPRegistration(
-          withId = true,
-          externalId = externalId,
-          psaType = psaType,
-          found = true,
-          isUk = None,
-          status = error.statusCode,
-          request = requestJson,
-          response = None
-        )
-      )
+      auditService.sendEvent(PSPRegistration(withId, externalId, psaType, found = true,
+        None, error.statusCode, requestJson, None))
 
     case Failure(error: HttpException) =>
-      auditService.sendEvent(
-        PSPRegistration(
-          withId = true,
-          externalId = externalId,
-          psaType = psaType,
-          found = true,
-          isUk = None,
-          status = error.responseCode,
-          request = requestJson,
-          response = None
-        )
-      )
+      auditService.sendEvent(PSPRegistration(withId, externalId, psaType, found = true,
+        None, error.responseCode, requestJson, None))
+
   }
 }
 
