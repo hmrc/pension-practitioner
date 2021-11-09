@@ -18,9 +18,13 @@ package controllers
 
 import connectors.{SchemeConnector, SubscriptionConnector}
 import models.enumeration.JourneyType
+import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
-import org.scalatest.{BeforeAndAfter, AsyncWordSpec, MustMatchers}
-import org.mockito.{ArgumentMatchers, MockitoSugar}
+import org.mockito.Mockito._
+import org.scalatest.{AsyncWordSpec, BeforeAndAfter, MustMatchers}
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AsyncWordSpec
+import org.mockito.MockitoSugar
 import play.api.Application
 import play.api.inject.bind
 import play.api.inject.guice.{GuiceApplicationBuilder, GuiceableModule}
@@ -99,7 +103,7 @@ class SubscriptionControllerSpec extends AsyncWordSpec with MustMatchers with Mo
     "return OK when valid response from API" in {
 
       when(mockSubscriptionConnector.pspSubscription(any(), any())(any(), any(), any()))
-        .thenReturn(Future.successful(Right(HttpResponse(OK, response.toString))))
+        .thenReturn(Future.successful(HttpResponse(OK, response.toString)))
 
       val result = controller.subscribePsp(JourneyType.PSP_SUBSCRIPTION)(fakeRequest.withJsonBody(uaIndividualUK))
       status(result) mustBe OK
@@ -158,7 +162,7 @@ class SubscriptionControllerSpec extends AsyncWordSpec with MustMatchers with Mo
     "return OK when valid response from API" in {
 
       when(mockSubscriptionConnector.pspDeregistration(any(), any())(any(), any(), any()))
-        .thenReturn(Future.successful(Right(HttpResponse(OK, response.toString))))
+        .thenReturn(Future.successful(HttpResponse(OK, response.toString)))
 
       val result = controller.deregisterPsp(pspId)(fakeRequest.withJsonBody(deregistrationRequestJson))
       status(result) mustBe OK

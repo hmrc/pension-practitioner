@@ -81,7 +81,7 @@ class RegistrationControllerSpec
 
       when(mockRegistrationConnector.registerWithIdIndividual(
         ArgumentMatchers.eq(externalId), ArgumentMatchers.eq(nino), ArgumentMatchers.eq(mandatoryRequestData)
-      )(any(), any(), any())).thenReturn(Future.successful(Right(successResponse)))
+      )(any(), any(), any())).thenReturn(Future.successful(successResponse))
 
       val result = controller.registerWithIdIndividual(fakeRequestWithNino)
 
@@ -97,7 +97,7 @@ class RegistrationControllerSpec
 
       when(mockRegistrationConnector.registerWithIdIndividual(
         ArgumentMatchers.eq(externalId), ArgumentMatchers.eq(nino), ArgumentMatchers.eq(mandatoryRequestData)
-      )(any(), any(), any())).thenReturn(Future.successful(Right(successResponse)))
+      )(any(), any(), any())).thenReturn(Future.successful(successResponse))
 
       recoverToExceptionIf[BadRequestException] {
         controller.registerWithIdIndividual(FakeRequest("", ""))
@@ -200,7 +200,7 @@ class RegistrationControllerSpec
 
       when(mockRegistrationConnector.registrationNoIdIndividual(
         ArgumentMatchers.eq(externalId), ArgumentMatchers.eq(requestBody.as[RegisterWithoutIdIndividualRequest]))(any(), any(), any()))
-        .thenReturn(Future.successful(Right(successResponse)))
+        .thenReturn(Future.successful(successResponse))
 
       val result = call(controller.registrationNoIdIndividual, fakeRequestWithNoIdIndBody)
 
@@ -256,7 +256,7 @@ class RegistrationControllerSpec
 
       when(mockRegistrationConnector.registrationNoIdOrganisation(
         ArgumentMatchers.eq(externalId), ArgumentMatchers.eq(requestBody.as[OrganisationRegistrant]))(any(), any(), any()))
-        .thenReturn(Future.successful(Right(successResponse)))
+        .thenReturn(Future.successful(successResponse))
 
       val result = call(controller.registrationNoIdOrganisation, fakeRequestWithNoIdOrgBody)
 

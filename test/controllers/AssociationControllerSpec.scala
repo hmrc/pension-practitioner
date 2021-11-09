@@ -69,7 +69,7 @@ class AssociationControllerSpec
     "return OK when valid response from IF" in {
 
       when(mockAssociationConnector.authorisePsp(any(), any())(any(), any(), any()))
-        .thenReturn(Future.successful(Right(HttpResponse(OK, response.toString))))
+        .thenReturn(Future.successful(HttpResponse(OK, response.toString)))
 
       val result = controller.authorisePsp()(fakeRequest.withHeaders(("pstr", pstr)).withJsonBody(testJson))
       status(result) mustBe OK
@@ -94,7 +94,7 @@ class AssociationControllerSpec
 
       when(mockAssociationConnector.deAuthorisePsp(any(), any())(any(), any(), any()))
         .thenReturn(Future.successful(
-          Right(HttpResponse(OK, response.toString))
+          HttpResponse(OK, response.toString)
         ))
 
       val result = controller.deAuthorisePsp()(fakeRequest.withHeaders(("pstr", pstr)).withJsonBody(testJson))

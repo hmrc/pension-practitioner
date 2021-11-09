@@ -55,7 +55,7 @@ class AssociationConnectorSpec extends AsyncWordSpec with Matchers with WireMock
       )
 
       connector.authorisePsp(data, pstr) map {
-        _.right.value.status mustBe OK
+        _.status mustBe OK
       }
     }
 
@@ -70,7 +70,7 @@ class AssociationConnectorSpec extends AsyncWordSpec with Matchers with WireMock
       )
 
       connector.authorisePsp(data, pstr) map {
-        _.left.value.responseCode mustBe BAD_REQUEST
+        _.status mustEqual BAD_REQUEST
       }
     }
 
@@ -85,7 +85,7 @@ class AssociationConnectorSpec extends AsyncWordSpec with Matchers with WireMock
       )
 
       connector.authorisePsp(data, pstr) map {
-        _.left.value.responseCode mustEqual NOT_FOUND
+        _.status mustEqual NOT_FOUND
       }
     }
 
@@ -98,12 +98,8 @@ class AssociationConnectorSpec extends AsyncWordSpec with Matchers with WireMock
             serverError()
           )
       )
-
-      recoverToExceptionIf[UpstreamErrorResponse](
-        connector.authorisePsp(data, pstr)
-      ) map {
-        ex =>
-          ex.statusCode mustBe INTERNAL_SERVER_ERROR
+      connector.authorisePsp(data, pstr) map {
+        _.status mustBe INTERNAL_SERVER_ERROR
       }
     }
 
@@ -122,7 +118,7 @@ class AssociationConnectorSpec extends AsyncWordSpec with Matchers with WireMock
       )
 
       connector.deAuthorisePsp(data, pstr) map {
-        _.right.value.status mustBe OK
+        _.status mustBe OK
       }
     }
 
@@ -137,7 +133,7 @@ class AssociationConnectorSpec extends AsyncWordSpec with Matchers with WireMock
       )
 
       connector.deAuthorisePsp(data, pstr) map {
-        _.left.value.responseCode mustEqual BAD_REQUEST
+        _.status mustEqual BAD_REQUEST
       }
     }
 
@@ -152,7 +148,7 @@ class AssociationConnectorSpec extends AsyncWordSpec with Matchers with WireMock
       )
 
       connector.deAuthorisePsp(data, pstr) map {
-        _.left.value.responseCode mustEqual NOT_FOUND
+        _.status mustEqual NOT_FOUND
       }
     }
 
@@ -165,12 +161,8 @@ class AssociationConnectorSpec extends AsyncWordSpec with Matchers with WireMock
             serverError()
           )
       )
-
-      recoverToExceptionIf[UpstreamErrorResponse](
-        connector.deAuthorisePsp(data, pstr)
-      ) map {
-        ex =>
-          ex.statusCode mustBe INTERNAL_SERVER_ERROR
+      connector.deAuthorisePsp(data, pstr) map {
+        _.status mustBe INTERNAL_SERVER_ERROR
       }
     }
 

@@ -19,11 +19,11 @@ package controllers
 import com.google.inject.Inject
 import connectors.AssociationConnector
 import play.api.Logger
-import play.api.mvc.{Action, ControllerComponents, AnyContent}
-import uk.gov.hmrc.auth.core.{AuthorisedFunctions, AuthConnector}
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions}
 import uk.gov.hmrc.http.{BadRequestException, Request => _}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import utils.{ErrorHandler, AuthUtil, HttpResponseHelper}
+import utils.{AuthUtil, HttpResponseHelper}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -36,7 +36,6 @@ class AssociationController @Inject()(
                                      )
   extends BackendController(cc)
     with HttpResponseHelper
-    with ErrorHandler
     with AuthorisedFunctions {
 
   private val logger = Logger(classOf[AssociationController])
@@ -50,10 +49,7 @@ class AssociationController @Inject()(
 
         (feJson, pstrOpt) match {
           case (Some(jsValue), Some(pstr)) =>
-            associationConnector.authorisePsp(jsValue, pstr).map {
-              case Right(response) => result(response)
-              case Left(e) => result(e)
-            }
+            associationConnector.authorisePsp(jsValue, pstr).map(result)
           case _ =>
             Future.failed(new BadRequestException("No Request Body received for psp association"))
         }
@@ -69,10 +65,7 @@ class AssociationController @Inject()(
 
         (feJson, pstrOpt) match {
           case (Some(jsValue), Some(pstr)) =>
-            associationConnector.deAuthorisePsp(jsValue, pstr).map {
-              case Right(response) => result(response)
-              case Left(e) => result(e)
-            }
+            associationConnector.deAuthorisePsp(jsValue, pstr).map(result)
           case _ =>
             Future.failed(new BadRequestException("No Request Body received for psp deAuthorisation"))
         }
