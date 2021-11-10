@@ -20,7 +20,7 @@ import audit.RegistrationAuditService
 import com.google.inject.Inject
 import config.AppConfig
 import models.registerWithId.RegisterWithIdResponse
-import models.registerWithoutId.{OrganisationRegistrant, RegisterWithoutIdIndividualRequest, RegisterWithoutIdResponse}
+import models.registerWithoutId.{RegisterWithoutIdResponse, RegisterWithoutIdIndividualRequest, OrganisationRegistrant}
 import play.api.http.Status._
 import play.api.libs.json._
 import play.api.mvc.RequestHeader
@@ -49,22 +49,23 @@ class RegistrationConnector @Inject()(
                                 implicit headerCarrier: HeaderCarrier,
                                 ec: ExecutionContext,
                                 request: RequestHeader
-                              ): Future[RegisterWithIdResponse] =
-    http.POST[JsValue, RegisterWithIdResponse](
-      url = config.registerWithIdIndividualUrl.format(nino),
+                              ): Future[Either[HttpException, RegisterWithIdResponse]] = {
+    val url = config.registerWithIdIndividualUrl.format(nino)
+    http.POST[JsValue, HttpResponse](
+      url = url,
       body = registerData
     )(
       wts = implicitly,
       rds = implicitly,
       hc = desHeaderCarrier,
       ec = implicitly
-    ) andThen
+    ) map(response => handleHttpResponseWithIdForErrors(response= response, url = url)) andThen
       registrationAuditService.sendRegisterWithIdAuditEvent(
-        withId = true,
-        externalId,
+        externalId = externalId,
         psaType = "Individual",
         requestJson = registerData
       )
+  }
 
   def registerWithIdOrganisation(
                                   externalId: String,
@@ -75,7 +76,7 @@ class RegistrationConnector @Inject()(
                                   ec: ExecutionContext,
                                   request: RequestHeader
                                 ): Future[Either[HttpException, RegisterWithIdResponse]] = {
-    val registerWithIdUrl = config.registerWithIdOrganisationUrl.format(utr)
+    val url = config.registerWithIdOrganisationUrl.format(utr)
 
     val organisationPsaType: String =
       (registerData \ "organisation" \ "organisationType")
@@ -83,27 +84,15 @@ class RegistrationConnector @Inject()(
         .fold(_ => "Unknown", organisationType => organisationType)
 
     http.POST[JsValue, HttpResponse](
-      url = registerWithIdUrl,
+      url = url,
       body = registerData
     )(
       wts = implicitly,
       rds = implicitly[HttpReads[HttpResponse]],
       hc = desHeaderCarrier,
       ec = implicitly
-    ) map {
-      response =>
-        response.status match {
-          case OK =>
-            Json.parse(response.body).validate[RegisterWithIdResponse] match {
-              case JsSuccess(value, _) => Right(value)
-              case JsError(errors) => throw JsResultException(errors)
-            }
-          case _ =>
-            Left(handleErrorResponse("POST", registerWithIdUrl)(response))
-        }
-    } andThen
-      registrationAuditService.sendRegisterWithIdOrgAuditEvent(
-        withId = true,
+    )  map(response => handleHttpResponseWithIdForErrors(response= response, url = url)) andThen
+      registrationAuditService.sendRegisterWithIdAuditEvent(
         externalId = externalId,
         psaType = organisationPsaType,
         requestJson = registerData
@@ -117,7 +106,7 @@ class RegistrationConnector @Inject()(
                                   implicit headerCarrier: HeaderCarrier,
                                   ec: ExecutionContext,
                                   request: RequestHeader
-                                ): Future[RegisterWithoutIdResponse] = {
+                                ): Future[Either[HttpException, RegisterWithoutIdResponse]] = {
     val url = config.registerWithoutIdIndividualUrl
     val correlationId = headerUtils.getCorrelationId
     val registerWithNoIdData =
@@ -125,7 +114,7 @@ class RegistrationConnector @Inject()(
         RegisterWithoutIdIndividualRequest.writesRegistrationNoIdIndividualRequest(correlationId)
       )
 
-    http.POST[JsValue, RegisterWithoutIdResponse](
+    http.POST[JsValue, HttpResponse](
       url = url,
       body = registerWithNoIdData
     )(
@@ -133,9 +122,8 @@ class RegistrationConnector @Inject()(
       rds = implicitly,
       hc = desHeaderCarrier,
       ec = implicitly
-    ) andThen
+    ) map(response => handleHttpResponseWithoutIdForErrors(response= response, url = url)) andThen
       registrationAuditService.sendRegisterWithoutIdAuditEvent(
-        withId = false,
         externalId = externalId,
         psaType = "Individual",
         requestJson = registerWithNoIdData
@@ -149,7 +137,7 @@ class RegistrationConnector @Inject()(
                                     implicit headerCarrier: HeaderCarrier,
                                     ec: ExecutionContext,
                                     request: RequestHeader
-                                  ): Future[RegisterWithoutIdResponse] = {
+                                  ): Future[Either[HttpException, RegisterWithoutIdResponse]] = {
     val url = config.registerWithoutIdOrganisationUrl
     val correlationId = headerUtils.getCorrelationId
     val registerWithNoIdData =
@@ -157,7 +145,7 @@ class RegistrationConnector @Inject()(
         OrganisationRegistrant.writesOrganisationRegistrantRequest(correlationId)
       )
 
-    http.POST[JsValue, RegisterWithoutIdResponse](
+    http.POST[JsValue, HttpResponse](
       url = url,
       body = registerWithNoIdData
     )(
@@ -165,12 +153,35 @@ class RegistrationConnector @Inject()(
       rds = implicitly,
       hc = desHeaderCarrier,
       ec = implicitly
-    ) andThen
+    ) map(response => handleHttpResponseWithoutIdForErrors(response= response, url = url)) andThen
       registrationAuditService.sendRegisterWithoutIdAuditEvent(
-        withId = false,
         externalId = externalId,
         psaType = "Organisation",
         requestJson = registerWithNoIdData
       )
+  }
+
+  private def handleHttpResponseWithIdForErrors(response: HttpResponse, url:String):Either[HttpException, RegisterWithIdResponse] = {
+    response.status match {
+      case OK =>
+        Json.parse(response.body).validate[RegisterWithIdResponse] match {
+          case JsSuccess(value, _) => Right(value)
+          case JsError(errors) => throw JsResultException(errors)
+        }
+      case _ =>
+        Left(handleErrorResponse("POST", url)(response))
+    }
+  }
+
+  private def handleHttpResponseWithoutIdForErrors(response: HttpResponse, url:String):Either[HttpException, RegisterWithoutIdResponse] = {
+    response.status match {
+      case OK =>
+        Json.parse(response.body).validate[RegisterWithoutIdResponse] match {
+          case JsSuccess(value, _) => Right(value)
+          case JsError(errors) => throw JsResultException(errors)
+        }
+      case _ =>
+        Left(handleErrorResponse("POST", url)(response))
+    }
   }
 }

@@ -29,10 +29,13 @@ import scala.util.{Failure, Success, Try}
 class SubscriptionAuditService @Inject()(auditService: AuditService) {
 
   def sendSubscribeAuditEvent(externalId: String, requestJson: JsValue)
-                             (implicit ec: ExecutionContext, request: RequestHeader): PartialFunction[Try[HttpResponse], Unit] = {
+                             (implicit ec: ExecutionContext, request: RequestHeader): PartialFunction[Try[Either[HttpException, HttpResponse]], Unit] = {
 
-    case Success(response) =>
+    case Success(Right(response)) =>
       auditService.sendExtendedEvent(PSPSubscription(externalId, response.status, requestJson, Some(response.json)))
+
+    case Success(Left(error)) =>
+      auditService.sendExtendedEvent(PSPSubscription(externalId, error.responseCode, requestJson, None))
 
     case Failure(error: UpstreamErrorResponse) =>
       auditService.sendExtendedEvent(PSPSubscription(externalId, error.statusCode, requestJson, None))
