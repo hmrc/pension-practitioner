@@ -76,7 +76,7 @@ case class PSPSubscription(
             (__ \ "subscriptionTypeAndPensionSchemePractitionerIdDetails" \ "existingPensionSchemePractitionerId").json.copyFrom(
               (__ \ "subscriptionTypeAndPSPIDDetails" \ "existingPSPID").json.pick) orElse doNothing
             ) and (
-            (__ \ "subscriptionTypeAndPensionSchemePractitionerIdDetails" \ "existingPensionSchemePractitionerId").json.copyFrom(
+            (__ \ "subscriptionTypeAndPensionSchemePractitionerIdDetails" \ "pensionSchemePractitionerId").json.copyFrom(
               (__ \ "subscriptionTypeAndPSPIDDetails" \ "pspid").json.pick) orElse doNothing
             )
           ) reduce
