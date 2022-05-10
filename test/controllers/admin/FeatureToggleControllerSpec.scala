@@ -17,7 +17,7 @@
 package controllers.admin
 
 import models.FeatureToggle.Enabled
-import models.FeatureToggleName.PspMinimalDetails
+import models.FeatureToggleName.DummyToggle
 import models.OperationSucceeded
 import org.mockito.ArgumentMatchers.any
 import org.mockito.MockitoSugar
@@ -47,9 +47,9 @@ class FeatureToggleControllerSpec
   override def beforeEach(): Unit = {
     reset(mockAdminDataRepository, mockFeatureToggleService)
     when(mockAdminDataRepository.getFeatureToggles)
-      .thenReturn(Future.successful(Seq(Enabled(PspMinimalDetails))))
+      .thenReturn(Future.successful(Seq(Enabled(DummyToggle))))
     when(mockFeatureToggleService.getAll)
-      .thenReturn(Future.successful(Seq(Enabled(PspMinimalDetails))))
+      .thenReturn(Future.successful(Seq(Enabled(DummyToggle))))
   }
 
   "FeatureToggleController.getAll" must {
@@ -69,16 +69,16 @@ class FeatureToggleControllerSpec
         .thenReturn(Future.successful(true))
 
       when(mockFeatureToggleService.get(any()))
-        .thenReturn(Future.successful(Enabled(PspMinimalDetails)))
+        .thenReturn(Future.successful(Enabled(DummyToggle)))
 
       val controller = new FeatureToggleController(controllerComponents, mockFeatureToggleService)
 
-      val result = controller.get(PspMinimalDetails)(fakeRequest)
+      val result = controller.get(DummyToggle)(fakeRequest)
 
       status(result) mustBe OK
 
       verify(mockFeatureToggleService, times(1))
-        .get(name = PspMinimalDetails)
+        .get(name = DummyToggle)
     }
   }
 
@@ -92,23 +92,23 @@ class FeatureToggleControllerSpec
 
       val controller = new FeatureToggleController(controllerComponents, mockFeatureToggleService)
 
-      val result = controller.put(PspMinimalDetails)(fakeRequest.withJsonBody(JsBoolean(true)))
+      val result = controller.put(DummyToggle)(fakeRequest.withJsonBody(JsBoolean(true)))
 
       status(result) mustBe NO_CONTENT
 
       verify(mockFeatureToggleService, times(1))
-        .set(toggleName = PspMinimalDetails, enabled = true)
+        .set(toggleName = DummyToggle, enabled = true)
     }
 
     "not set the feature toggles and return BAD_REQUEST" in {
       val controller = new FeatureToggleController(controllerComponents, mockFeatureToggleService)
 
-      val result = controller.put(PspMinimalDetails)(fakeRequest.withJsonBody(Json.obj("blah" -> "blah")))
+      val result = controller.put(DummyToggle)(fakeRequest.withJsonBody(Json.obj("blah" -> "blah")))
 
       status(result) mustBe BAD_REQUEST
 
       verify(mockFeatureToggleService, times(0))
-        .set(toggleName = PspMinimalDetails, enabled = true)
+        .set(toggleName = DummyToggle, enabled = true)
     }
   }
 }
