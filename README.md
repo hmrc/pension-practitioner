@@ -1,9 +1,18 @@
-// TODO: Needs writing up?
+Pension Practitioner
+==================================
 
-# pension-practitioner
- 
-This is a placeholder README.md for a new repository
+// TODO: template needs filling in.
 
-### License
+// Description of the microservice:
+Back-end microservice to ...
+
+// Table of endpoints
+API
+---
+
+| *Task*                                                      | *Supported Methods* | *Description*               |
+|-------------------------------------------------------------|----|-----------------------------|
+| ```/example-endpoint                                    ``` | POST   | Description of what happens |
+
 
 This code is open source software licensed under the [Apache 2.0 License]("http://www.apache.org/licenses/LICENSE-2.0.html").
