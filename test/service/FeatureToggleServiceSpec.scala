@@ -18,7 +18,7 @@ package service
 
 import akka.Done
 import models.FeatureToggle.{Disabled, Enabled}
-import models.FeatureToggleName.PspMinimalDetails
+import models.FeatureToggleName.{PspFromIvToPdv, PspMinimalDetails}
 import models.{FeatureToggle, FeatureToggleName, OperationFailed, OperationSucceeded}
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.any
@@ -100,7 +100,8 @@ class FeatureToggleServiceSpec
     when(adminDataRepository.getFeatureToggles).thenReturn(Future.successful(Seq.empty))
 
     OUT.getAll.futureValue mustBe Seq(
-      Disabled(PspMinimalDetails)
+      Disabled(PspMinimalDetails),
+      Disabled(PspFromIvToPdv)
     )
   }
 
