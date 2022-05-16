@@ -1,33 +1,26 @@
 Pension Practitioner
 ==================================
 
-// TODO: template needs filling in.
+Back-end microservice to support the registration, variation, invitation, association and de-registration of a pension practitioner.
 
-// Description of the microservice:
-Back-end microservice to ...
-
-// Table of endpoints
 API
 ---
 
-| *Task*                                                                  | *Supported Methods* | *Description*               |
-|-------------------------------------------------------------------------|---------------------|-----------------------------|
-| ```/register-with-id/individual                                  ```    | POST                | Description of what happens |
-| ```/register-with-id/organisation                                   ``` | POST                | Description of what happens |
-| ```/register-with-no-id/organisation                             ```    | POST                | Description of what happens |
-| ```/register-with-no-id/individual                               ```    | POST                | Description of what happens |
-| ```/journey-cache                                     ```               | GET                 | Description of what happens |
-| ```/journey-cache                                     ```               | POST                | Description of what happens |
-| ```/journey-cache                                     ```               | DELETE              | Description of what happens |
-| ```/subscribePsp/:journeyType                                    ```    | POST                | Description of what happens |
-| ```/getPsp                                                       ```    | GET                 | Description of what happens |
-| ```/deregisterPsp/:pspId                                         ```    | POST                | Description of what happens |
-| ```/authorise-psp                                                ```    | POST                | Description of what happens |
-| ```/de-authorise-psp                                             ```    | POST                | Description of what happens |
-| ```/email-response/:journeyType/:requestId/:email/:pspId        ```     | POST                | Description of what happens |
-| ```/email-response-psp-dereg/:encryptedPspId/:encryptedEmail     ```    | POST                | Description of what happens |
-| ```/get-minimal-details                                    ```          | GET                 | Description of what happens |
-| ```/can-deregister/:id                                     ```          | GET                 | Description of what happens |
-
-
-This code is open source software licensed under the [Apache 2.0 License]("http://www.apache.org/licenses/LICENSE-2.0.html").
+| *Task*                                                                  | *Supported Methods* | *Description*                                                                                            |
+|-------------------------------------------------------------------------|---------------------|----------------------------------------------------------------------------------------------------------|
+| ```/register-with-id/individual                                  ```    | POST                | Registers an individual based on the NINO from ETMP                                                      |
+| ```/register-with-id/organisation                                   ``` | POST                | Registers an organisation from ETMP based on the UTR                                                     |
+| ```/register-with-no-id/organisation                             ```    | POST                | Registers an organisation on ETMP who does not have a UTR. Typically this will be a non-UK organisation  |
+| ```/register-with-no-id/individual                               ```    | POST                | Registers an individual on ETMP who does not have a UTR/NINO. Typically this will be a non-UK individual |
+| ```/journey-cache                                     ```               | GET                 | Returns the data from Psp Data Cache                                                                     |
+| ```/journey-cache                                     ```               | POST                | Saves the data to Psp Data Cache                                                                         |
+| ```/journey-cache                                     ```               | DELETE              | Delete the data from Psp Data Cache                                                                      |
+| ```/subscribePsp/:journeyType                                    ```    | POST                | Subscribe a pension scheme practitioner                                                                  |
+| ```/getPsp                                                       ```    | GET                 | Get Psp subscription details                                                                             |
+| ```/deregisterPsp/:pspId                                         ```    | POST                | De-register a Psp                                                                                        |
+| ```/authorise-psp                                                ```    | POST                | Authorise a Psp                                                                                          |
+| ```/de-authorise-psp                                             ```    | POST                | De-authorise a Psp                                                                                       |
+| ```/email-response/:journeyType/:requestId/:email/:pspId        ```     | POST                | Sends an audit event with the correct response returned from an email service                            |
+| ```/email-response-psp-dereg/:encryptedPspId/:encryptedEmail     ```    | POST                | Sends an Psp de-registration email with the correct response returned from an email service              |
+| ```/get-minimal-details                                    ```          | GET                 | Get minimal Psp details                                                                                  |
+| ```/can-deregister/:id                                     ```          | GET                 | Can de-register a Psp                                                                                    |
