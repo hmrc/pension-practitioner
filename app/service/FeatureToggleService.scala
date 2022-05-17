@@ -16,8 +16,8 @@
 
 package service
 
-import models.FeatureToggle._
-import models.FeatureToggleName.DummyToggle
+import models.FeatureToggle.Disabled
+import models.FeatureToggleName.PspFromIvToPdv
 import models._
 import play.api.cache.AsyncCacheApi
 import repository.AdminDataRepository
@@ -34,7 +34,7 @@ class FeatureToggleService @Inject()(
   private val cacheValidFor: FiniteDuration = Duration(2, Seconds)
 
   private val defaults: Seq[FeatureToggle] = Seq(
-    Disabled(DummyToggle)
+    Disabled(PspFromIvToPdv)
   )
 
   private def addDefaults(fromDb: Seq[FeatureToggle]): Seq[FeatureToggle] = {

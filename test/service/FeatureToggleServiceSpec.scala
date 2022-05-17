@@ -18,7 +18,7 @@ package service
 
 import akka.Done
 import models.FeatureToggle.{Disabled, Enabled}
-import models.FeatureToggleName.DummyToggle
+import models.FeatureToggleName.PspFromIvToPdv
 import models.{FeatureToggle, FeatureToggleName, OperationFailed, OperationSucceeded}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.{ArgumentCaptor, MockitoSugar}
@@ -99,7 +99,7 @@ class FeatureToggleServiceSpec
     when(adminDataRepository.getFeatureToggles).thenReturn(Future.successful(Seq.empty))
 
     OUT.getAll.futureValue mustBe Seq(
-      Disabled(DummyToggle)
+      Disabled(PspFromIvToPdv)
     )
   }
 
@@ -107,13 +107,13 @@ class FeatureToggleServiceSpec
     val adminDataRepository = mock[AdminDataRepository]
     when(adminDataRepository.getFeatureToggles).thenReturn(Future.successful(Seq.empty))
     val OUT = new FeatureToggleService(adminDataRepository, new FakeCache())
-    OUT.get(DummyToggle).futureValue mustBe Disabled(DummyToggle)
+    OUT.get(PspFromIvToPdv).futureValue mustBe Disabled(PspFromIvToPdv)
   }
 
   "When a toggle exists in the repo, override default" in {
     val adminDataRepository = mock[AdminDataRepository]
-    when(adminDataRepository.getFeatureToggles).thenReturn(Future.successful(Seq(Enabled(DummyToggle))))
+    when(adminDataRepository.getFeatureToggles).thenReturn(Future.successful(Seq(Enabled(PspFromIvToPdv))))
     val OUT = new FeatureToggleService(adminDataRepository, new FakeCache())
-    OUT.get(DummyToggle).futureValue mustBe Enabled(DummyToggle)
+    OUT.get(PspFromIvToPdv).futureValue mustBe Enabled(PspFromIvToPdv)
   }
 }
