@@ -18,17 +18,16 @@ package service
 
 import akka.Done
 import models.FeatureToggle.{Disabled, Enabled}
-import models.FeatureToggleName.{PspFromIvToPdv, PspMinimalDetails}
+import models.FeatureToggleName.PspFromIvToPdv
 import models.{FeatureToggle, FeatureToggleName, OperationFailed, OperationSucceeded}
-import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.any
+import org.mockito.{ArgumentCaptor, MockitoSugar}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.OptionValues.convertOptionToValuable
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import org.mockito.MockitoSugar
 import play.api.cache.AsyncCacheApi
 import repository.AdminDataRepository
 
@@ -100,7 +99,6 @@ class FeatureToggleServiceSpec
     when(adminDataRepository.getFeatureToggles).thenReturn(Future.successful(Seq.empty))
 
     OUT.getAll.futureValue mustBe Seq(
-      Disabled(PspMinimalDetails),
       Disabled(PspFromIvToPdv)
     )
   }
@@ -109,13 +107,13 @@ class FeatureToggleServiceSpec
     val adminDataRepository = mock[AdminDataRepository]
     when(adminDataRepository.getFeatureToggles).thenReturn(Future.successful(Seq.empty))
     val OUT = new FeatureToggleService(adminDataRepository, new FakeCache())
-    OUT.get(PspMinimalDetails).futureValue mustBe Disabled(PspMinimalDetails)
+    OUT.get(PspFromIvToPdv).futureValue mustBe Disabled(PspFromIvToPdv)
   }
 
   "When a toggle exists in the repo, override default" in {
     val adminDataRepository = mock[AdminDataRepository]
-    when(adminDataRepository.getFeatureToggles).thenReturn(Future.successful(Seq(Enabled(PspMinimalDetails))))
+    when(adminDataRepository.getFeatureToggles).thenReturn(Future.successful(Seq(Enabled(PspFromIvToPdv))))
     val OUT = new FeatureToggleService(adminDataRepository, new FakeCache())
-    OUT.get(PspMinimalDetails).futureValue mustBe Enabled(PspMinimalDetails)
+    OUT.get(PspFromIvToPdv).futureValue mustBe Enabled(PspFromIvToPdv)
   }
 }

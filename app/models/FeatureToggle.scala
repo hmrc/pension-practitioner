@@ -35,18 +35,13 @@ sealed trait FeatureToggleName {
 
 object FeatureToggleName {
 
-  case object PspMinimalDetails extends FeatureToggleName {
-    val asString = "psp-minimal-details-cache"
-  }
-
   case object PspFromIvToPdv extends FeatureToggleName {
     val asString = "psp-from-iv-to-pdv"
   }
 
-  val toggles = Seq(PspMinimalDetails,PspFromIvToPdv)
+  val toggles = Seq(PspFromIvToPdv)
 
   implicit val reads: Reads[FeatureToggleName] = Reads {
-    case JsString(PspMinimalDetails.asString) => JsSuccess(PspMinimalDetails)
     case JsString(PspFromIvToPdv.asString) => JsSuccess(PspFromIvToPdv)
     case _ => JsError("Unrecognised feature toggle name")
   }

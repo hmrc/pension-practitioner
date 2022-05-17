@@ -17,13 +17,10 @@
 package controllers
 
 import connectors.MinimalConnector
-import models.FeatureToggle.Enabled
-import models.FeatureToggleName.PspMinimalDetails
 import models.MinimalDetails
 import play.api.libs.json.{JsError, JsSuccess, Json}
 import play.api.mvc._
 import repository.MinimalDetailsCacheRepository
-import service.FeatureToggleService
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.{ErrorHandler, HttpResponseHelper}
@@ -35,7 +32,6 @@ import scala.concurrent.Future
 class MinimalDetailsController @Inject()(
                                           minimalConnector: MinimalConnector,
                                           minimalDetailsCacheRepository: MinimalDetailsCacheRepository,
-                                          featureToggleService: FeatureToggleService,
                                           cc: ControllerComponents
                                      ) extends BackendController(cc) with ErrorHandler with HttpResponseHelper {
 
@@ -59,18 +55,14 @@ class MinimalDetailsController @Inject()(
 
   private def getMinimalDetail(idValue: String, idType: String, regime: String)(
     implicit hc: HeaderCarrier, request: RequestHeader): Future[Either[HttpResponse, MinimalDetails]] = {
-    featureToggleService.get(PspMinimalDetails).flatMap {
-      case Enabled(_) =>
         minimalDetailsCacheRepository.get(idValue).flatMap {
           case Some(response) =>
             response.validate[MinimalDetails](MinimalDetails.defaultReads) match {
               case JsSuccess(value, _) => Future.successful(Right(value))
-              case JsError(errors) => getAndCacheMinimalDetails(idValue, idType, regime)
+              case JsError(_) => getAndCacheMinimalDetails(idValue, idType, regime)
             }
           case _ => getAndCacheMinimalDetails(idValue, idType, regime)
         }
-      case _ => minimalConnector.getMinimalDetails(idValue, idType, regime)
-    }
   }
 
 
@@ -78,11 +70,10 @@ class MinimalDetailsController @Inject()(
     implicit hc: HeaderCarrier, request: RequestHeader):Future[Either[HttpResponse, MinimalDetails]]={
 
     minimalConnector.getMinimalDetails(idValue, idType, regime) flatMap  {
-      case Right(psaDetails) => {
+      case Right(psaDetails) =>
         minimalDetailsCacheRepository.upsert(idValue,Json.toJson(psaDetails)).map(_ =>
           Right(psaDetails)
         )
-      }
       case Left(e) => Future.successful(Left(e))
     }
   }
