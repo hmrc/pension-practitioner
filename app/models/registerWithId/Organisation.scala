@@ -29,7 +29,7 @@ object Organisation {
     ) (
     (orgName, orgType) => {
       Organisation(
-        orgName.replaceAll("""[^a-zA-Z0-9 '&\/]+""", ""),
+        orgName.replaceAll("""[^a-zA-Z0-9- '&\/]+""", ""),
         orgType
       )
     }

@@ -23,7 +23,7 @@ import play.api.libs.json._
 
 class OrganisationReadsSpec extends WordSpec with MustMatchers with OptionValues {
   private val organisation = Json.obj(
-    "organisationName" -> "(Test Ltd)",
+    "organisationName" -> "(Test-Ltd)",
     "organisationType" -> "Partnership"
   )
   "A JSON Payload with an Organisation" must {
@@ -31,7 +31,7 @@ class OrganisationReadsSpec extends WordSpec with MustMatchers with OptionValues
       val result = organisation.as[Organisation]
 
       "we have organisation name" in {
-        result.organisationName mustBe "Test Ltd"
+        result.organisationName mustBe "Test-Ltd"
       }
 
       "we have organisation type" in {
