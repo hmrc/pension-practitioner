@@ -118,6 +118,7 @@ object SchemeConnectorSpec {
         referenceNumber = "ref",
         schemeStatus = "OPEN",
         openDate = None,
+        windUpDate = None,
         pstr = None,
         relationship = None,
         pspDetails = None

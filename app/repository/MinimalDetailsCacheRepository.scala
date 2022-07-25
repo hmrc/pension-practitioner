@@ -23,9 +23,9 @@ import play.modules.reactivemongo.ReactiveMongoComponent
 import scala.concurrent.ExecutionContext
 
 class MinimalDetailsCacheRepository @Inject()(
-                                        mongoComponent: ReactiveMongoComponent,
-                                        configuration: Configuration
-                                      )(implicit val ec: ExecutionContext)
+                                               mongoComponent: ReactiveMongoComponent,
+                                               configuration: Configuration
+                                             )(implicit val ec: ExecutionContext)
   extends ManageCacheRepository(
     configuration.get[String](path = "mongodb.minimal-detail.name"),
     Some(configuration.get[Int](path = "mongodb.minimal-detail.timeToLiveInSeconds")),
