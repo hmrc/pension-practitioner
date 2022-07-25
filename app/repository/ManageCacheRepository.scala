@@ -113,7 +113,7 @@ abstract class ManageCacheRepository(
 
   def upsert(id: String, data: JsValue)(implicit ec: ExecutionContext): Future[Boolean] = {
     val document: JsValue = {
-        Json.toJson(JsonDataEntry(id, data, DateTime.now(DateTimeZone.UTC)))
+      Json.toJson(JsonDataEntry(id, data, DateTime.now(DateTimeZone.UTC)))
     }
     val selector = BSONDocument("id" -> id)
     val modifier = BSONDocument("$set" -> document)
@@ -123,22 +123,22 @@ abstract class ManageCacheRepository(
 
   def get(id: String)(implicit ec: ExecutionContext): Future[Option[JsValue]] = {
 
-      collection.find(BSONDocument("id" -> id), projection = Option.empty[JsObject]).one[JsonDataEntry].map {
-        _.map {
-          dataEntry =>
-            dataEntry.data
-        }
+    collection.find(BSONDocument("id" -> id), projection = Option.empty[JsObject]).one[JsonDataEntry].map {
+      _.map {
+        dataEntry =>
+          dataEntry.data
       }
+    }
   }
 
   def getLastUpdated(id: String)(implicit ec: ExecutionContext): Future[Option[DateTime]] = {
 
-      collection.find(BSONDocument("id" -> id), projection = Option.empty[JsObject]).one[JsonDataEntry].map {
-        _.map {
-          dataEntry =>
-            dataEntry.lastUpdated
-        }
+    collection.find(BSONDocument("id" -> id), projection = Option.empty[JsObject]).one[JsonDataEntry].map {
+      _.map {
+        dataEntry =>
+          dataEntry.lastUpdated
       }
+    }
   }
 
   def remove(id: String)(implicit ec: ExecutionContext): Future[Boolean] = {

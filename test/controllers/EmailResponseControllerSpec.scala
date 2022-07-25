@@ -17,14 +17,12 @@
 package controllers
 
 import audit._
-import models.{Sent, _}
+import models._
 import models.enumeration.JourneyType.PSP_SUBSCRIPTION
 import org.joda.time.DateTime
 import org.mockito.ArgumentMatchers.any
-import org.mockito.{ArgumentCaptor, Mockito}
-import org.mockito.Mockito.{never, times, verify, when}
-import org.scalatest.{BeforeAndAfterEach, AsyncWordSpec, MustMatchers}
-import org.mockito.MockitoSugar
+import org.mockito.{ArgumentCaptor, Mockito, MockitoSugar}
+import org.scalatest.{AsyncWordSpec, BeforeAndAfterEach, MustMatchers}
 import play.api.Application
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
