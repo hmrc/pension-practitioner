@@ -26,6 +26,7 @@ import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterEach}
 import play.api.Configuration
 import play.api.libs.json.{Format, JsString, JsValue, Json}
+import repository.DataCacheRepositorySpec.id
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.formats.MongoJodaFormats
 
@@ -89,115 +90,24 @@ class DataCacheRepositorySpec extends AnyWordSpec with MockitoSugar with Matcher
       whenReady(result) {
         _ mustBe None
       }
-
     }
-    //
-    //    "remove" must {
-    //      "delete an existing DataEntryWithoutEncryption session data cache record by id in Mongo collection when encrypted false" in {
-    //
-    //        when(mockAppConfig.get[Boolean](path = "encrypted")).thenReturn(false)
-    //        mongoCollectionDrop()
-    //
-    //        val record = ("id-1", Json.parse("""{"data":"1"}"""))
-    //
-    //        val documentsInDB = for {
-    //          _ <- dataCacheRepository.upsert(record._1, record._2)
-    //          documentsInDB <- dataCacheRepository.get(record._1)
-    //        } yield documentsInDB
-    //
-    //        whenReady(documentsInDB) { documentsInDB =>
-    //          documentsInDB.isDefined mustBe true
-    //        }
-    //
-    //        val documentsInDB2 = for {
-    //          _ <- dataCacheRepository.remove(record._1)
-    //          documentsInDB2 <- dataCacheRepository.get(record._1)
-    //        } yield documentsInDB2
-    //
-    //        whenReady(documentsInDB2) { documentsInDB2 =>
-    //          documentsInDB2.isDefined mustBe false
-    //        }
-    //      }
-    //
-    //      "not delete an existing DataEntryWithoutEncryption session data cache record by id in Mongo collection when encrypted false and id incorrect" in {
-    //
-    //        when(mockAppConfig.get[Boolean](path = "encrypted")).thenReturn(false)
-    //        mongoCollectionDrop()
-    //
-    //        val record = ("id-1", Json.parse("""{"data":"1"}"""))
-    //        val documentsInDB = for {
-    //          _ <- dataCacheRepository.upsert(record._1, record._2)
-    //          documentsInDB <- dataCacheRepository.get(record._1)
-    //        } yield documentsInDB
-    //
-    //        whenReady(documentsInDB) { documentsInDB =>
-    //          documentsInDB.isDefined mustBe true
-    //        }
-    //
-    //        val documentsInDB2 = for {
-    //          _ <- dataCacheRepository.remove("2")
-    //          documentsInDB2 <- dataCacheRepository.get(record._1)
-    //        } yield documentsInDB2
-    //
-    //        whenReady(documentsInDB2) { documentsInDB2 =>
-    //          documentsInDB2.isDefined mustBe true
-    //        }
-    //      }
-    //
-    //      "delete an existing EncryptedDataEntry session data cache record by id in Mongo collection when encrypted true" in {
-    //
-    //        when(mockAppConfig.get[Boolean](path = "encrypted")).thenReturn(true)
-    //        mongoCollectionDrop()
-    //
-    //        val record = ("id-1", Json.parse("""{"data":"1"}"""))
-    //        val documentsInDB = for {
-    //          _ <- dataCacheRepository.upsert(record._1, record._2)
-    //          documentsInDB <- dataCacheRepository.get(record._1)
-    //        } yield documentsInDB
-    //
-    //        whenReady(documentsInDB) { documentsInDB =>
-    //          documentsInDB.isDefined mustBe true
-    //        }
-    //
-    //        val documentsInDB2 = for {
-    //          _ <- dataCacheRepository.remove(record._1)
-    //          documentsInDB2 <- dataCacheRepository.get(record._1)
-    //        } yield documentsInDB2
-    //
-    //
-    //        whenReady(documentsInDB2) { documentsInDB2 =>
-    //          documentsInDB2.isDefined mustBe false
-    //        }
-    //      }
-    //
-    //      "not delete an existing EncryptedDataEntry session data cache record by id in Mongo collection when encrypted true" in {
-    //
-    //        when(mockAppConfig.get[Boolean](path = "encrypted")).thenReturn(true)
-    //        mongoCollectionDrop()
-    //
-    //        val record = ("id-1", Json.parse("""{"data":"1"}"""))
-    //        val documentsInDB = for {
-    //          _ <- dataCacheRepository.upsert(record._1, record._2)
-    //          documentsInDB <- dataCacheRepository.get(record._1)
-    //        } yield documentsInDB
-    //
-    //        whenReady(documentsInDB) { documentsInDB =>
-    //          documentsInDB.isDefined mustBe true
-    //        }
-    //
-    //        val documentsInDB2 = for {
-    //          _ <- dataCacheRepository.remove("2")
-    //          documentsInDB2 <- dataCacheRepository.get(record._1)
-    //        } yield documentsInDB2
-    //
-    //        whenReady(documentsInDB2) { documentsInDB2 =>
-    //          documentsInDB2.isDefined mustBe true
-    //        }
-    //      }
-    //    }
-    //  }
   }
 
+  "remove" must {
+    "remove record at given id" in {
+      mongoCollectionDrop()
+
+      val saveAndRemoveData = for {
+        _ <- dataCacheRepository.save(id, dummyData)
+        _ <- dataCacheRepository.remove(id)
+        dataRetrieved <- dataCacheRepository.get(id = id)
+      } yield dataRetrieved
+
+      whenReady(saveAndRemoveData) {
+        _ mustBe None
+      }
+    }
+  }
 }
 
 object DataCacheRepositorySpec extends AnyWordSpec with MockitoSugar {
