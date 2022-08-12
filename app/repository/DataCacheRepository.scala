@@ -82,8 +82,8 @@ class DataCacheRepository @Inject()(
 
     collection.find(filter = selector(id))
       .toFuture().map(_.headOption).map { optJsVal =>
-      optJsVal.map { jsVal =>
-        val x = (jsVal.as[JsObject] \ "data").asOpt
+      optJsVal.flatMap { jsVal =>
+        (jsVal \ "data").asOpt[JsValue]
       }
     }
   }
