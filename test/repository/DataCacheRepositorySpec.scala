@@ -17,7 +17,7 @@
 package repository
 
 import com.github.simplyscala.MongoEmbedDatabase
-import com.typesafe.config.Config
+import org.joda.time.DateTime
 import org.mockito.{ArgumentMatchers, MockitoSugar}
 import org.mongodb.scala.model.Filters
 import org.scalatest.concurrent.ScalaFutures.whenReady
@@ -25,8 +25,9 @@ import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterEach}
 import play.api.Configuration
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.{Format, JsString, JsValue, Json}
 import uk.gov.hmrc.mongo.MongoComponent
+import uk.gov.hmrc.mongo.play.json.formats.MongoJodaFormats
 
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -45,7 +46,7 @@ class DataCacheRepositorySpec extends AnyWordSpec with MockitoSugar with Matcher
 
   withEmbedMongoFixture(port = 24680) { _ =>
     "save" must {
-      "save data into the cache" in {
+      "save new data into the cache" in {
         mongoCollectionDrop()
 
         val filters = Filters.eq(idField, id)
@@ -59,27 +60,40 @@ class DataCacheRepositorySpec extends AnyWordSpec with MockitoSugar with Matcher
           documentsInDB.size mustBe 1
         }
       }
-      //
-      //      "update an existing session data cache as DataEntryWithoutEncryption in Mongo collection when encrypted false" in {
-      //        when(mockAppConfig.getOptional[Boolean](path = "encrypted")).thenReturn(Some(false))
-      //        mongoCollectionDrop()
-      //
-      //        val record1 = ("Ext-b9443dbb-3d88-465d-9696-47d6ef94f356", Json.parse("""{"registerAsBusiness":true}"""))
-      //        val record2 = ("Ext-b9443dbb-3d88-465d-9696-47d6ef94f356", Json.parse("""{"registerAsBusiness":true,"expireAt":1658530800000,"areYouInUK":true}"""))
-      //
-      //        val filters = Filters.eq(idField, "Ext-b9443dbb-3d88-465d-9696-47d6ef94f356")
-      //        val documentsInDB = for {
-      //          _ <- dataCacheRepository.upsert(record1._1, record1._2)
-      //          _ <- dataCacheRepository.upsert(record2._1, record2._2)
-      //          documentsInDB <- dataCacheRepository.collection.find[DataEntryWithoutEncryption](filters).toFuture()
-      //        } yield documentsInDB
-      //
-      //        whenReady(documentsInDB) { documentsInDB =>
-      //          documentsInDB.size mustBe 1
-      //          documentsInDB.head.data mustBe record2._2
-      //          documentsInDB.head.data must not be record1._2
-      //        }
-      //      }
+
+      "update data into the cache when already exists" in {
+        mongoCollectionDrop()
+
+        val newData = JsString("New data")
+
+        val dataRetrieved = for {
+          _ <- dataCacheRepository.save(id, userData)
+          _ <- dataCacheRepository.save(id, newData)
+          dataRetrieved <- dataCacheRepository.get(id = id)
+        } yield dataRetrieved
+
+        whenReady(dataRetrieved) { documentsInDB =>
+          dataRetrieved mustBe Some(JsString("New data"))
+        }
+      }
+
+//      "update an existing session data cache in Mongo collection" in {
+//        mongoCollectionDrop()
+//
+//        val filters = Filters.eq(idField, "Ext-b9443dbb-3d88-465d-9696-47d6ef94f356")
+//        val documentsInDB = for {
+//          _ <- dataCacheRepository.upsert(record1._1, record1._2)
+//          _ <- dataCacheRepository.upsert(record2._1, record2._2)
+//          documentsInDB <- dataCacheRepository.collection.find[DataEntryWithoutEncryption](filters).toFuture()
+//        } yield documentsInDB
+//
+//        whenReady(documentsInDB) { documentsInDB =>
+//          documentsInDB.size mustBe 1
+//          documentsInDB.head.data mustBe record2._2
+//          documentsInDB.head.data must not be record1._2
+//        }
+//      }
+    }
       //
       //      "save a new session data cache as DataEntryWithoutEncryption in Mongo collection when encrypted false and id is not same" in {
       //        when(mockAppConfig.get[Boolean](path = "encrypted")).thenReturn(false)
@@ -296,12 +310,13 @@ class DataCacheRepositorySpec extends AnyWordSpec with MockitoSugar with Matcher
     //      }
     //    }
     //  }
-  }
+
 }
 
 object DataCacheRepositorySpec extends AnyWordSpec with MockitoSugar {
 
   import scala.concurrent.ExecutionContext.Implicits._
+  implicit val dateFormat: Format[DateTime] = MongoJodaFormats.dateTimeFormat
 
   private val id: String = "testId"
   private val idField: String = "id"

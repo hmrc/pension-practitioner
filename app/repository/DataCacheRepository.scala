@@ -81,7 +81,11 @@ class DataCacheRepository @Inject()(
     logger.debug("Calling get in PSP Cache")
 
     collection.find(filter = selector(id))
-      .toFuture().map(_.headOption)
+      .toFuture().map(_.headOption).map { optJsVal =>
+      optJsVal.map { jsVal =>
+        val x = (jsVal.as[JsObject] \ "data").asOpt
+      }
+    }
   }
 
   def remove(id: String)(implicit ec: ExecutionContext): Future[Unit] = {
