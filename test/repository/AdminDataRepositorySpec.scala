@@ -41,7 +41,7 @@ class AdminDataRepositorySpec extends AnyWordSpec with MockitoSugar with Matcher
 
   override def beforeEach: Unit = {
     super.beforeEach
-    when(mockAppConfig.get[String](path = "mongodb.psp-cache.name"))
+    when(mockAppConfig.get[String](path = "mongodb.admin-data.name"))
       .thenReturn("admin-data")
   }
 

@@ -52,10 +52,10 @@ class AdminDataRepository @Inject()(
         indexOptions = IndexOptions()
           .name(featureToggles)
           .background(true)
+          .unique(true)
       )
     )
   ) with Logging {
-
 
   def getFeatureToggles: Future[Seq[FeatureToggle]] = {
     collection.find[FeatureToggles](
