@@ -55,12 +55,11 @@ class DataCacheRepository @Inject()(
     domainFormat = implicitly,
     indexes = Seq(
       IndexModel(
-        Indexes.ascending("expireAt"),
-        IndexOptions().name("dataExpiry").expireAfter(0, TimeUnit.SECONDS).background(true)
-      ),
-      IndexModel(
-        Indexes.ascending("id"),
-        IndexOptions().name("id").unique(true).background(true)
+        keys = Indexes.ascending("expireAt"),
+        indexOptions = IndexOptions()
+          .name("dataExpiry")
+          .expireAfter(0, TimeUnit.SECONDS)
+          .background(true)
       )
     )
   ) with Logging {

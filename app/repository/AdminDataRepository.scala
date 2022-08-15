@@ -43,13 +43,16 @@ class AdminDataRepository @Inject()(
                                      configuration: Configuration
                                    )(implicit val ec: ExecutionContext)
   extends PlayMongoRepository[FeatureToggles](
-    collectionName = configuration.get[String](path = "mongodb.psp-cache.name"),
+    collectionName = configuration.get[String](path = "mongodb.admin-data.name"),
     mongoComponent = mongoComponent,
     domainFormat = FeatureToggleMongoFormatter.featureToggleMongoFormatter,
     indexes = Seq(
       IndexModel(
-        Indexes.ascending(featureToggles),
-        IndexOptions().name(featureToggles).unique(true).background(true))
+        keys = Indexes.ascending(featureToggles),
+        indexOptions = IndexOptions()
+          .name(featureToggles)
+          .background(true)
+      )
     )
   ) with Logging {
 

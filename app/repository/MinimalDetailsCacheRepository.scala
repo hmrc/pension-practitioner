@@ -55,9 +55,11 @@ class MinimalDetailsCacheRepository @Inject()(
     domainFormat = implicitly,
     indexes = Seq(
       IndexModel(
-        Indexes.ascending("lastUpdated"),
-        IndexOptions().name("dataExpiry")
-          .expireAfter(config.get[Int](path = "mongodb.minimal-detail.timeToLiveInSeconds"), TimeUnit.SECONDS).background(true)
+        keys = Indexes.ascending("lastUpdated"),
+        indexOptions = IndexOptions()
+          .name("dataExpiry")
+          .expireAfter(config.get[Int](path = "mongodb.minimal-detail.timeToLiveInSeconds"), TimeUnit.SECONDS)
+          .background(true)
       )
     )
   ) with Logging {
