@@ -60,6 +60,12 @@ class DataCacheRepository @Inject()(
           .name("dataExpiry")
           .expireAfter(0, TimeUnit.SECONDS)
           .background(true)
+      ),
+      IndexModel(
+        keys = Indexes.ascending("id"),
+        indexOptions = IndexOptions()
+          .name("id")
+          .background(true)
       )
     )
   ) with Logging {
