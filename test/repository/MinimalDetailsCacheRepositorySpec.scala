@@ -122,7 +122,7 @@ object MinimalDetailsCacheRepositorySpec extends AnyWordSpec with MockitoSugar {
   private val userData: JsValue = Json.obj("testing" -> "123")
 
   private val mockConfig = mock[Configuration]
-  private val databaseName = "pension-administrator"
+  private val databaseName = "pension-practitioner"
   private val mongoUri: String = s"mongodb://127.0.0.1:27017/$databaseName?heartbeatFrequencyMS=1000&rm.failover=default"
   private val mongoComponent = MongoComponent(mongoUri)
   private val dummyData = JsString("dummy data")
