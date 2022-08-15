@@ -17,20 +17,17 @@
 package audit
 
 import com.google.inject.Inject
-import models.registerWithoutId.RegisterWithoutIdResponse
 import models.registerWithId.{RegisterWithIdResponse, UkAddress}
-import play.api.Logger
+import models.registerWithoutId.RegisterWithoutIdResponse
 import play.api.http.Status
-import play.api.libs.json.{Format, Json, JsValue}
+import play.api.libs.json.{Format, JsValue, Json}
 import play.api.mvc.RequestHeader
-import uk.gov.hmrc.http.{UpstreamErrorResponse, HttpException}
+import uk.gov.hmrc.http.{HttpException, UpstreamErrorResponse}
 
 import scala.concurrent.ExecutionContext
-import scala.util.{Try, Success, Failure}
+import scala.util.{Failure, Success, Try}
 
 class RegistrationAuditService @Inject()(auditService: AuditService) {
-
-  private val logger = Logger(classOf[RegistrationAuditService])
 
   def withIdIsUk(response: RegisterWithIdResponse): Option[Boolean] = {
     response.address match {
