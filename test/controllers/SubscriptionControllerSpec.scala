@@ -19,7 +19,9 @@ package controllers
 import connectors.{SchemeConnector, SubscriptionConnector}
 import models.enumeration.JourneyType
 import org.mockito.ArgumentMatchers.any
-import org.scalatest.{BeforeAndAfter, AsyncWordSpec, MustMatchers}
+import org.scalatest.wordspec.AsyncWordSpec
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.BeforeAndAfter
 import org.mockito.{ArgumentMatchers, MockitoSugar}
 import play.api.Application
 import play.api.inject.bind
@@ -34,7 +36,7 @@ import uk.gov.hmrc.http._
 
 import scala.concurrent.Future
 
-class SubscriptionControllerSpec extends AsyncWordSpec with MustMatchers with MockitoSugar with BeforeAndAfter {
+class SubscriptionControllerSpec extends AsyncWordSpec with Matchers with MockitoSugar with BeforeAndAfter {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 

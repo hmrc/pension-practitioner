@@ -18,10 +18,12 @@ package models.reads.registerWithoutId
 
 import models.registerWithoutId
 import models.registerWithoutId.{Address, RegisterWithoutIdIndividualRequest, RegisterWithoutIdResponse}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import play.api.libs.json.{JsResultException, JsValue, Json}
 
-class RegisterWithoutIdIndividualRequestSpec extends FlatSpec with Matchers {
+class RegisterWithoutIdIndividualRequestSpec extends AnyFlatSpec with Matchers {
 
   import RegisterWithoutIdIndividualRequestSpec._
 

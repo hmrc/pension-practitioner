@@ -29,7 +29,7 @@ lazy val microservice = Project(appName, file("."))
   .settings(
     ScoverageKeys.coverageExcludedFiles := "<empty>;Reverse.*;.*repository.*;" +
       ".*BuildInfo.*;.*javascript.*;.*Routes.*;.*GuiceInjector;",
-    ScoverageKeys.coverageMinimum := 80,
+    ScoverageKeys.coverageMinimumStmtTotal := 80,
     ScoverageKeys.coverageFailOnMinimum := true,
     ScoverageKeys.coverageHighlighting := true
   )
@@ -53,8 +53,6 @@ lazy val silencerSettings: Seq[Setting[_]] = {
     // silence implicit parameter value is never used warnings
     scalacOptions += s"-P:silencer:globalFilters=$paramValueNeverUsed",
     // Make sure you only exclude warnings for the project directories, i.e. make builds reproducible
-    scalacOptions += s"-P:silencer:sourceRoots=${baseDirectory.value.getCanonicalPath}",
-    scalacOptions += "-Xfatal-warnings",
-  scalacOptions += "-feature"
+    scalacOptions += s"-P:silencer:sourceRoots=${baseDirectory.value.getCanonicalPath}"
   )
 }

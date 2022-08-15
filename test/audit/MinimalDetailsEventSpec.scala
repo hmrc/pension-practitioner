@@ -16,15 +16,17 @@
 
 package audit
 
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 import play.api.libs.json.Json
 
 class MinimalDetailsEventSpec
-  extends FlatSpec
+  extends AnyFlatSpec
     with Matchers {
 
   "MinimalDetailsEvent" should "output the correct map of data" in {
 
+    //noinspection ScalaStyle
     val event = MinimalDetailsEvent(
       idType = "pspid",
       idValue = "2100000",
@@ -32,6 +34,7 @@ class MinimalDetailsEventSpec
       isSuspended = Option(false),
       rlsFlag = Option(false),
       deceasedFlag = Option(false),
+      // scalastyle: off
       status = 200,
       response = Option(Json.obj("some" -> "value"))
     )

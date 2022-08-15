@@ -23,7 +23,9 @@ import models.registerWithoutId.{OrganisationRegistrant, RegisterWithoutIdIndivi
 import org.mockito.ArgumentMatchers.any
 import org.mockito.{ArgumentMatchers, MockitoSugar}
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{AsyncWordSpec, BeforeAndAfter, MustMatchers}
+import org.scalatest.wordspec.AsyncWordSpec
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.BeforeAndAfter
 import play.api.Application
 import play.api.inject.bind
 import play.api.inject.guice.{GuiceApplicationBuilder, GuiceableModule}
@@ -38,7 +40,7 @@ import scala.concurrent.Future
 
 class RegistrationControllerSpec
   extends AsyncWordSpec
-    with MustMatchers
+    with Matchers
     with MockitoSugar
     with BeforeAndAfter {
 

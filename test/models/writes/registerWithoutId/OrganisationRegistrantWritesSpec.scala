@@ -17,10 +17,11 @@
 package models.writes.registerWithoutId
 
 import models.registerWithoutId.{Address, OrganisationName, OrganisationRegistrant}
-import org.scalatest.{MustMatchers, WordSpec}
+import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.matchers.must.Matchers
 import play.api.libs.json.Json
 
-class OrganisationRegistrantWritesSpec extends WordSpec with MustMatchers {
+class OrganisationRegistrantWritesSpec extends AnyWordSpec with Matchers {
 
   "An OrganisationRegistrant" must {
     "parse correctly to a valid DES format" when {

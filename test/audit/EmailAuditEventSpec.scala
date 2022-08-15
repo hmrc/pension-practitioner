@@ -18,11 +18,11 @@ package audit
 
 import models.Sent
 import models.enumeration.JourneyType
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 class EmailAuditEventSpec
-  extends FlatSpec
+  extends AnyFlatSpec
     with Matchers {
 
   "EmailAuditEvent" should "output the correct map of data" in {

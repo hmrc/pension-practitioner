@@ -16,10 +16,12 @@
 
 package transformations.toUserAnswers
 
-import org.scalatest.{FreeSpec, MustMatchers, OptionValues}
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.OptionValues
 import play.api.libs.json.{JsObject, Json}
 
-class PspDetailsTransformerSpec extends FreeSpec with MustMatchers with OptionValues {
+class PspDetailsTransformerSpec extends AnyFreeSpec with Matchers with OptionValues {
 
   import PspDetailsTransformerSpec._
 
