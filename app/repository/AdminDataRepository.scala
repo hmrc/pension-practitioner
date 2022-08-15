@@ -43,7 +43,7 @@ class AdminDataRepository @Inject()(
                                      configuration: Configuration
                                    )(implicit val ec: ExecutionContext)
   extends PlayMongoRepository[FeatureToggles](
-    collectionName = configuration.get[String](path = "mongodb.pension-administrator-cache.admin-data.name"),
+    collectionName = configuration.get[String](path = "mongodb.psp-cache.name"),
     mongoComponent = mongoComponent,
     domainFormat = FeatureToggleMongoFormatter.featureToggleMongoFormatter,
     indexes = Seq(
