@@ -50,8 +50,9 @@ trait HttpResponseHelper extends HttpErrorFunctions {
   def handleErrorResponse(httpMethod: String, url: String, args: String*)(response: HttpResponse): HttpException =
     response.status match {
       case BAD_REQUEST =>
-        if (response.body.contains("INVALID_PAYLOAD"))
+        if (response.body.contains("INVALID_PAYLOAD")) {
           logger.warn(s"INVALID_PAYLOAD returned for: ${args.headOption.getOrElse(url)} from: $url")
+        }
         new BadRequestException(badRequestMessage(httpMethod, url, response.body))
       case FORBIDDEN =>
         new ForbiddenException(upstreamResponseMessage("POST", url, FORBIDDEN, response.body))

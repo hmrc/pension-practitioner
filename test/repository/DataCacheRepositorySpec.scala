@@ -26,7 +26,6 @@ import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterEach}
 import play.api.Configuration
 import play.api.libs.json.{Format, JsString, JsValue, Json}
-import repository.DataCacheRepositorySpec.id
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.formats.MongoJodaFormats
 

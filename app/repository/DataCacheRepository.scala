@@ -1,3 +1,4 @@
+
 /*
  * Copyright 2022 HM Revenue & Customs
  *
@@ -20,7 +21,6 @@ import com.google.inject.Inject
 import com.mongodb.client.model.FindOneAndUpdateOptions
 import org.joda.time.{DateTime, DateTimeZone}
 import org.mongodb.scala.model._
-import org.slf4j.{Logger, LoggerFactory}
 import play.api.libs.json._
 import play.api.{Configuration, Logging}
 import uk.gov.hmrc.mongo.MongoComponent
@@ -68,7 +68,7 @@ class DataCacheRepository @Inject()(
     val modifier = Updates.combine(
       Updates.set("id", Codecs.toBson(id)),
       Updates.set("data", Codecs.toBson(userData)),
-      Updates.set("expireAt", Codecs.toBson(getExpireAt)),
+      Updates.set("expireAt", Codecs.toBson(getExpireAt))
     )
 
     collection.findOneAndUpdate(
