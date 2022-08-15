@@ -66,7 +66,9 @@ class DataCacheRepository @Inject()(
         indexOptions = IndexOptions()
           .name("id")
           .background(true)
+          .unique(true)
       )
+
     )
   ) with Logging {
 

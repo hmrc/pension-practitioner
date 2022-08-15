@@ -65,8 +65,8 @@ class MinimalDetailsCacheRepository @Inject()(
         keys = Indexes.ascending("id"),
         indexOptions = IndexOptions()
           .name("id")
-          .expireAfter(config.get[Int](path = "mongodb.minimal-detail.timeToLiveInSeconds"), TimeUnit.SECONDS)
           .background(true)
+          .unique(true)
       )
     )
   ) with Logging {
