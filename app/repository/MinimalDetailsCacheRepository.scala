@@ -32,6 +32,7 @@
 
 package repository
 
+import com.google.inject.Inject
 import com.mongodb.client.model.FindOneAndUpdateOptions
 import org.joda.time.{DateTime, DateTimeZone}
 import org.mongodb.scala.model._
@@ -44,7 +45,7 @@ import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 import java.util.concurrent.TimeUnit
 import scala.concurrent.{ExecutionContext, Future}
 
-class MinimalDetailsCacheRepository(
+class MinimalDetailsCacheRepository @Inject()(
                                       mongoComponent: MongoComponent,
                                       config: Configuration
                                     )(implicit ec: ExecutionContext)

@@ -41,7 +41,9 @@ class MinimalDetailsCacheRepositorySpec extends AnyWordSpec with MockitoSugar wi
   override def beforeEach: Unit = {
     super.beforeEach
     when(mockConfig.get[String](ArgumentMatchers.eq("mongodb.minimal-detail.name"))(ArgumentMatchers.any()))
-      .thenReturn("psp-journey")
+      .thenReturn("minimal-detail")
+    when(mockConfig.get[Int](ArgumentMatchers.eq("mongodb.minimal-detail.timeToLiveInSeconds"))(ArgumentMatchers.any()))
+      .thenReturn(3600)
   }
 
   withEmbedMongoFixture(port = 24680) { _ =>
