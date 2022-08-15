@@ -1,4 +1,5 @@
 import play.sbt.routes.RoutesKeys
+import sbt.Keys.scalacOptions
 import uk.gov.hmrc.DefaultBuildSettings.integrationTestSettings
 import uk.gov.hmrc.SbtArtifactory
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
@@ -52,6 +53,8 @@ lazy val silencerSettings: Seq[Setting[_]] = {
     // silence implicit parameter value is never used warnings
     scalacOptions += s"-P:silencer:globalFilters=$paramValueNeverUsed",
     // Make sure you only exclude warnings for the project directories, i.e. make builds reproducible
-    scalacOptions += s"-P:silencer:sourceRoots=${baseDirectory.value.getCanonicalPath}"
+    scalacOptions += s"-P:silencer:sourceRoots=${baseDirectory.value.getCanonicalPath}",
+    scalacOptions += "-Xfatal-warnings",
+  scalacOptions += "-feature"
   )
 }
