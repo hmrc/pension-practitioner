@@ -19,7 +19,9 @@ package controllers
 import connectors.AssociationConnector
 import org.mockito.ArgumentMatchers.any
 import org.mockito.MockitoSugar
-import org.scalatest.{AsyncWordSpec, BeforeAndAfter, MustMatchers}
+import org.scalatest.wordspec.AsyncWordSpec
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.BeforeAndAfter
 import play.api.Application
 import play.api.inject.bind
 import play.api.inject.guice.{GuiceApplicationBuilder, GuiceableModule}
@@ -33,7 +35,7 @@ import scala.concurrent.Future
 
 class AssociationControllerSpec
   extends AsyncWordSpec
-    with MustMatchers
+    with Matchers
     with MockitoSugar
     with BeforeAndAfter {
 

@@ -20,7 +20,9 @@ import akka.util.ByteString
 import org.apache.commons.lang3.RandomUtils
 import org.mockito.ArgumentMatchers.{eq => eqTo, _}
 import org.mockito.MockitoSugar
-import org.scalatest.{BeforeAndAfter, MustMatchers, WordSpec}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 import play.api.inject.bind
 import play.api.inject.guice.{GuiceApplicationBuilder, GuiceableModule}
 import play.api.libs.json.Json
@@ -32,7 +34,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.Future
 
-class DataCacheControllerSpec extends WordSpec with MustMatchers with MockitoSugar with BeforeAndAfter {
+class DataCacheControllerSpec extends AnyWordSpec with Matchers with MockitoSugar with BeforeAndAfter {
 
   import DataCacheController._
 
@@ -112,7 +114,7 @@ class DataCacheControllerSpec extends WordSpec with MustMatchers with MockitoSug
           .configure(conf = "auditing.enabled" -> false, "metrics.enabled" -> false, "metrics.jvm" -> false, "run.mode" -> "Test")
           .overrides(modules: _*).build()
         val controller = app.injector.instanceOf[DataCacheController]
-        when(repo.save(any(), any())(any())) thenReturn Future.successful(true)
+        when(repo.save(any(), any())(any())) thenReturn Future.successful(():Unit)
         when(authConnector.authorise[Option[String]](any(), any())(any(), any())) thenReturn Future.successful(Some(id))
 
         val result = controller.save(fakePostRequest.withJsonBody(Json.obj("value" -> "data")))
@@ -124,7 +126,7 @@ class DataCacheControllerSpec extends WordSpec with MustMatchers with MockitoSug
           .configure(conf = "auditing.enabled" -> false, "metrics.enabled" -> false, "metrics.jvm" -> false, "run.mode" -> "Test")
           .overrides(modules: _*).build()
         val controller = app.injector.instanceOf[DataCacheController]
-        when(repo.save(any(), any())(any())) thenReturn Future.successful(true)
+        when(repo.save(any(), any())(any())) thenReturn Future.successful(():Unit)
         when(authConnector.authorise[Option[String]](any(), any())(any(), any())) thenReturn Future.successful(Some(id))
 
         val result = controller.save(fakePostRequest.withRawBody(ByteString(RandomUtils.nextBytes(512001))))
@@ -149,7 +151,7 @@ class DataCacheControllerSpec extends WordSpec with MustMatchers with MockitoSug
           .configure(conf = "auditing.enabled" -> false, "metrics.enabled" -> false, "metrics.jvm" -> false, "run.mode" -> "Test")
           .overrides(modules: _*).build()
         val controller = app.injector.instanceOf[DataCacheController]
-        when(repo.remove(eqTo(id))(any())) thenReturn Future.successful(true)
+        when(repo.remove(eqTo(id))(any())) thenReturn Future.successful(():Unit)
         when(authConnector.authorise[Option[String]](any(), any())(any(), any())) thenReturn Future.successful(Some(id))
 
         val result = controller.remove(fakeRequest)

@@ -61,7 +61,7 @@ class MinimalDetailsControllerSpec extends AnyWordSpec with Matchers {
         .thenReturn(Future.successful(Right(minimalDetailsIndividualUser)))
 
       when(mockMinimalDetailsCacheRepository.upsert(any(),any())(any()))
-        .thenReturn(Future.successful(true))
+        .thenReturn(Future.successful((): Unit))
       val result = controller.getMinimalDetails(fakeRequest.withHeaders(("pspId", "A2123456")))
 
       status(result) mustBe OK
@@ -78,7 +78,7 @@ class MinimalDetailsControllerSpec extends AnyWordSpec with Matchers {
         .thenReturn(Future.successful(Right(minimalDetailsIndividualUser)))
 
       when(mockMinimalDetailsCacheRepository.upsert(any(),any())(any()))
-        .thenReturn(Future.successful(true))
+        .thenReturn(Future.successful((): Unit))
       val result = controller.getMinimalDetails(fakeRequest.withHeaders(("pspId", "A2123456")))
 
       status(result) mustBe OK

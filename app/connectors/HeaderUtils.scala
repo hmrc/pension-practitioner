@@ -18,7 +18,6 @@ package connectors
 
 import com.google.inject.Inject
 import config.AppConfig
-import play.api.Logger
 import uk.gov.hmrc.http.HeaderCarrier
 
 import java.util.UUID.randomUUID
@@ -26,7 +25,6 @@ import java.util.UUID.randomUUID
 class HeaderUtils @Inject()(config: AppConfig) {
   private[connectors] val maxLengthCorrelationId = 32
   private[connectors] val maxLengthCorrelationIF = 36
-  private val logger = Logger(classOf[HeaderUtils])
 
   def desHeaderWithoutCorrelationId: Seq[(String, String)] = {
     Seq(

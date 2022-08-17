@@ -22,6 +22,7 @@ import play.api.libs.json.Reads._
 import play.api.libs.json._
 import play.api.mvc.RequestHeader
 import uk.gov.hmrc.http.{HttpException, HttpResponse, UpstreamErrorResponse}
+import scala.language.postfixOps
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}

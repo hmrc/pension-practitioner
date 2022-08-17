@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-package models.reads
+package models.reads.registerWithId
 
 import models.enumeration.OrganisationTypeEnum
 import models.registerWithId.Organisation
-import org.scalatest.{MustMatchers, OptionValues, WordSpec}
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.OptionValues
+import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json._
 
-class OrganisationReadsSpec extends WordSpec with MustMatchers with OptionValues {
+class OrganisationReadsSpec extends AnyWordSpec with Matchers with OptionValues {
   private val organisation = Json.obj(
     "organisationName" -> "(Test-Ltd)",
     "organisationType" -> "Partnership"

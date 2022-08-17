@@ -22,7 +22,9 @@ import models.enumeration.JourneyType.PSP_SUBSCRIPTION
 import org.joda.time.DateTime
 import org.mockito.ArgumentMatchers.any
 import org.mockito.{ArgumentCaptor, Mockito, MockitoSugar}
-import org.scalatest.{AsyncWordSpec, BeforeAndAfterEach, MustMatchers}
+import org.scalatest.wordspec.AsyncWordSpec
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.BeforeAndAfterEach
 import play.api.Application
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -34,7 +36,7 @@ import uk.gov.hmrc.crypto.{ApplicationCrypto, PlainText}
 
 import scala.concurrent.Future
 
-class EmailResponseControllerSpec extends AsyncWordSpec with MustMatchers with MockitoSugar with BeforeAndAfterEach {
+class EmailResponseControllerSpec extends AsyncWordSpec with Matchers with MockitoSugar with BeforeAndAfterEach {
 
   import EmailResponseControllerSpec._
 

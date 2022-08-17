@@ -5,7 +5,7 @@ import sbt._
 object AppDependencies {
 
   val compile = Seq(
-    "uk.gov.hmrc"             %% "simple-reactivemongo"       % "8.0.0-play-28",
+    "uk.gov.hmrc.mongo"       %% "hmrc-mongo-play-28"      % "0.68.0",
     "uk.gov.hmrc"             %% "bootstrap-backend-play-28"  % "5.14.0",
     "com.networknt"           %  "json-schema-validator"      % "1.0.3",
     "uk.gov.hmrc"             %% "domain"                     % "6.2.0-play-28",
@@ -13,6 +13,8 @@ object AppDependencies {
   )
 
   val test = Seq(
+    "uk.gov.hmrc.mongo"       %% "hmrc-mongo-test-play-28"    % "0.68.0"            % Test,
+    "com.github.simplyscala"  %% "scalatest-embedmongo"       % "0.2.4"             % Test,
     "uk.gov.hmrc"             %% "bootstrap-test-play-28"   % "5.14.0"   % Test,
     "com.typesafe.play"       %% "play-test"                % current   % Test,
     "com.vladsch.flexmark" % "flexmark-all" % "0.36.8" % "test, it",

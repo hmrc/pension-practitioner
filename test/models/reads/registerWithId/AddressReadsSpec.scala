@@ -17,10 +17,12 @@
 package models.reads.registerWithId
 
 import models.registerWithId.{Address, InternationalAddress, UkAddress}
-import org.scalatest.{MustMatchers, OptionValues, WordSpec}
+import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.OptionValues
 import play.api.libs.json._
 
-class AddressReadsSpec extends WordSpec with MustMatchers with OptionValues {
+class AddressReadsSpec extends AnyWordSpec with Matchers with OptionValues {
   "A JSON Payload with an address" must {
     "map correctly to an Address type" when {
 
