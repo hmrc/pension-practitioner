@@ -24,7 +24,7 @@ import transformations.JsonTransformer
 class PSPSubscriptionTransformer extends JsonTransformer {
 
   lazy val transformPsp: Reads[JsObject] =
-    (__ \ 'subscriptionType).readNullable[String].flatMap {
+    (__ \ Symbol("subscriptionType")).readNullable[String].flatMap {
       case Some("Variation") => transformPspVariation
       case _ => transformPspSubscription
     }
@@ -46,72 +46,72 @@ class PSPSubscriptionTransformer extends JsonTransformer {
       transformDeclaration).reduce
 
   private def transformSubscriptionDetails: Reads[JsObject] =
-    ((__ \ 'subscriptionTypeAndPSPIDDetails \ 'subscriptionType).json.put(JsString("Creation")) and
-     (__ \ 'subscriptionTypeAndPSPIDDetails \ 'existingPSPID).json.copyFrom(transformBooleanToYesNo(__ \ 'existingPSP \ 'isExistingPSP)) and
-     ((__ \ 'subscriptionTypeAndPSPIDDetails \ 'pspid).json.copyFrom((__ \ 'existingPSP \ 'existingPSPId).json.pick) orElse doNothing)).reduce
+    ((__ \ Symbol("subscriptionTypeAndPSPIDDetails") \ Symbol("subscriptionType")).json.put(JsString("Creation")) and
+      (__ \ Symbol("subscriptionTypeAndPSPIDDetails") \ Symbol("existingPSPID")).json.copyFrom(transformBooleanToYesNo(__ \ Symbol("existingPSP") \ Symbol("isExistingPSP"))) and
+      ((__ \ Symbol("subscriptionTypeAndPSPIDDetails") \ Symbol("pspid")).json.copyFrom((__ \ Symbol("existingPSP") \ Symbol("existingPSPId")).json.pick) orElse doNothing)).reduce
 
   private def transformSubscriptionDetailsVariation: Reads[JsObject] =
-    ((__ \ 'subscriptionTypeAndPSPIDDetails \ 'subscriptionType).json.put(JsString("Variation")) and
-    (__ \ 'subscriptionTypeAndPSPIDDetails \ 'pspid).json.copyFrom((__ \ 'pspId).json.pick)).reduce
+    ((__ \ Symbol("subscriptionTypeAndPSPIDDetails") \ Symbol("subscriptionType")).json.put(JsString("Variation")) and
+      (__ \ Symbol("subscriptionTypeAndPSPIDDetails") \ Symbol("pspid")).json.copyFrom((__ \ Symbol("pspId")).json.pick)).reduce
 
   private def transformLegalAndCustomer: Reads[JsObject] =
-    ((__ \ 'regime).json.put(JsString("PODP")) and
-      ((__ \ 'sapNumber).json.copyFrom((__ \ 'registrationInfo \ 'sapNumber).json.pick) orElse doNothing) and
-      (__ \ 'legalEntityAndCustomerID \ 'legalStatus).json.copyFrom((__ \ 'registrationInfo \ 'legalStatus).json.pick) and
-      (__ \ 'legalEntityAndCustomerID \ 'customerType).json.copyFrom((__ \ 'registrationInfo \ 'customerType).json.pick) and
-      ((__ \ 'legalEntityAndCustomerID \ 'idType).json.copyFrom((__ \ 'registrationInfo \ 'idType).json.pick) orElse doNothing) and
-      ((__ \ 'legalEntityAndCustomerID \ 'idNumber).json.copyFrom((__ \ 'registrationInfo \ 'idNumber).json.pick) orElse doNothing)).reduce
+    ((__ \ Symbol("regime")).json.put(JsString("PODP")) and
+      ((__ \ Symbol("sapNumber")).json.copyFrom((__ \ Symbol("registrationInfo") \ Symbol("sapNumber")).json.pick) orElse doNothing) and
+      (__ \ Symbol("legalEntityAndCustomerID") \ Symbol("legalStatus")).json.copyFrom((__ \ Symbol("registrationInfo") \ Symbol("legalStatus")).json.pick) and
+      (__ \ Symbol("legalEntityAndCustomerID") \ Symbol("customerType")).json.copyFrom((__ \ Symbol("registrationInfo") \ Symbol("customerType")).json.pick) and
+      ((__ \ Symbol("legalEntityAndCustomerID") \ Symbol("idType")).json.copyFrom((__ \ Symbol("registrationInfo") \ Symbol("idType")).json.pick) orElse doNothing) and
+      ((__ \ Symbol("legalEntityAndCustomerID") \ Symbol("idNumber")).json.copyFrom((__ \ Symbol("registrationInfo") \ Symbol("idNumber")).json.pick) orElse doNothing)).reduce
 
   private def transformName: Reads[JsObject] =
-    (__ \ 'registrationInfo \ 'legalStatus).read[String].flatMap {
+    (__ \ Symbol("registrationInfo") \ Symbol("legalStatus")).read[String].flatMap {
       case "Individual" =>
-        ((__ \ 'individualDetails \ 'firstName).json.copyFrom((__ \ 'individualDetails \ 'firstName).json.pick) and
-          (__ \ 'individualDetails \ 'lastName).json.copyFrom((__ \ 'individualDetails \ 'lastName).json.pick)).reduce
+        ((__ \ Symbol("individualDetails") \ Symbol("firstName")).json.copyFrom((__ \ Symbol("individualDetails") \ Symbol("firstName")).json.pick) and
+          (__ \ Symbol("individualDetails") \ Symbol("lastName")).json.copyFrom((__ \ Symbol("individualDetails") \ Symbol("lastName")).json.pick)).reduce
       case _ =>
-        (__ \ 'orgOrPartnershipDetails \ 'organisationName).json.copyFrom((__ \ 'name).json.pick)
+        (__ \ Symbol("orgOrPartnershipDetails") \ Symbol("organisationName")).json.copyFrom((__ \ Symbol("name")).json.pick)
     }
 
-  private def transformNameVariation: Reads[JsObject] = (__ \ 'registrationInfo \ 'customerType).read[String].flatMap {
+  private def transformNameVariation: Reads[JsObject] = (__ \ Symbol("registrationInfo") \ Symbol("customerType")).read[String].flatMap {
     case "UK" => transformName
     case _ =>
-    (__ \ 'registrationInfo \ 'legalStatus).read[String].flatMap {
-      case "Individual" =>
-        ((__ \ 'individualDetails \ 'firstName).json.copyFrom((__ \ 'individualDetails \ 'firstName).json.pick) and
-          (__ \ 'individualDetails \ 'lastName).json.copyFrom((__ \ 'individualDetails \ 'lastName).json.pick) and
-          ((__ \ 'individualDetails \ 'changeFlag).json.copyFrom((__ \ 'nameChange).json.pick) orElse
-            (__ \ 'individualDetails \ 'changeFlag).json.put(JsBoolean(false)))).reduce
-      case _ =>
-        ((__ \ 'orgOrPartnershipDetails \ 'organisationName).json.copyFrom((__ \ 'name).json.pick) and
-          ((__ \ 'orgOrPartnershipDetails \ 'changeFlag).json.copyFrom((__ \ 'nameChange).json.pick) orElse
-            (__ \ 'orgOrPartnershipDetails \ 'changeFlag).json.put(JsBoolean(false)))).reduce
-    }
+      (__ \ Symbol("registrationInfo") \ Symbol("legalStatus")).read[String].flatMap {
+        case "Individual" =>
+          ((__ \ Symbol("individualDetails") \ Symbol("firstName")).json.copyFrom((__ \ Symbol("individualDetails") \ Symbol("firstName")).json.pick) and
+            (__ \ Symbol("individualDetails") \ Symbol("lastName")).json.copyFrom((__ \ Symbol("individualDetails") \ Symbol("lastName")).json.pick) and
+            ((__ \ Symbol("individualDetails") \ Symbol("changeFlag")).json.copyFrom((__ \ Symbol("nameChange")).json.pick) orElse
+              (__ \ Symbol("individualDetails") \ Symbol("changeFlag")).json.put(JsBoolean(false)))).reduce
+        case _ =>
+          ((__ \ Symbol("orgOrPartnershipDetails") \ Symbol("organisationName")).json.copyFrom((__ \ Symbol("name")).json.pick) and
+            ((__ \ Symbol("orgOrPartnershipDetails") \ Symbol("changeFlag")).json.copyFrom((__ \ Symbol("nameChange")).json.pick) orElse
+              (__ \ Symbol("orgOrPartnershipDetails") \ Symbol("changeFlag")).json.put(JsBoolean(false)))).reduce
+      }
   }
 
   private def transformAddress: Reads[JsObject] =
     (nonUKAddress and
-      (__ \ 'correspondenceAddressDetails \ 'addressLine1).json.copyFrom((__ \ 'contactAddress \ 'addressLine1).json.pick) and
-      (__ \ 'correspondenceAddressDetails \ 'addressLine2).json.copyFrom((__ \ 'contactAddress \ 'addressLine2).json.pick) and
-      ((__ \ 'correspondenceAddressDetails \ 'addressLine3).json.copyFrom((__ \ 'contactAddress \ 'addressLine3).json.pick) orElse doNothing) and
-      ((__ \ 'correspondenceAddressDetails \ 'addressLine4).json.copyFrom((__ \ 'contactAddress \ 'addressLine4).json.pick) orElse doNothing) and
-      (__ \ 'correspondenceAddressDetails \ 'countryCode).json.copyFrom((__ \ 'contactAddress \ 'country).json.pick) and
-      ((__ \ 'correspondenceAddressDetails \ 'postalCode).json.copyFrom((__ \ 'contactAddress \ 'postcode).json.pick) orElse doNothing)).reduce
+      (__ \ Symbol("correspondenceAddressDetails") \ Symbol("addressLine1")).json.copyFrom((__ \ Symbol("contactAddress") \ Symbol("addressLine1")).json.pick) and
+      (__ \ Symbol("correspondenceAddressDetails") \ Symbol("addressLine2")).json.copyFrom((__ \ Symbol("contactAddress") \ Symbol("addressLine2")).json.pick) and
+      ((__ \ Symbol("correspondenceAddressDetails") \ Symbol("addressLine3")).json.copyFrom((__ \ Symbol("contactAddress") \ Symbol("addressLine3")).json.pick) orElse doNothing) and
+      ((__ \ Symbol("correspondenceAddressDetails") \ Symbol("addressLine4")).json.copyFrom((__ \ Symbol("contactAddress") \ Symbol("addressLine4")).json.pick) orElse doNothing) and
+      (__ \ Symbol("correspondenceAddressDetails") \ Symbol("countryCode")).json.copyFrom((__ \ Symbol("contactAddress") \ Symbol("country")).json.pick) and
+      ((__ \ Symbol("correspondenceAddressDetails") \ Symbol("postalCode")).json.copyFrom((__ \ Symbol("contactAddress") \ Symbol("postcode")).json.pick) orElse doNothing)).reduce
 
   private def transformAddressVariation: Reads[JsObject] = (transformAddress and
-    ((__ \ 'correspondenceAddressDetails \ 'changeFlag).json.copyFrom((__ \ 'addressChange).json.pick) orElse
-      (__ \ 'correspondenceAddressDetails \ 'changeFlag).json.put(JsBoolean(false)))).reduce
+    ((__ \ Symbol("correspondenceAddressDetails") \ Symbol("changeFlag")).json.copyFrom((__ \ Symbol("addressChange")).json.pick) orElse
+      (__ \ Symbol("correspondenceAddressDetails") \ Symbol("changeFlag")).json.put(JsBoolean(false)))).reduce
 
   private def nonUKAddress: Reads[JsObject] =
-    (__ \ 'contactAddress \ 'country).read[String].flatMap {
+    (__ \ Symbol("contactAddress") \ Symbol("country")).read[String].flatMap {
       case "GB" =>
-        (__ \ 'correspondenceAddressDetails \ 'nonUKAddress).json.put(JsString("false"))
+        (__ \ Symbol("correspondenceAddressDetails") \ Symbol("nonUKAddress")).json.put(JsString("false"))
       case _ =>
-        (__ \ 'correspondenceAddressDetails \ 'nonUKAddress).json.put(JsString("true"))
+        (__ \ Symbol("correspondenceAddressDetails") \ Symbol("nonUKAddress")).json.put(JsString("true"))
     }
 
   private def transformContactDetails: Reads[JsObject] =
-    ((__ \ 'correspondenceContactDetails \ 'email).json.copyFrom((__ \ 'email).json.pick) and
-      (__ \ 'correspondenceContactDetails \ 'telephone).json.copyFrom((__ \ 'phone).json.pick)).reduce
+    ((__ \ Symbol("correspondenceContactDetails") \ Symbol("email")).json.copyFrom((__ \ Symbol("email")).json.pick) and
+      (__ \ Symbol("correspondenceContactDetails") \ Symbol("telephone")).json.copyFrom((__ \ Symbol("phone")).json.pick)).reduce
 
-  private def transformDeclaration: Reads[JsObject] = (__ \ 'declaration \ 'pspDeclarationBox1).json.put(JsBoolean(true))
+  private def transformDeclaration: Reads[JsObject] = (__ \ Symbol("declaration") \ Symbol("pspDeclarationBox1")).json.put(JsBoolean(true))
 
 }

@@ -18,17 +18,20 @@ package controllers
 
 import connectors.{SchemeConnector, SubscriptionConnector}
 import models.enumeration.JourneyType
+import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
-import org.scalatest.wordspec.AsyncWordSpec
-import org.scalatest.matchers.must.Matchers
+import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfter
-import org.mockito.{ArgumentMatchers, MockitoSugar}
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AsyncWordSpec
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.Application
 import play.api.inject.bind
 import play.api.inject.guice.{GuiceApplicationBuilder, GuiceableModule}
 import play.api.libs.json._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import repository.{AdminDataRepository, DataCacheRepository, MinimalDetailsCacheRepository}
 import transformations.userAnswersToDes.PSPSubscriptionTransformer
 import transformations.userAnswersToDes.PSPSubscriptionTransformerSpec._
 import uk.gov.hmrc.auth.core.AuthConnector
@@ -50,26 +53,26 @@ class SubscriptionControllerSpec extends AsyncWordSpec with Matchers with Mockit
   private val deregistrationRequestJson: JsValue = Json.obj("request-key" -> "request-value")
 
   def listOfSchemesJson(statuses: Seq[String] = Seq("Open", "Open")): JsObject = Json.obj(
-      "processingDate" -> "2001-12-17T09 ->30 ->47Z",
-      "totalSchemesRegistered" -> "1",
-      "schemeDetails" -> Json.arr(
-        Json.obj(
+    "processingDate" -> "2001-12-17T09 ->30 ->47Z",
+    "totalSchemesRegistered" -> "1",
+    "schemeDetails" -> Json.arr(
+      Json.obj(
         "name" -> "abcdefghi",
         "referenceNumber" -> "S1000000456",
         "schemeStatus" -> JsString(statuses.head),
         "pstr" -> "10000678RE",
         "relationShip" -> "Primary",
         "underAppeal" -> "Yes"
-        ),
-        Json.obj(
-          "name" -> "abcdefghi",
-          "referenceNumber" -> "S1000000456",
-          "schemeStatus" -> JsString(statuses(1)),
-          "pstr" -> "10000678RE",
-          "relationShip" -> "Primary",
-          "underAppeal" -> "Yes"
-        )
+      ),
+      Json.obj(
+        "name" -> "abcdefghi",
+        "referenceNumber" -> "S1000000456",
+        "schemeStatus" -> JsString(statuses(1)),
+        "pstr" -> "10000678RE",
+        "relationShip" -> "Primary",
+        "underAppeal" -> "Yes"
       )
+    )
   )
 
   def noSchemesJson: JsObject = Json.obj(
@@ -77,12 +80,14 @@ class SubscriptionControllerSpec extends AsyncWordSpec with Matchers with Mockit
     "totalSchemesRegistered" -> "1")
 
 
-
   val modules: Seq[GuiceableModule] =
     Seq(
       bind[AuthConnector].toInstance(authConnector),
       bind[SubscriptionConnector].toInstance(mockSubscriptionConnector),
-      bind[SchemeConnector].toInstance(mockSchemeConnector)
+      bind[SchemeConnector].toInstance(mockSchemeConnector),
+      bind[DataCacheRepository].toInstance(mock[DataCacheRepository]),
+      bind[AdminDataRepository].toInstance(mock[AdminDataRepository]),
+      bind[MinimalDetailsCacheRepository].toInstance(mock[MinimalDetailsCacheRepository])
     )
 
   val application: Application = new GuiceApplicationBuilder()
@@ -92,15 +97,17 @@ class SubscriptionControllerSpec extends AsyncWordSpec with Matchers with Mockit
   val controller: SubscriptionController = application.injector.instanceOf[SubscriptionController]
 
   before {
-    reset(mockSubscriptionConnector, mockPspSubscriptionTransformer, authConnector)
+    reset(mockSubscriptionConnector)
+    reset(mockPspSubscriptionTransformer)
+    reset(authConnector)
     when(authConnector.authorise[Option[String]](any(), any())(any(), any()))
-    .thenReturn(Future.successful(Some("Ext-137d03b9-d807-4283-a254-fb6c30aceef1")))
+      .thenReturn(Future.successful(Some("Ext-137d03b9-d807-4283-a254-fb6c30aceef1")))
   }
 
   "subscribePsp" must {
     "return OK when valid response from API" in {
 
-      when(mockSubscriptionConnector.pspSubscription(any(), any())(any(), any(), any()))
+      when(mockSubscriptionConnector.pspSubscription(any(), any())(any(), any()))
         .thenReturn(Future.successful(Right(HttpResponse(OK, response.toString))))
 
       val result = controller.subscribePsp(JourneyType.PSP_SUBSCRIPTION)(fakeRequest.withJsonBody(uaIndividualUK))
@@ -109,7 +116,7 @@ class SubscriptionControllerSpec extends AsyncWordSpec with Matchers with Mockit
 
     "throw Upstream5XXResponse on Internal Server Error from API" in {
 
-      when(mockSubscriptionConnector.pspSubscription(any(), any())(any(), any(), any()))
+      when(mockSubscriptionConnector.pspSubscription(any(), any())(any(), any()))
         .thenReturn(Future.failed(UpstreamErrorResponse(message = "Internal Server Error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR)))
 
       recoverToExceptionIf[UpstreamErrorResponse] {
@@ -124,7 +131,7 @@ class SubscriptionControllerSpec extends AsyncWordSpec with Matchers with Mockit
   "getPspDetails" must {
     "return OK when service returns successfully" in {
 
-      when(mockSubscriptionConnector.getSubscriptionDetails(any())(any(), any(), any()))
+      when(mockSubscriptionConnector.getSubscriptionDetails(any())(any()))
         .thenReturn(Future.successful(Right(Json.obj())))
       val result = controller.getPspDetails(fakeRequest.withHeaders(("pspId", "A2123456")))
 
@@ -134,19 +141,19 @@ class SubscriptionControllerSpec extends AsyncWordSpec with Matchers with Mockit
 
     "return bad request when connector returns BAD_REQUEST" in {
 
-      when(mockSubscriptionConnector.getSubscriptionDetails(any())(any(), any(), any()))
+      when(mockSubscriptionConnector.getSubscriptionDetails(any())(any()))
         .thenReturn(Future.successful(Left(HttpResponse(BAD_REQUEST, "bad request")))
-      )
+        )
 
       val result = controller.getPspDetails(fakeRequest.withHeaders(("pspId", "A2123456")))
 
       status(result) mustBe BAD_REQUEST
       contentAsString(result) mustBe "bad request"
-      }
+    }
 
     "return not found when connector returns NOT_FOUND" in {
 
-      when(mockSubscriptionConnector.getSubscriptionDetails(any())(any(), any(), any()))
+      when(mockSubscriptionConnector.getSubscriptionDetails(any())(any()))
         .thenReturn(Future.successful(Left(HttpResponse(NOT_FOUND, "not found"))))
 
       val result = controller.getPspDetails(fakeRequest.withHeaders(("pspId", "A2123456")))
@@ -159,7 +166,7 @@ class SubscriptionControllerSpec extends AsyncWordSpec with Matchers with Mockit
   "deregisterPsp" must {
     "return OK when valid response from API" in {
 
-      when(mockSubscriptionConnector.pspDeregistration(any(), any())(any(), any(), any()))
+      when(mockSubscriptionConnector.pspDeregistration(any(), any())(any()))
         .thenReturn(Future.successful(Right(HttpResponse(OK, response.toString))))
 
       val result = controller.deregisterPsp(pspId)(fakeRequest.withJsonBody(deregistrationRequestJson))
@@ -168,7 +175,7 @@ class SubscriptionControllerSpec extends AsyncWordSpec with Matchers with Mockit
 
     "throw Upstream5XXResponse on Internal Server Error from API" in {
 
-      when(mockSubscriptionConnector.pspDeregistration(any(), any())(any(), any(), any()))
+      when(mockSubscriptionConnector.pspDeregistration(any(), any())(any()))
         .thenReturn(Future.failed(UpstreamErrorResponse(message = "Internal Server Error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR)))
 
       recoverToExceptionIf[UpstreamErrorResponse] {

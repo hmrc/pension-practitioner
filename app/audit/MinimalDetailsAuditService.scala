@@ -20,10 +20,8 @@ import models.MinimalDetails
 import play.api.Logger
 import play.api.http.Status
 import play.api.libs.json.Json
-import play.api.mvc.RequestHeader
 import uk.gov.hmrc.http.HttpResponse
 
-import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
 
 trait MinimalDetailsAuditService {
@@ -32,8 +30,7 @@ trait MinimalDetailsAuditService {
 
 
   def sendGetMinimalDetailsEvent(idType: String, idValue: String)
-                                (sendEvent: MinimalDetailsEvent => Unit)
-                                (implicit rh: RequestHeader, ec: ExecutionContext):
+                                (sendEvent: MinimalDetailsEvent => Unit):
   PartialFunction[Try[Either[HttpResponse, MinimalDetails]], Unit] = {
 
     case Success(Right(minimalDetails)) =>

@@ -20,14 +20,16 @@ import akka.Done
 import models.FeatureToggle.{Disabled, Enabled}
 import models.FeatureToggleName.PspFromIvToPdv
 import models.{FeatureToggle, FeatureToggleName}
+import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.any
-import org.mockito.{ArgumentCaptor, MockitoSugar}
+import org.mockito.Mockito._
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.OptionValues.convertOptionToValuable
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.cache.AsyncCacheApi
 import repository.AdminDataRepository
 
@@ -66,7 +68,7 @@ class FeatureToggleServiceSpec
   "When set works in the repo returns a success result" in {
     val adminDataRepository = mock[AdminDataRepository]
     when(adminDataRepository.getFeatureToggles).thenReturn(Future.successful(Seq.empty))
-    when(adminDataRepository.setFeatureToggles(any())).thenReturn(Future.successful(():Unit))
+    when(adminDataRepository.setFeatureToggles(any())).thenReturn(Future.successful((): Unit))
 
     val OUT = new FeatureToggleService(adminDataRepository, new FakeCache())
     val toggleName = arbitrary[FeatureToggleName].sample.value
@@ -87,7 +89,7 @@ class FeatureToggleServiceSpec
     val OUT = new FeatureToggleService(adminDataRepository, new FakeCache())
 
     when(adminDataRepository.getFeatureToggles).thenReturn(Future.successful(Seq.empty))
-    when(adminDataRepository.setFeatureToggles(any())).thenReturn(Future.successful(():Unit))
+    when(adminDataRepository.setFeatureToggles(any())).thenReturn(Future.successful((): Unit))
 
     whenReady(OUT.set(toggleName = toggleName, enabled = true))(_ mustBe ((): Unit))
   }

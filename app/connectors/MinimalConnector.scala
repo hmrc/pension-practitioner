@@ -23,10 +23,9 @@ import models.MinimalDetails
 import play.api.Logger
 import play.api.http.Status._
 import play.api.mvc.RequestHeader
-import uk.gov.hmrc.http._
-import uk.gov.hmrc.http.HttpClient
-import utils.{ErrorHandler, InvalidPayloadHandler}
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
+import uk.gov.hmrc.http.{HttpClient, _}
+import utils.{ErrorHandler, InvalidPayloadHandler}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
@@ -59,7 +58,7 @@ class MinimalConnectorImpl @Inject()(httpClient: HttpClient,
                                  ec: ExecutionContext,
                                  request: RequestHeader): Future[Either[HttpResponse, MinimalDetails]] = {
 
-    val hc: HeaderCarrier = HeaderCarrier(extraHeaders = headerUtils.integrationFrameworkHeader)
+    val hc: HeaderCarrier = HeaderCarrier(extraHeaders = headerUtils.integrationFrameworkHeader())
     val url = appConfig.minimalDetailsUrl.format(regime, idType, idValue)
 
     httpClient.GET[HttpResponse](url)(implicitly, hc, implicitly) map { response =>

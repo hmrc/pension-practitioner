@@ -18,16 +18,18 @@ package controllers
 
 import connectors.AssociationConnector
 import org.mockito.ArgumentMatchers.any
-import org.mockito.MockitoSugar
-import org.scalatest.wordspec.AsyncWordSpec
-import org.scalatest.matchers.must.Matchers
+import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfter
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AsyncWordSpec
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.Application
 import play.api.inject.bind
 import play.api.inject.guice.{GuiceApplicationBuilder, GuiceableModule}
 import play.api.libs.json._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import repository.{AdminDataRepository, DataCacheRepository, MinimalDetailsCacheRepository}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http._
 
@@ -51,7 +53,10 @@ class AssociationControllerSpec
   val modules: Seq[GuiceableModule] =
     Seq(
       bind[AuthConnector].toInstance(authConnector),
-      bind[AssociationConnector].toInstance(mockAssociationConnector)
+      bind[AssociationConnector].toInstance(mockAssociationConnector),
+      bind[DataCacheRepository].toInstance(mock[DataCacheRepository]),
+      bind[AdminDataRepository].toInstance(mock[AdminDataRepository]),
+      bind[MinimalDetailsCacheRepository].toInstance(mock[MinimalDetailsCacheRepository])
     )
 
   val application: Application = new GuiceApplicationBuilder()
@@ -69,7 +74,7 @@ class AssociationControllerSpec
   "authorise PSP" must {
     "return OK when valid response from IF" in {
 
-      when(mockAssociationConnector.authorisePsp(any(), any())(any(), any(), any()))
+      when(mockAssociationConnector.authorisePsp(any(), any())(any()))
         .thenReturn(Future.successful(Right(HttpResponse(OK, response.toString))))
 
       val result = controller.authorisePsp()(fakeRequest.withHeaders(("pstr", pstr)).withJsonBody(testJson))
@@ -78,7 +83,7 @@ class AssociationControllerSpec
 
     "throw Upstream5XXResponse on Internal Server Error from IF" in {
 
-      when(mockAssociationConnector.authorisePsp(any(), any())(any(), any(), any()))
+      when(mockAssociationConnector.authorisePsp(any(), any())(any()))
         .thenReturn(Future.failed(UpstreamErrorResponse(message = "Internal Server Error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR)))
 
       recoverToExceptionIf[UpstreamErrorResponse] {
@@ -93,7 +98,7 @@ class AssociationControllerSpec
   "deAuthorisePsp" must {
     "return OK when valid response from IF" in {
 
-      when(mockAssociationConnector.deAuthorisePsp(any(), any())(any(), any(), any()))
+      when(mockAssociationConnector.deAuthorisePsp(any(), any())(any()))
         .thenReturn(Future.successful(
           Right(HttpResponse(OK, response.toString))
         ))
@@ -104,7 +109,7 @@ class AssociationControllerSpec
 
     "throw Upstream5XXResponse on Internal Server Error from IF" in {
 
-      when(mockAssociationConnector.deAuthorisePsp(any(), any())(any(), any(), any()))
+      when(mockAssociationConnector.deAuthorisePsp(any(), any())(any()))
         .thenReturn(Future.failed(
           UpstreamErrorResponse(message = "Internal Server Error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR)
         ))

@@ -16,13 +16,12 @@
 
 package connectors
 
-import config.AppConfig
-import org.mockito.MockitoSugar
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
-import repository.DataCacheRepository
-import org.scalatest.wordspec.AnyWordSpec
-import org.scalatest.matchers.must.Matchers
+import repository.{AdminDataRepository, DataCacheRepository, MinimalDetailsCacheRepository}
 
 class HeaderUtilsSpec extends AnyWordSpec with Matchers {
 
@@ -55,15 +54,15 @@ class HeaderUtilsSpec extends AnyWordSpec with Matchers {
 }
 
 object HeaderUtilsSpec extends MockitoSugar {
-  private val mockDataCacheRepository = mock[DataCacheRepository]
+
   private val app = new GuiceApplicationBuilder().configure(
     "microservice.services.des-hod.env" -> "local",
     "microservice.services.des-hod.authorizationToken" -> "test-token"
-  ).overrides(
-    bind[DataCacheRepository].toInstance(mockDataCacheRepository)
-  ).build()
-  private val injector = app.injector
-  private val appConfig: AppConfig = injector.instanceOf[AppConfig]
-  private val headerUtils = new HeaderUtils(appConfig)
-}
+  ).overrides(Seq(
+    bind[DataCacheRepository].toInstance(mock[DataCacheRepository]),
+    bind[AdminDataRepository].toInstance(mock[AdminDataRepository]),
+    bind[MinimalDetailsCacheRepository].toInstance(mock[MinimalDetailsCacheRepository])
+  )).build()
 
+  val headerUtils: HeaderUtils = app.injector.instanceOf[HeaderUtils]
+}

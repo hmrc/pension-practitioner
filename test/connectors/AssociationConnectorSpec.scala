@@ -18,23 +18,28 @@ package connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import org.scalatest.EitherValues
-import org.mockito.MockitoSugar
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AsyncWordSpec
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.http.Status._
+import play.api.inject.bind
+import play.api.inject.guice.GuiceableModule
 import play.api.libs.json.Json
-import play.api.mvc.RequestHeader
-import play.api.test.FakeRequest
+import repository.{AdminDataRepository, DataCacheRepository, MinimalDetailsCacheRepository}
 import uk.gov.hmrc.http._
 import utils.WireMockHelper
 
 class AssociationConnectorSpec extends AsyncWordSpec with Matchers with WireMockHelper
   with EitherValues with MockitoSugar {
 
-  private implicit lazy val hc: HeaderCarrier = HeaderCarrier()
-  private implicit lazy val rh: RequestHeader = FakeRequest("", "")
-
   override protected def portConfigKey: String = "microservice.services.if-hod.port"
+
+  override protected def bindings: Seq[GuiceableModule] =
+    Seq(
+      bind[DataCacheRepository].toInstance(mock[DataCacheRepository]),
+      bind[AdminDataRepository].toInstance(mock[AdminDataRepository]),
+      bind[MinimalDetailsCacheRepository].toInstance(mock[MinimalDetailsCacheRepository])
+    )
 
   private lazy val connector: AssociationConnector = injector.instanceOf[AssociationConnector]
   private val pstr: String = "pstr"
@@ -55,7 +60,7 @@ class AssociationConnectorSpec extends AsyncWordSpec with Matchers with WireMock
       )
 
       connector.authorisePsp(data, pstr) map {
-        _.right.value.status mustBe OK
+        _.value.status mustBe OK
       }
     }
 
@@ -122,7 +127,7 @@ class AssociationConnectorSpec extends AsyncWordSpec with Matchers with WireMock
       )
 
       connector.deAuthorisePsp(data, pstr) map {
-        _.right.value.status mustBe OK
+        _.value.status mustBe OK
       }
     }
 

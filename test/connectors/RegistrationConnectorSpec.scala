@@ -20,11 +20,13 @@ import audit.{AuditService, PSPRegistration}
 import com.github.tomakehurst.wiremock.client.WireMock._
 import models.registerWithId.RegisterWithIdResponse
 import models.registerWithoutId._
+import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.any
-import org.mockito.{ArgumentCaptor, Mockito, MockitoSugar}
+import org.mockito.Mockito.{reset, times, verify, when}
 import org.scalatest.EitherValues
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AsyncWordSpec
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.http.Status
 import play.api.http.Status._
 import play.api.inject.bind
@@ -32,8 +34,8 @@ import play.api.inject.guice.GuiceableModule
 import play.api.libs.json.{JsObject, JsValue, Json}
 import play.api.mvc.RequestHeader
 import play.api.test.FakeRequest
-import repository.DataCacheRepository
-import uk.gov.hmrc.http.{HeaderCarrier, _}
+import repository.{AdminDataRepository, DataCacheRepository, MinimalDetailsCacheRepository}
+import uk.gov.hmrc.http._
 import utils.WireMockHelper
 
 class RegistrationConnectorSpec
@@ -45,14 +47,12 @@ class RegistrationConnectorSpec
 
   import RegistrationConnectorSpec._
 
-  private implicit lazy val hc: HeaderCarrier = HeaderCarrier()
   private implicit lazy val rh: RequestHeader = FakeRequest("", "")
 
   override protected def portConfigKey: String = "microservice.services.des-hod.port"
 
   private val mockAuditService = mock[AuditService]
   private val mockHeaderUtils = mock[HeaderUtils]
-  private val mockDataCacheRepository = mock[DataCacheRepository]
 
   private lazy val connector: RegistrationConnector = injector.instanceOf[RegistrationConnector]
 
@@ -60,7 +60,9 @@ class RegistrationConnectorSpec
     Seq(
       bind[AuditService].toInstance(mockAuditService),
       bind[HeaderUtils].toInstance(mockHeaderUtils),
-      bind[DataCacheRepository].toInstance(mockDataCacheRepository)
+      bind[DataCacheRepository].toInstance(mock[DataCacheRepository]),
+      bind[AdminDataRepository].toInstance(mock[AdminDataRepository]),
+      bind[MinimalDetailsCacheRepository].toInstance(mock[MinimalDetailsCacheRepository])
     )
 
   private val registerIndividualWithIdUrl = s"/registration/individual/nino/$testNino"
@@ -127,7 +129,7 @@ class RegistrationConnectorSpec
     }
 
     "send a PSPRegistration audit event on success" in {
-      Mockito.reset(mockAuditService)
+      reset(mockAuditService)
       server.stubFor(
         post(urlEqualTo(registerIndividualWithIdUrl))
           .withRequestBody(equalTo(Json.stringify(testRegisterDataIndividual)))
@@ -166,7 +168,7 @@ class RegistrationConnectorSpec
 
       connector.registerWithIdOrganisation(externalId, testUtr, testRegisterDataOrganisation).map {
         response =>
-          response.right.value mustBe registerOrganisationResponse.as[RegisterWithIdResponse]
+          response.value mustBe registerOrganisationResponse.as[RegisterWithIdResponse]
       }
     }
 
@@ -205,7 +207,7 @@ class RegistrationConnectorSpec
     }
 
     "send a PSPRegistration audit event on success" in {
-      Mockito.reset(mockAuditService)
+      reset(mockAuditService)
       server.stubFor(
         post(urlEqualTo(registerOrganisationWithIdUrl))
           .withRequestBody(equalTo(Json.stringify(testRegisterDataOrganisation)))
@@ -250,7 +252,7 @@ class RegistrationConnectorSpec
     }
 
     "send a PSPRegistration audit event on success" in {
-      Mockito.reset(mockAuditService)
+      reset(mockAuditService)
       when(mockHeaderUtils.getCorrelationId).thenReturn(testCorrelationId)
       val regWithoutIdRequest =
         Json.toJson(organisationRegistrant)(
@@ -299,7 +301,7 @@ class RegistrationConnectorSpec
     }
 
     "send a PSPRegistration audit event on success" in {
-      Mockito.reset(mockAuditService)
+      reset(mockAuditService)
       when(mockHeaderUtils.getCorrelationId).thenReturn(testCorrelationId)
       server.stubFor(
         post(urlEqualTo(registerIndividualWithoutIdUrl))
