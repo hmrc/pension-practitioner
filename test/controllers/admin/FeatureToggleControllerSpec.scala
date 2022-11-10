@@ -20,8 +20,9 @@ import models.FeatureToggle.Enabled
 import models.FeatureToggleName.PspFromIvToPdv
 import models.OperationSucceeded
 import org.mockito.ArgumentMatchers.any
-import org.mockito.MockitoSugar
+import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsBoolean, Json}
 import play.api.mvc.{AnyContentAsEmpty, ControllerComponents}
@@ -42,10 +43,12 @@ class FeatureToggleControllerSpec
   private val mockAdminDataRepository = mock[AdminDataRepository]
 
   private val mockFeatureToggleService = mock[FeatureToggleService]
-  private val controllerComponents: ControllerComponents = injector.instanceOf[ControllerComponents]
+  private val controllerComponents: ControllerComponents = injector().instanceOf[ControllerComponents]
   private val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("", "")
+
   override def beforeEach(): Unit = {
-    reset(mockAdminDataRepository, mockFeatureToggleService)
+    reset(mockAdminDataRepository)
+    reset(mockFeatureToggleService)
     when(mockAdminDataRepository.getFeatureToggles)
       .thenReturn(Future.successful(Seq(Enabled(PspFromIvToPdv))))
     when(mockFeatureToggleService.getAll)
@@ -66,7 +69,7 @@ class FeatureToggleControllerSpec
   "FeatureToggleController.get" must {
     "get the feature toggle value and return OK" in {
       when(mockAdminDataRepository.setFeatureToggles(any()))
-        .thenReturn(Future.successful(():Unit))
+        .thenReturn(Future.successful((): Unit))
 
       when(mockFeatureToggleService.get(any()))
         .thenReturn(Future.successful(Enabled(PspFromIvToPdv)))
@@ -85,7 +88,7 @@ class FeatureToggleControllerSpec
   "FeatureToggleController.put" must {
     "set the feature toggles and return NO_CONTENT" in {
       when(mockAdminDataRepository.setFeatureToggles(any()))
-        .thenReturn(Future.successful(():Unit))
+        .thenReturn(Future.successful((): Unit))
 
       when(mockFeatureToggleService.set(any(), any()))
         .thenReturn(Future.successful(OperationSucceeded))

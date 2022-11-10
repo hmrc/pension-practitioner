@@ -18,11 +18,13 @@ package connectors
 
 import audit.{AuditService, PSPSubscription}
 import com.github.tomakehurst.wiremock.client.WireMock._
+import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.any
-import org.mockito.{ArgumentCaptor, Mockito, MockitoSugar}
+import org.mockito.Mockito.{reset, times, verify, when}
 import org.scalatest.EitherValues
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AsyncWordSpec
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.http.Status
 import play.api.http.Status._
 import play.api.inject.bind
@@ -30,6 +32,7 @@ import play.api.inject.guice.GuiceableModule
 import play.api.libs.json.{JsString, Json}
 import play.api.mvc.RequestHeader
 import play.api.test.FakeRequest
+import repository.{AdminDataRepository, DataCacheRepository, MinimalDetailsCacheRepository}
 import uk.gov.hmrc.http._
 import utils.WireMockHelper
 
@@ -42,7 +45,6 @@ class SubscriptionConnectorSpec
 
   import SubscriptionConnectorSpec._
 
-  private implicit lazy val hc: HeaderCarrier = HeaderCarrier()
   private implicit lazy val rh: RequestHeader = FakeRequest("", "")
 
   override protected def portConfigKey: String = "microservice.services.if-hod.port"
@@ -55,7 +57,10 @@ class SubscriptionConnectorSpec
   override protected def bindings: Seq[GuiceableModule] =
     Seq(
       bind[AuditService].toInstance(mockAuditService),
-      bind[HeaderUtils].toInstance(mockHeaderUtils)
+      bind[HeaderUtils].toInstance(mockHeaderUtils),
+      bind[DataCacheRepository].toInstance(mock[DataCacheRepository]),
+      bind[AdminDataRepository].toInstance(mock[AdminDataRepository]),
+      bind[MinimalDetailsCacheRepository].toInstance(mock[MinimalDetailsCacheRepository])
     )
 
   private val pspId = "psp-id"
@@ -67,7 +72,7 @@ class SubscriptionConnectorSpec
 
   private val eventCaptor = ArgumentCaptor.forClass(classOf[PSPSubscription])
 
-  when(mockHeaderUtils.integrationFrameworkHeader).thenReturn(Nil)
+  when(mockHeaderUtils.integrationFrameworkHeader()).thenReturn(Nil)
 
   "pspSubscription" must {
 
@@ -138,7 +143,7 @@ class SubscriptionConnectorSpec
     "send a PSPSubscription audit event on success" in {
       val response = JsString("mock response")
       val data = Json.obj(fields = "Id" -> "value")
-      Mockito.reset(mockAuditService)
+      reset(mockAuditService)
       server.stubFor(
         post(urlEqualTo(pspSubscriptionUrl))
           .withRequestBody(equalTo(Json.stringify(data)))
@@ -149,9 +154,9 @@ class SubscriptionConnectorSpec
           )
       )
 
-      connector.pspSubscription(externalId, data).map {_ =>
+      connector.pspSubscription(externalId, data).map { _ =>
         verify(mockAuditService, times(1)).sendExtendedEvent(eventCaptor.capture())(any(), any())
-          eventCaptor.getValue mustEqual PSPSubscription(externalId, Status.OK, data, Some(response))
+        eventCaptor.getValue mustEqual PSPSubscription(externalId, Status.OK, data, Some(response))
       }
     }
   }
@@ -168,7 +173,7 @@ class SubscriptionConnectorSpec
       )
 
       connector.getSubscriptionDetails(pspId).map { response =>
-        response.right.get mustBe pspUserAnswers
+        response.toOption.get mustBe pspUserAnswers
       }
     }
 
@@ -184,8 +189,8 @@ class SubscriptionConnectorSpec
 
 
       connector.getSubscriptionDetails(pspId).map { response =>
-        response.left.get.status mustEqual BAD_REQUEST
-        response.left.get.body must include("INVALID_IDVALUE")
+        response.swap.getOrElse(HttpResponse(0, "")).status mustEqual BAD_REQUEST
+        response.swap.getOrElse(HttpResponse(0, "")).body must include("INVALID_IDVALUE")
       }
     }
 
@@ -199,8 +204,8 @@ class SubscriptionConnectorSpec
       )
 
       connector.getSubscriptionDetails(pspId).map { response =>
-        response.left.get.status mustEqual NOT_FOUND
-        response.left.get.body must include("NOT_FOUND")
+        response.swap.getOrElse(HttpResponse(0, "")).status mustEqual NOT_FOUND
+        response.swap.getOrElse(HttpResponse(0, "")).body must include("NOT_FOUND")
       }
     }
 
@@ -215,8 +220,8 @@ class SubscriptionConnectorSpec
       )
 
       connector.getSubscriptionDetails(pspId).map { response =>
-        response.left.get.status mustEqual FORBIDDEN
-        response.left.get.body must include("FORBIDDEN")
+        response.swap.getOrElse(HttpResponse(0, "")).status mustEqual FORBIDDEN
+        response.swap.getOrElse(HttpResponse(0, "")).body must include("FORBIDDEN")
       }
     }
 
@@ -231,8 +236,8 @@ class SubscriptionConnectorSpec
       )
 
       connector.getSubscriptionDetails(pspId).map { response =>
-        response.left.get.status mustEqual INTERNAL_SERVER_ERROR
-        response.left.get.body must include("SERVER_ERROR")
+        response.swap.getOrElse(HttpResponse(0, "")).status mustEqual INTERNAL_SERVER_ERROR
+        response.swap.getOrElse(HttpResponse(0, "")).body must include("SERVER_ERROR")
       }
     }
   }

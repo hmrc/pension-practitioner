@@ -19,16 +19,18 @@ package connectors
 import audit.AuditService
 import com.github.tomakehurst.wiremock.client.WireMock._
 import models.{IndividualDetails, MinimalDetails}
-import org.mockito.MockitoSugar
+import org.mockito.Mockito._
 import org.scalatest.EitherValues
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AsyncWordSpec
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.http.Status.{BAD_REQUEST, FORBIDDEN, INTERNAL_SERVER_ERROR, NOT_FOUND}
 import play.api.inject.bind
 import play.api.inject.guice.GuiceableModule
 import play.api.libs.json.Json
 import play.api.mvc.RequestHeader
 import play.api.test.FakeRequest
+import repository.{AdminDataRepository, DataCacheRepository, MinimalDetailsCacheRepository}
 import uk.gov.hmrc.http._
 import utils.WireMockHelper
 
@@ -50,7 +52,10 @@ class MinimalConnectorSpec extends AsyncWordSpec with Matchers with WireMockHelp
   override protected def bindings: Seq[GuiceableModule] =
     Seq(
       bind[AuditService].toInstance(mockAuditService),
-      bind[HeaderUtils].toInstance(mockHeaderUtils)
+      bind[HeaderUtils].toInstance(mockHeaderUtils),
+      bind[DataCacheRepository].toInstance(mock[DataCacheRepository]),
+      bind[AdminDataRepository].toInstance(mock[AdminDataRepository]),
+      bind[MinimalDetailsCacheRepository].toInstance(mock[MinimalDetailsCacheRepository])
     )
 
   private val pspId = "psp-id"
@@ -58,92 +63,92 @@ class MinimalConnectorSpec extends AsyncWordSpec with Matchers with WireMockHelp
   private val regime = "podp"
   private val minDetailsUrl = s"/pension-online/psa-min-details/$regime/$idType/$pspId"
 
-  when(mockHeaderUtils.integrationFrameworkHeader).thenReturn(Nil)
+  when(mockHeaderUtils.integrationFrameworkHeader()).thenReturn(Nil)
 
-    "minimalDetails" must {
-      "return user answer json when successful response returned from API" in {
-        server.stubFor(
-          get(urlEqualTo(minDetailsUrl))
-            .willReturn(
-              ok
-                .withHeader("Content-Type", "application/json")
-                .withBody(minDetailsPayload.toString())
-            )
-        )
+  "minimalDetails" must {
+    "return user answer json when successful response returned from API" in {
+      server.stubFor(
+        get(urlEqualTo(minDetailsUrl))
+          .willReturn(
+            ok
+              .withHeader("Content-Type", "application/json")
+              .withBody(minDetailsPayload.toString())
+          )
+      )
 
-        connector.getMinimalDetails(pspId, idType, regime).map { response =>
-          response.right.get mustBe minDetailsIndividual
-        }
-      }
-
-      "return a BadRequestException for a 400 INVALID_IDVALUE response" in {
-        server.stubFor(
-          get(urlEqualTo(minDetailsUrl))
-            .willReturn(
-              badRequest()
-                .withHeader("Content-Type", "application/json")
-                .withBody(errorResponse("INVALID_IDVALUE"))
-            )
-        )
-
-        connector.getMinimalDetails(pspId, idType, regime) map {
-          response =>
-            response.left.get.body contains "INVALID_IDVALUE"
-            response.left.get.status mustBe BAD_REQUEST
-        }
-
-      }
-
-      "return Not Found - 404" in {
-        server.stubFor(
-          get(urlEqualTo(minDetailsUrl))
-            .willReturn(
-              notFound
-                .withBody(errorResponse("NOT_FOUND"))
-            )
-        )
-
-        connector.getMinimalDetails(pspId, idType, regime) map {
-          response =>
-            response.left.get.body contains "NOT_FOUND"
-            response.left.get.status mustBe NOT_FOUND
-        }
-      }
-
-      "throw Upstream4XX for server unavailable - 403" in {
-
-        server.stubFor(
-          get(urlEqualTo(minDetailsUrl))
-            .willReturn(
-              forbidden
-                .withBody(errorResponse("FORBIDDEN"))
-            )
-        )
-
-        connector.getMinimalDetails(pspId, idType, regime) map {
-          response =>
-            response.left.get.body contains "FORBIDDEN"
-            response.left.get.status mustBe FORBIDDEN
-        }
-      }
-
-      "throw Upstream5XX for internal server error - 500 and log the event as error" in {
-
-        server.stubFor(
-          get(urlEqualTo(minDetailsUrl))
-            .willReturn(
-              serverError
-                .withBody(errorResponse("SERVER_ERROR"))
-            )
-        )
-
-        connector.getMinimalDetails(pspId, idType, regime) map {
-          response =>
-            response.left.get.body contains "SERVER_ERROR"
-            response.left.get.status mustBe INTERNAL_SERVER_ERROR
-        }
+      connector.getMinimalDetails(pspId, idType, regime).map { response =>
+        response.toOption.get mustBe minDetailsIndividual
       }
     }
+
+    "return a BadRequestException for a 400 INVALID_IDVALUE response" in {
+      server.stubFor(
+        get(urlEqualTo(minDetailsUrl))
+          .willReturn(
+            badRequest()
+              .withHeader("Content-Type", "application/json")
+              .withBody(errorResponse("INVALID_IDVALUE"))
+          )
+      )
+
+      connector.getMinimalDetails(pspId, idType, regime) map {
+        response =>
+          response.swap.getOrElse(HttpResponse(0, "")).body contains "INVALID_IDVALUE"
+          response.swap.getOrElse(HttpResponse(0, "")).status mustBe BAD_REQUEST
+      }
+
+    }
+
+    "return Not Found - 404" in {
+      server.stubFor(
+        get(urlEqualTo(minDetailsUrl))
+          .willReturn(
+            notFound
+              .withBody(errorResponse("NOT_FOUND"))
+          )
+      )
+
+      connector.getMinimalDetails(pspId, idType, regime) map {
+        response =>
+          response.swap.getOrElse(HttpResponse(0, "")).body contains "NOT_FOUND"
+          response.swap.getOrElse(HttpResponse(0, "")).status mustBe NOT_FOUND
+      }
+    }
+
+    "throw Upstream4XX for server unavailable - 403" in {
+
+      server.stubFor(
+        get(urlEqualTo(minDetailsUrl))
+          .willReturn(
+            forbidden
+              .withBody(errorResponse("FORBIDDEN"))
+          )
+      )
+
+      connector.getMinimalDetails(pspId, idType, regime) map {
+        response =>
+          response.swap.getOrElse(HttpResponse(0, "")).body contains "FORBIDDEN"
+          response.swap.getOrElse(HttpResponse(0, "")).status mustBe FORBIDDEN
+      }
+    }
+
+    "throw Upstream5XX for internal server error - 500 and log the event as error" in {
+
+      server.stubFor(
+        get(urlEqualTo(minDetailsUrl))
+          .willReturn(
+            serverError
+              .withBody(errorResponse("SERVER_ERROR"))
+          )
+      )
+
+      connector.getMinimalDetails(pspId, idType, regime) map {
+        response =>
+          response.swap.getOrElse(HttpResponse(0, "")).body contains "SERVER_ERROR"
+          response.swap.getOrElse(HttpResponse(0, "")).status mustBe INTERNAL_SERVER_ERROR
+      }
+    }
+  }
 
   def errorResponse(code: String): String = {
     Json.stringify(

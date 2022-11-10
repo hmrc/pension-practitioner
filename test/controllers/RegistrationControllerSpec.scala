@@ -20,19 +20,21 @@ import akka.stream.Materializer
 import connectors.RegistrationConnector
 import models.registerWithId.RegisterWithIdResponse
 import models.registerWithoutId.{OrganisationRegistrant, RegisterWithoutIdIndividualRequest, RegisterWithoutIdResponse}
+import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
-import org.mockito.{ArgumentMatchers, MockitoSugar}
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.wordspec.AsyncWordSpec
-import org.scalatest.matchers.must.Matchers
+import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfter
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AsyncWordSpec
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.Application
 import play.api.inject.bind
 import play.api.inject.guice.{GuiceApplicationBuilder, GuiceableModule}
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{INTERNAL_SERVER_ERROR, contentAsJson, status, _}
-import repository.DataCacheRepository
+import repository.{AdminDataRepository, DataCacheRepository, MinimalDetailsCacheRepository}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http._
 
@@ -48,13 +50,14 @@ class RegistrationControllerSpec
 
   private val mockRegistrationConnector = mock[RegistrationConnector]
   private val authConnector: AuthConnector = mock[AuthConnector]
-  private val mockDataCacheRepository = mock[DataCacheRepository]
 
   private val modules: Seq[GuiceableModule] =
     Seq(
       bind[AuthConnector].toInstance(authConnector),
       bind[RegistrationConnector].toInstance(mockRegistrationConnector),
-      bind[DataCacheRepository].toInstance(mockDataCacheRepository)
+      bind[DataCacheRepository].toInstance(mock[DataCacheRepository]),
+      bind[AdminDataRepository].toInstance(mock[AdminDataRepository]),
+      bind[MinimalDetailsCacheRepository].toInstance(mock[MinimalDetailsCacheRepository])
     )
 
   private val application: Application = new GuiceApplicationBuilder()
@@ -81,7 +84,7 @@ class RegistrationControllerSpec
 
       when(mockRegistrationConnector.registerWithIdIndividual(
         ArgumentMatchers.eq(externalId), ArgumentMatchers.eq(nino), ArgumentMatchers.eq(mandatoryRequestData)
-      )(any(), any(), any())).thenReturn(Future.successful(Right(successResponse)))
+      )(any(), any())).thenReturn(Future.successful(Right(successResponse)))
 
       val result = controller.registerWithIdIndividual(fakeRequestWithNino)
 
@@ -97,7 +100,7 @@ class RegistrationControllerSpec
 
       when(mockRegistrationConnector.registerWithIdIndividual(
         ArgumentMatchers.eq(externalId), ArgumentMatchers.eq(nino), ArgumentMatchers.eq(mandatoryRequestData)
-      )(any(), any(), any())).thenReturn(Future.successful(Right(successResponse)))
+      )(any(), any())).thenReturn(Future.successful(Right(successResponse)))
 
       recoverToExceptionIf[BadRequestException] {
         controller.registerWithIdIndividual(FakeRequest("", ""))
@@ -109,7 +112,7 @@ class RegistrationControllerSpec
 
     "throw Upstream5XXResponse on Internal Server Error from DES" in {
 
-      when(mockRegistrationConnector.registerWithIdIndividual(any(), any(), any())(any(), any(), any()))
+      when(mockRegistrationConnector.registerWithIdIndividual(any(), any(), any())(any(), any()))
         .thenReturn(Future.failed(UpstreamErrorResponse(message = "Internal Server Error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR)))
 
       recoverToExceptionIf[UpstreamErrorResponse] {
@@ -134,7 +137,7 @@ class RegistrationControllerSpec
 
       when(mockRegistrationConnector.registerWithIdOrganisation(
         ArgumentMatchers.eq(externalId), ArgumentMatchers.eq(utr), ArgumentMatchers.eq(mandatoryRequestData)
-      )(any(), any(), any())).thenReturn(Future.successful(Right(successResponse)))
+      )(any(), any())).thenReturn(Future.successful(Right(successResponse)))
 
       val result = controller.registerWithIdOrganisation(fakeRequestWithUtr)
 
@@ -150,7 +153,7 @@ class RegistrationControllerSpec
 
       when(mockRegistrationConnector.registerWithIdOrganisation(
         ArgumentMatchers.eq(externalId), ArgumentMatchers.eq(nino), ArgumentMatchers.eq(mandatoryRequestData)
-      )(any(), any(), any())).thenReturn(Future.successful(Right(successResponse)))
+      )(any(), any())).thenReturn(Future.successful(Right(successResponse)))
 
       recoverToExceptionIf[BadRequestException] {
         controller.registerWithIdOrganisation(FakeRequest("", ""))
@@ -162,7 +165,7 @@ class RegistrationControllerSpec
 
     "throw Upstream5XXResponse on Internal Server Error from DES" in {
 
-      when(mockRegistrationConnector.registerWithIdOrganisation(any(), any(), any())(any(), any(), any()))
+      when(mockRegistrationConnector.registerWithIdOrganisation(any(), any(), any())(any(), any()))
         .thenReturn(Future.failed(UpstreamErrorResponse(message = "CONFLICT", CONFLICT, CONFLICT)))
 
       recoverToExceptionIf[UpstreamErrorResponse] {
@@ -199,20 +202,20 @@ class RegistrationControllerSpec
       val successResponse: RegisterWithoutIdResponse = RegisterWithoutIdResponse("XE0001234567890", "1234567890")
 
       when(mockRegistrationConnector.registrationNoIdIndividual(
-        ArgumentMatchers.eq(externalId), ArgumentMatchers.eq(requestBody.as[RegisterWithoutIdIndividualRequest]))(any(), any(), any()))
+        ArgumentMatchers.eq(externalId), ArgumentMatchers.eq(requestBody.as[RegisterWithoutIdIndividualRequest]))(any(), any()))
         .thenReturn(Future.successful(Right(successResponse)))
 
       val result = call(controller.registrationNoIdIndividual, fakeRequestWithNoIdIndBody)
 
       ScalaFutures.whenReady(result) { _ =>
-        verify(mockRegistrationConnector, times(1)).registrationNoIdIndividual(any(), any())(any(), any(), any())
+        verify(mockRegistrationConnector, times(1)).registrationNoIdIndividual(any(), any())(any(), any())
         status(result) mustBe OK
       }
     }
 
     "throw Upstream5XXResponse on Internal Server Error from DES" in {
 
-      when(mockRegistrationConnector.registrationNoIdIndividual(any(), any())(any(), any(), any()))
+      when(mockRegistrationConnector.registrationNoIdIndividual(any(), any())(any(), any()))
         .thenReturn(Future.failed(UpstreamErrorResponse(message = "Internal Server Error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR)))
 
       recoverToExceptionIf[UpstreamErrorResponse] {
@@ -255,20 +258,20 @@ class RegistrationControllerSpec
       val successResponse: RegisterWithoutIdResponse = RegisterWithoutIdResponse("XE0001234567890", "1234567890")
 
       when(mockRegistrationConnector.registrationNoIdOrganisation(
-        ArgumentMatchers.eq(externalId), ArgumentMatchers.eq(requestBody.as[OrganisationRegistrant]))(any(), any(), any()))
+        ArgumentMatchers.eq(externalId), ArgumentMatchers.eq(requestBody.as[OrganisationRegistrant]))(any(), any()))
         .thenReturn(Future.successful(Right(successResponse)))
 
       val result = call(controller.registrationNoIdOrganisation, fakeRequestWithNoIdOrgBody)
 
       ScalaFutures.whenReady(result) { _ =>
-        verify(mockRegistrationConnector, times(1)).registrationNoIdOrganisation(any(), any())(any(), any(), any())
+        verify(mockRegistrationConnector, times(1)).registrationNoIdOrganisation(any(), any())(any(), any())
         status(result) mustBe OK
       }
     }
 
     "throw Upstream5XXResponse on Internal Server Error from DES" in {
 
-      when(mockRegistrationConnector.registrationNoIdOrganisation(any(), any())(any(), any(), any()))
+      when(mockRegistrationConnector.registrationNoIdOrganisation(any(), any())(any(), any()))
         .thenReturn(Future.failed(UpstreamErrorResponse(message = "Internal Server Error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR)))
 
       recoverToExceptionIf[UpstreamErrorResponse] {

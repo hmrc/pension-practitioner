@@ -17,11 +17,11 @@
 package utils
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.networknt.schema.{JsonSchema, JsonSchemaFactory, ValidationMessage}
+import com.networknt.schema.{JsonSchema, JsonSchemaFactory, SpecVersion, ValidationMessage}
 import org.slf4j.LoggerFactory
 import play.api.libs.json._
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 
 class InvalidPayloadHandler {
@@ -29,8 +29,8 @@ class InvalidPayloadHandler {
   private val logger = LoggerFactory.getLogger("InvalidPayloadHandler")
 
   private[utils] def loadSchema(schemaFileName: String): JsonSchema = {
-    val schemaUrl = getClass.getResource(schemaFileName)
-    val factory = JsonSchemaFactory.getInstance()
+    val schemaUrl = getClass.getResourceAsStream(schemaFileName)
+    val factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V4)
     factory.getSchema(schemaUrl)
   }
 

@@ -68,8 +68,8 @@ class DataCacheController @Inject()(
       }
   }
 
-  private def getId(block: (String) => Future[Result])
-                   (implicit hc: HeaderCarrier, request: Request[AnyContent]): Future[Result] = {
+  private def getId(block: String => Future[Result])
+                   (implicit hc: HeaderCarrier): Future[Result] = {
     authorised().retrieve(Retrievals.externalId) {
       case Some(id) =>
         block(id)

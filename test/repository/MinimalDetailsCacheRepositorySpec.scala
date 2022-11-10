@@ -16,65 +16,74 @@
 
 package repository
 
-import com.github.simplyscala.MongoEmbedDatabase
 import org.joda.time.DateTime
-import org.mockito.{ArgumentMatchers, MockitoSugar}
+import org.mockito.ArgumentMatchers
+import org.mockito.Mockito._
 import org.mongodb.scala.model.Filters
-import org.scalatest.concurrent.ScalaFutures.whenReady
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.must.Matchers
+import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.wordspec.AnyWordSpec
-import org.scalatest.{BeforeAndAfter, BeforeAndAfterEach}
+import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, BeforeAndAfterEach}
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.Configuration
 import play.api.libs.json.{Format, JsString, JsValue, Json}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.formats.MongoJodaFormats
 
-import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration.Duration
 
-class MinimalDetailsCacheRepositorySpec extends AnyWordSpec with MockitoSugar with Matchers with MongoEmbedDatabase with BeforeAndAfter with
-  BeforeAndAfterEach { // scalastyle:off magic.number
+class MinimalDetailsCacheRepositorySpec extends AnyWordSpec with MockitoSugar with Matchers with EmbeddedMongoDBSupport with BeforeAndAfter with
+  BeforeAndAfterEach with BeforeAndAfterAll with ScalaFutures { // scalastyle:off magic.number
+
+  override implicit val patienceConfig: PatienceConfig = PatienceConfig(Span(30, Seconds), Span(1, Millis))
 
   import MinimalDetailsCacheRepositorySpec._
 
-  override def beforeEach: Unit = {
-    super.beforeEach
+  var minimalDetailsCacheRepository: MinimalDetailsCacheRepository = _
+
+  override def beforeAll(): Unit = {
     when(mockConfig.get[String](ArgumentMatchers.eq("mongodb.minimal-detail.name"))(ArgumentMatchers.any()))
       .thenReturn("minimal-detail")
     when(mockConfig.get[Int](ArgumentMatchers.eq("mongodb.minimal-detail.timeToLiveInSeconds"))(ArgumentMatchers.any()))
       .thenReturn(3600)
+    initMongoDExecutable()
+    startMongoD()
+    minimalDetailsCacheRepository = buildFormRepository(mongoHost, mongoPort)
+
+    super.beforeAll()
   }
 
-  withEmbedMongoFixture(port = 24680) { _ =>
-    "upsert" must {
-      "save new data into the cache" in {
-        mongoCollectionDrop()
+  override def afterAll(): Unit =
+    stopMongoD()
 
-        val filters = Filters.eq(idField, id)
+  "upsert" must {
+    "save new data into the cache" in {
 
-        val documentsInDB = for {
-          _ <- minimalDetailsCacheRepository.upsert(id, userData)
-          documentsInDB <- minimalDetailsCacheRepository.collection.find(filters).toFuture()
-        } yield documentsInDB
+      val filters = Filters.eq(idField, id)
 
-        whenReady(documentsInDB) { documentsInDB =>
-          documentsInDB.size mustBe 1
-        }
+      val documentsInDB = for {
+        _ <- minimalDetailsCacheRepository.collection.drop().toFuture()
+        _ <- minimalDetailsCacheRepository.upsert(id, userData)
+        documentsInDB <- minimalDetailsCacheRepository.collection.find(filters).toFuture()
+      } yield documentsInDB
+
+      whenReady(documentsInDB) { documentsInDB =>
+        documentsInDB.size mustBe 1
       }
+    }
 
-      "update data when already exists in the cache and then get the value" in {
-        mongoCollectionDrop()
+    "update data when already exists in the cache and then get the value" in {
 
-        val result = for {
-          _ <- minimalDetailsCacheRepository.upsert(id, userData)
-          _ <- minimalDetailsCacheRepository.upsert(id, dummyData)
-          dataRetrieved <- minimalDetailsCacheRepository.get(id = id)
-        } yield dataRetrieved
+      val result = for {
+        _ <- minimalDetailsCacheRepository.collection.drop().toFuture()
+        _ <- minimalDetailsCacheRepository.upsert(id, userData)
+        _ <- minimalDetailsCacheRepository.upsert(id, dummyData)
+        dataRetrieved <- minimalDetailsCacheRepository.get(id = id)
+      } yield dataRetrieved
 
-        whenReady(result) {
-          _ mustBe Some(dummyData)
-        }
+      whenReady(result) {
+        _ mustBe Some(dummyData)
       }
     }
   }
@@ -82,9 +91,8 @@ class MinimalDetailsCacheRepositorySpec extends AnyWordSpec with MockitoSugar wi
   "get" must {
     "get no data if value does not exist" in {
 
-      mongoCollectionDrop()
-
       val result = for {
+        _ <- minimalDetailsCacheRepository.collection.drop().toFuture()
         resultOfGet <- minimalDetailsCacheRepository.get(id = id)
       } yield resultOfGet
 
@@ -96,9 +104,9 @@ class MinimalDetailsCacheRepositorySpec extends AnyWordSpec with MockitoSugar wi
 
   "remove" must {
     "remove record at given id" in {
-      mongoCollectionDrop()
 
       val saveAndRemoveData = for {
+        _ <- minimalDetailsCacheRepository.collection.drop().toFuture()
         _ <- minimalDetailsCacheRepository.upsert(id, dummyData)
         _ <- minimalDetailsCacheRepository.remove(id)
         dataRetrieved <- minimalDetailsCacheRepository.get(id = id)
@@ -113,8 +121,6 @@ class MinimalDetailsCacheRepositorySpec extends AnyWordSpec with MockitoSugar wi
 
 object MinimalDetailsCacheRepositorySpec extends AnyWordSpec with MockitoSugar {
 
-  import scala.concurrent.ExecutionContext.Implicits._
-
   implicit val dateFormat: Format[DateTime] = MongoJodaFormats.dateTimeFormat
 
   private val id: String = "testId"
@@ -122,15 +128,13 @@ object MinimalDetailsCacheRepositorySpec extends AnyWordSpec with MockitoSugar {
   private val userData: JsValue = Json.obj("testing" -> "123")
 
   private val mockConfig = mock[Configuration]
-  private val databaseName = "pension-practitioner"
-  private val mongoUri: String = s"mongodb://127.0.0.1:27017/$databaseName?heartbeatFrequencyMS=1000&rm.failover=default"
-  private val mongoComponent = MongoComponent(mongoUri)
   private val dummyData = JsString("dummy data")
 
-  private def mongoCollectionDrop(): Void = Await
-    .result(minimalDetailsCacheRepository.collection.drop().toFuture(), Duration.Inf)
-
-  def minimalDetailsCacheRepository: MinimalDetailsCacheRepository = new MinimalDetailsCacheRepository(mongoComponent, mockConfig)
+  private def buildFormRepository(mongoHost: String, mongoPort: Int) = {
+    val databaseName = "pension-administrator"
+    val mongoUri = s"mongodb://$mongoHost:$mongoPort/$databaseName?heartbeatFrequencyMS=1000&rm.failover=default"
+    new MinimalDetailsCacheRepository(MongoComponent(mongoUri), mockConfig)
+  }
 }
 
 

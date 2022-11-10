@@ -31,37 +31,37 @@ class PspDetailsTransformer extends JsonTransformer {
       transformContactDetails).reduce
 
   private def transformSubscriptionDetails: Reads[JsObject] =
-    ((__ \ 'applicationDate).json.copyFrom((__ \ 'subscriptionTypeAndPSPIDDetails \ 'applicationDate).json.pick) and
-      (__ \ 'subscriptionType).json.copyFrom((__ \ 'subscriptionTypeAndPSPIDDetails \ 'subscriptionType).json.pick) and
-      ((__ \ 'existingPSP \ 'isExistingPSP).json.copyFrom((__ \ 'subscriptionTypeAndPSPIDDetails \ 'existingPSPID).json.pick) orElse doNothing) and
-      (__ \ 'existingPSP \ 'existingPSPId).json.copyFrom((__ \ 'subscriptionTypeAndPSPIDDetails \ 'pspid).json.pick)).reduce
+    ((__ \ Symbol("applicationDate")).json.copyFrom((__ \ Symbol("subscriptionTypeAndPSPIDDetails") \ Symbol("applicationDate")).json.pick) and
+      (__ \ Symbol("subscriptionType")).json.copyFrom((__ \ Symbol("subscriptionTypeAndPSPIDDetails") \ Symbol("subscriptionType")).json.pick) and
+      ((__ \ Symbol("existingPSP") \ Symbol("isExistingPSP")).json.copyFrom((__ \ Symbol("subscriptionTypeAndPSPIDDetails") \ Symbol("existingPSPID")).json.pick) orElse doNothing) and
+      (__ \ Symbol("existingPSP") \ Symbol("existingPSPId")).json.copyFrom((__ \ Symbol("subscriptionTypeAndPSPIDDetails") \ Symbol("pspid")).json.pick)).reduce
 
   private def transformLegalAndCustomer: Reads[JsObject] =
-    ((__ \ 'registrationInfo \ 'legalStatus).json.copyFrom((__ \ 'legalEntityAndCustomerID \ 'legalStatus).json.pick) and
-      (__ \ 'registrationInfo \ 'customerType).json.copyFrom((__ \ 'legalEntityAndCustomerID \ 'customerType).json.pick) and
-      ((__ \ 'registrationInfo \ 'idType).json.copyFrom((__ \ 'legalEntityAndCustomerID \ 'idType).json.pick) orElse doNothing) and
-      ((__ \ 'registrationInfo \ 'idNumber).json.copyFrom((__ \ 'legalEntityAndCustomerID \ 'idNumber).json.pick) orElse doNothing)).reduce
+    ((__ \ Symbol("registrationInfo") \ Symbol("legalStatus")).json.copyFrom((__ \ Symbol("legalEntityAndCustomerID") \ Symbol("legalStatus")).json.pick) and
+      (__ \ Symbol("registrationInfo") \ Symbol("customerType")).json.copyFrom((__ \ Symbol("legalEntityAndCustomerID") \ Symbol("customerType")).json.pick) and
+      ((__ \ Symbol("registrationInfo") \ Symbol("idType")).json.copyFrom((__ \ Symbol("legalEntityAndCustomerID") \ Symbol("idType")).json.pick) orElse doNothing) and
+      ((__ \ Symbol("registrationInfo") \ Symbol("idNumber")).json.copyFrom((__ \ Symbol("legalEntityAndCustomerID") \ Symbol("idNumber")).json.pick) orElse doNothing)).reduce
 
   private def transformName: Reads[JsObject] =
-    (__ \ 'legalEntityAndCustomerID \ 'legalStatus).read[String].flatMap {
+    (__ \ Symbol("legalEntityAndCustomerID") \ Symbol("legalStatus")).read[String].flatMap {
       case "Individual" =>
-        ((__ \ 'individualDetails \ 'firstName).json.copyFrom((__ \ 'individualDetails \ 'firstName).json.pick) and
-          (__ \ 'individualDetails \ 'lastName).json.copyFrom((__ \ 'individualDetails \ 'lastName).json.pick)).reduce
+        ((__ \ Symbol("individualDetails") \ Symbol("firstName")).json.copyFrom((__ \ Symbol("individualDetails") \ Symbol("firstName")).json.pick) and
+          (__ \ Symbol("individualDetails") \ Symbol("lastName")).json.copyFrom((__ \ Symbol("individualDetails") \ Symbol("lastName")).json.pick)).reduce
       case _ =>
-        (__ \ 'name).json.copyFrom((__ \ 'orgOrPartnershipDetails \ 'organisationName).json.pick)
+        (__ \ Symbol("name")).json.copyFrom((__ \ Symbol("orgOrPartnershipDetails") \ Symbol("organisationName")).json.pick)
     }
 
   private def transformAddress: Reads[JsObject] =
-    ((__ \ 'contactAddress \ 'addressLine1).json.copyFrom((__ \ 'correspondenceAddressDetails \ 'addressLine1).json.pick) and
-      (__ \ 'contactAddress \ 'addressLine2).json.copyFrom((__ \ 'correspondenceAddressDetails \ 'addressLine2).json.pick) and
-      ((__ \ 'contactAddress \ 'addressLine3).json.copyFrom((__ \ 'correspondenceAddressDetails \ 'addressLine3).json.pick) orElse doNothing) and
-      ((__ \ 'contactAddress \ 'addressLine4).json.copyFrom((__ \ 'correspondenceAddressDetails \ 'addressLine4).json.pick) orElse doNothing) and
-      (__ \ 'contactAddress \ 'country).json.copyFrom((__ \ 'correspondenceAddressDetails \ 'countryCode).json.pick) and
-      ((__ \ 'contactAddress \ 'postcode).json.copyFrom((__ \ 'correspondenceAddressDetails \ 'postalCode).json.pick) orElse doNothing)
+    ((__ \ Symbol("contactAddress") \ Symbol("addressLine1")).json.copyFrom((__ \ Symbol("correspondenceAddressDetails") \ Symbol("addressLine1")).json.pick) and
+      (__ \ Symbol("contactAddress") \ Symbol("addressLine2")).json.copyFrom((__ \ Symbol("correspondenceAddressDetails") \ Symbol("addressLine2")).json.pick) and
+      ((__ \ Symbol("contactAddress") \ Symbol("addressLine3")).json.copyFrom((__ \ Symbol("correspondenceAddressDetails") \ Symbol("addressLine3")).json.pick) orElse doNothing) and
+      ((__ \ Symbol("contactAddress") \ Symbol("addressLine4")).json.copyFrom((__ \ Symbol("correspondenceAddressDetails") \ Symbol("addressLine4")).json.pick) orElse doNothing) and
+      (__ \ Symbol("contactAddress") \ Symbol("country")).json.copyFrom((__ \ Symbol("correspondenceAddressDetails") \ Symbol("countryCode")).json.pick) and
+      ((__ \ Symbol("contactAddress") \ Symbol("postcode")).json.copyFrom((__ \ Symbol("correspondenceAddressDetails") \ Symbol("postalCode")).json.pick) orElse doNothing)
       ).reduce
 
 
   private def transformContactDetails: Reads[JsObject] =
-    ((__ \ 'email).json.copyFrom((__ \ 'correspondenceContactDetails \ 'email).json.pick) and
-      (__ \ 'phone).json.copyFrom((__ \ 'correspondenceContactDetails \ 'telephone).json.pick)).reduce
+    ((__ \ Symbol("email")).json.copyFrom((__ \ Symbol("correspondenceContactDetails") \ Symbol("email")).json.pick) and
+      (__ \ Symbol("phone")).json.copyFrom((__ \ Symbol("correspondenceContactDetails") \ Symbol("telephone")).json.pick)).reduce
 }

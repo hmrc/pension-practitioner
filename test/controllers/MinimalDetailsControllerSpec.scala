@@ -19,9 +19,10 @@ package controllers
 import connectors.MinimalConnector
 import models._
 import org.mockito.ArgumentMatchers._
-import org.mockito.MockitoSugar
+import org.mockito.Mockito._
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.Json
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
@@ -40,7 +41,7 @@ class MinimalDetailsControllerSpec extends AnyWordSpec with Matchers {
     "return OK when service returns successfully" in {
 
       when(mockMinimalDetailsCacheRepository.get(any())(any()))
-        .thenReturn (Future.successful {
+        .thenReturn(Future.successful {
           Some(Json.toJson(minimalDetailsIndividualUser))
         })
 
@@ -60,7 +61,7 @@ class MinimalDetailsControllerSpec extends AnyWordSpec with Matchers {
       when(mockMinimalConnector.getMinimalDetails(any(), any(), any())(any(), any(), any()))
         .thenReturn(Future.successful(Right(minimalDetailsIndividualUser)))
 
-      when(mockMinimalDetailsCacheRepository.upsert(any(),any())(any()))
+      when(mockMinimalDetailsCacheRepository.upsert(any(), any())(any()))
         .thenReturn(Future.successful((): Unit))
       val result = controller.getMinimalDetails(fakeRequest.withHeaders(("pspId", "A2123456")))
 
@@ -77,7 +78,7 @@ class MinimalDetailsControllerSpec extends AnyWordSpec with Matchers {
       when(mockMinimalConnector.getMinimalDetails(any(), any(), any())(any(), any(), any()))
         .thenReturn(Future.successful(Right(minimalDetailsIndividualUser)))
 
-      when(mockMinimalDetailsCacheRepository.upsert(any(),any())(any()))
+      when(mockMinimalDetailsCacheRepository.upsert(any(), any())(any()))
         .thenReturn(Future.successful((): Unit))
       val result = controller.getMinimalDetails(fakeRequest.withHeaders(("pspId", "A2123456")))
 
@@ -136,7 +137,8 @@ object MinimalDetailsControllerSpec extends MockitoSugar {
 
   val mockMinimalConnector: MinimalConnector = mock[MinimalConnector]
   val mockMinimalDetailsCacheRepository: MinimalDetailsCacheRepository = mock[MinimalDetailsCacheRepository]
-  def controller: MinimalDetailsController = new MinimalDetailsController(mockMinimalConnector,mockMinimalDetailsCacheRepository,
-     stubControllerComponents())
+
+  def controller: MinimalDetailsController = new MinimalDetailsController(mockMinimalConnector, mockMinimalDetailsCacheRepository,
+    stubControllerComponents())
 
 }

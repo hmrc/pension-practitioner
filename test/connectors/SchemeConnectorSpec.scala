@@ -19,16 +19,18 @@ package connectors
 import audit.AuditService
 import com.github.tomakehurst.wiremock.client.WireMock._
 import models.SchemeDetails
-import org.mockito.MockitoSugar
+import org.mockito.Mockito._
 import org.scalatest.EitherValues
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AsyncWordSpec
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject.bind
 import play.api.inject.guice.GuiceableModule
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.RequestHeader
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import repository.{AdminDataRepository, DataCacheRepository, MinimalDetailsCacheRepository}
 import uk.gov.hmrc.http._
 import utils.WireMockHelper
 
@@ -54,14 +56,17 @@ class SchemeConnectorSpec
   override protected def bindings: Seq[GuiceableModule] =
     Seq(
       bind[AuditService].toInstance(mockAuditService),
-      bind[HeaderUtils].toInstance(mockHeaderUtils)
+      bind[HeaderUtils].toInstance(mockHeaderUtils),
+      bind[DataCacheRepository].toInstance(mock[DataCacheRepository]),
+      bind[AdminDataRepository].toInstance(mock[AdminDataRepository]),
+      bind[MinimalDetailsCacheRepository].toInstance(mock[MinimalDetailsCacheRepository])
     )
 
   private val pspId = "21000000"
   private val idType = "pspid"
   private val listOfSchemesUrl = "/pensions-scheme/list-of-schemes"
 
-  when(mockHeaderUtils.integrationFrameworkHeader).thenReturn(Nil)
+  when(mockHeaderUtils.integrationFrameworkHeader()).thenReturn(Nil)
 
   "SchemeConnector" must {
     "get list of schemes" in {
@@ -77,7 +82,7 @@ class SchemeConnectorSpec
       )
 
       connector.listOfSchemes(pspId).map { response =>
-        response.right.get mustBe listOfSchemesPayload
+        response.toOption.get mustBe listOfSchemesPayload
       }
     }
 
@@ -94,8 +99,8 @@ class SchemeConnectorSpec
       )
 
       connector.listOfSchemes(pspId).map { response =>
-        response.left.get.body contains "NOT_FOUND"
-        response.left.get.status mustBe NOT_FOUND
+        response.swap.getOrElse(HttpResponse(0, "")).body contains "NOT_FOUND"
+        response.swap.getOrElse(HttpResponse(0, "")).status mustBe NOT_FOUND
       }
     }
   }
