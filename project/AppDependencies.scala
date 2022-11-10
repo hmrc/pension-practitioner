@@ -8,6 +8,7 @@ object AppDependencies {
     "uk.gov.hmrc"             %% "bootstrap-backend-play-28"  % "7.11.0",
     "com.networknt"           %  "json-schema-validator"      % "1.0.73",
     "uk.gov.hmrc"             %% "domain"                     % "8.1.0-play-28",
+    "com.fasterxml.jackson.module" %% "jackson-module-scala"  % "2.14.0",
     ehcache
   )
 
@@ -21,7 +22,6 @@ object AppDependencies {
     "org.scalatestplus"       %% "scalacheck-1-17"            % "3.2.14.0"          % Test,
     "org.scalatestplus"       %% "mockito-4-6"                % "3.2.14.0"          % Test,
     "org.scalatestplus.play"  %% "scalatestplus-play"         % "5.1.0"             % Test,
-    "com.github.tomakehurst"  %  "wiremock-jre8"              % "2.35.0"            % Test,
-    "com.fasterxml.jackson.module" %% "jackson-module-scala"  % "2.14.0"            % Test
+    "com.github.tomakehurst"  %  "wiremock-jre8"              % "2.35.0"            % Test
   )
 }
