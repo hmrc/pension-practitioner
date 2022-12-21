@@ -19,21 +19,20 @@ package controllers
 import com.google.inject.Inject
 import connectors.AssociationConnector
 import play.api.Logger
-import play.api.mvc.{Action, ControllerComponents, AnyContent}
-import uk.gov.hmrc.auth.core.{AuthorisedFunctions, AuthConnector}
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions}
 import uk.gov.hmrc.http.{BadRequestException, Request => _}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import utils.{ErrorHandler, AuthUtil, HttpResponseHelper}
+import utils.{AuthUtil, ErrorHandler, HttpResponseHelper}
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class AssociationController @Inject()(
                                        override val authConnector: AuthConnector,
                                        associationConnector: AssociationConnector,
                                        cc: ControllerComponents,
                                        util: AuthUtil
-                                     )
+                                     )(implicit ec: ExecutionContext)
   extends BackendController(cc)
     with HttpResponseHelper
     with ErrorHandler

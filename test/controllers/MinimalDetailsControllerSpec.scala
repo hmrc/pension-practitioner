@@ -21,7 +21,7 @@ import models._
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
 import org.scalatest.matchers.must.Matchers
-import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.wordspec.AsyncWordSpec
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.Json
 import play.api.mvc.AnyContentAsEmpty
@@ -30,9 +30,10 @@ import play.api.test.Helpers._
 import repository.MinimalDetailsCacheRepository
 import uk.gov.hmrc.http._
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class MinimalDetailsControllerSpec extends AnyWordSpec with Matchers {
+class MinimalDetailsControllerSpec extends AsyncWordSpec with Matchers {
 
   import MinimalDetailsControllerSpec._
 

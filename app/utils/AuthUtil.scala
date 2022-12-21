@@ -16,18 +16,17 @@
 
 package utils
 
-import javax.inject.Inject
 import play.api.mvc.{ControllerComponents, Result}
-import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions}
 import uk.gov.hmrc.auth.core.retrieve.v2
+import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions}
 import uk.gov.hmrc.http.{HeaderCarrier, UnauthorizedException}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import javax.inject.Inject
+import scala.concurrent.{ExecutionContext, Future}
 
 class AuthUtil @Inject()(override val authConnector: AuthConnector,
-                         cc: ControllerComponents)
+                         cc: ControllerComponents)(implicit ec: ExecutionContext)
   extends BackendController(cc)
     with AuthorisedFunctions {
 

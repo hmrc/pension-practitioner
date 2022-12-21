@@ -27,10 +27,9 @@ import transformations.userAnswersToDes.PSPSubscriptionTransformer
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.http.{Request => _, _}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import utils.{ErrorHandler, AuthUtil, HttpResponseHelper}
+import utils.{AuthUtil, ErrorHandler, HttpResponseHelper}
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class SubscriptionController @Inject()(
                                         override val authConnector: AuthConnector,
@@ -39,7 +38,7 @@ class SubscriptionController @Inject()(
                                         pspSubscriptionTransformer: PSPSubscriptionTransformer,
                                         cc: ControllerComponents,
                                         util: AuthUtil
-                                      ) extends BackendController(cc)
+                                      )(implicit ec: ExecutionContext) extends BackendController(cc)
   with AuthorisedFunctions
   with HttpResponseHelper
   with ErrorHandler {
@@ -56,9 +55,9 @@ class SubscriptionController @Inject()(
             case JsSuccess(data, _) =>
               logger.debug(s"[PSP-Subscription-Outgoing-Payload]$data")
               subscriptionConnector.pspSubscription(externalId, data) map {
-                  case Right(response) => result(response)
-                  case Left(e) => result(e)
-                }
+                case Right(response) => result(response)
+                case Left(e) => result(e)
+              }
             case JsError(errors) => throw JsResultException(errors)
           }
         case _ =>

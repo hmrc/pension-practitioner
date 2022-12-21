@@ -43,12 +43,14 @@ import uk.gov.hmrc.mongo.play.json.formats.MongoJodaFormats
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 
 import java.util.concurrent.TimeUnit
+import javax.inject.Singleton
 import scala.concurrent.{ExecutionContext, Future}
 
+@Singleton
 class MinimalDetailsCacheRepository @Inject()(
-                                      mongoComponent: MongoComponent,
-                                      config: Configuration
-                                    )(implicit ec: ExecutionContext)
+                                               mongoComponent: MongoComponent,
+                                               config: Configuration
+                                             )(implicit ec: ExecutionContext)
   extends PlayMongoRepository[JsValue](
     collectionName = config.get[String]("mongodb.minimal-detail.name"),
     mongoComponent = mongoComponent,

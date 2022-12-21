@@ -19,24 +19,23 @@ package controllers
 import com.google.inject.Inject
 import connectors.RegistrationConnector
 import models.registerWithId.Organisation
-import models.registerWithoutId.{RegisterWithoutIdIndividualRequest, OrganisationRegistrant}
+import models.registerWithoutId.{OrganisationRegistrant, RegisterWithoutIdIndividualRequest}
 import play.api.libs.json.Json
 import play.api.mvc._
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.http.{Request => _, _}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import utils.{ErrorHandler, AuthUtil}
 import utils.ValidationUtils._
+import utils.{AuthUtil, ErrorHandler}
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class RegistrationController @Inject()(
                                         override val authConnector: AuthConnector,
                                         registerConnector: RegistrationConnector,
                                         cc: ControllerComponents,
                                         util: AuthUtil
-                                      )
+                                      )(implicit ec: ExecutionContext)
   extends BackendController(cc)
     with ErrorHandler
     with AuthorisedFunctions {

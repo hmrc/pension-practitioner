@@ -19,7 +19,7 @@ package controllers
 import audit._
 import com.google.inject.Inject
 import models.enumeration.JourneyType
-import models.{Opened, EmailEvents}
+import models.{EmailEvents, Opened}
 import play.api.Logger
 import play.api.libs.json.JsValue
 import play.api.mvc._
@@ -28,17 +28,16 @@ import uk.gov.hmrc.crypto.{ApplicationCrypto, Crypted}
 import uk.gov.hmrc.domain.PspId
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.ExecutionContext
 
 class EmailResponseController @Inject()(
                                          auditService: AuditService,
                                          cc: ControllerComponents,
                                          crypto: ApplicationCrypto,
                                          parser: PlayBodyParsers,
-                                         val authConnector: AuthConnector
-                                       )
-  extends BackendController(cc)
-    with AuthorisedFunctions {
+                                         val authConnector: AuthConnector)
+                                       (implicit ec: ExecutionContext)
+  extends BackendController(cc) with AuthorisedFunctions {
 
   import EmailResponseController._
 
