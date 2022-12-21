@@ -26,18 +26,17 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.{ErrorHandler, HttpResponseHelper}
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class MinimalDetailsController @Inject()(
                                           minimalConnector: MinimalConnector,
                                           minimalDetailsCacheRepository: MinimalDetailsCacheRepository,
                                           cc: ControllerComponents
-                                     ) extends BackendController(cc) with ErrorHandler with HttpResponseHelper {
+                                        )(implicit ec: ExecutionContext) extends BackendController(cc) with ErrorHandler with HttpResponseHelper {
 
   def getMinimalDetails: Action[AnyContent] = Action.async {
     implicit request =>
-      retrieveIdAndTypeFromHeaders{ (idValue, idType, regime) =>
+      retrieveIdAndTypeFromHeaders { (idValue, idType, regime) =>
         getMinimalDetail(idValue, idType, regime).map {
           case Right(minDetails) => Ok(Json.toJson(minDetails))
           case Left(e) => result(e)
@@ -45,7 +44,7 @@ class MinimalDetailsController @Inject()(
       }
   }
 
-  private def retrieveIdAndTypeFromHeaders(block: (String, String, String) => Future[Result])(implicit request: RequestHeader):Future[Result] = {
+  private def retrieveIdAndTypeFromHeaders(block: (String, String, String) => Future[Result])(implicit request: RequestHeader): Future[Result] = {
     (request.headers.get("psaId"), request.headers.get("pspId")) match {
       case (Some(id), None) => block(id, "psaid", "poda")
       case (None, Some(id)) => block(id, "pspid", "podp")
@@ -55,23 +54,23 @@ class MinimalDetailsController @Inject()(
 
   private def getMinimalDetail(idValue: String, idType: String, regime: String)(
     implicit hc: HeaderCarrier, request: RequestHeader): Future[Either[HttpResponse, MinimalDetails]] = {
-        minimalDetailsCacheRepository.get(idValue).flatMap {
-          case Some(response) =>
-            response.validate[MinimalDetails](MinimalDetails.defaultReads) match {
-              case JsSuccess(value, _) => Future.successful(Right(value))
-              case JsError(_) => getAndCacheMinimalDetails(idValue, idType, regime)
-            }
-          case _ => getAndCacheMinimalDetails(idValue, idType, regime)
+    minimalDetailsCacheRepository.get(idValue).flatMap {
+      case Some(response) =>
+        response.validate[MinimalDetails](MinimalDetails.defaultReads) match {
+          case JsSuccess(value, _) => Future.successful(Right(value))
+          case JsError(_) => getAndCacheMinimalDetails(idValue, idType, regime)
         }
+      case _ => getAndCacheMinimalDetails(idValue, idType, regime)
+    }
   }
 
 
   private def getAndCacheMinimalDetails(idValue: String, idType: String, regime: String)(
-    implicit hc: HeaderCarrier, request: RequestHeader):Future[Either[HttpResponse, MinimalDetails]]={
+    implicit hc: HeaderCarrier, request: RequestHeader): Future[Either[HttpResponse, MinimalDetails]] = {
 
-    minimalConnector.getMinimalDetails(idValue, idType, regime) flatMap  {
+    minimalConnector.getMinimalDetails(idValue, idType, regime) flatMap {
       case Right(psaDetails) =>
-        minimalDetailsCacheRepository.upsert(idValue,Json.toJson(psaDetails)).map(_ =>
+        minimalDetailsCacheRepository.upsert(idValue, Json.toJson(psaDetails)).map(_ =>
           Right(psaDetails)
         )
       case Left(e) => Future.successful(Left(e))
