@@ -18,7 +18,7 @@ package controllers.admin
 
 import models.FeatureToggle.Enabled
 import models.FeatureToggleName.PspFromIvToPdv
-import models.OperationSucceeded
+import models.{OperationSucceeded, ToggleDetails}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
@@ -29,7 +29,7 @@ import play.api.mvc.{AnyContentAsEmpty, ControllerComponents}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import play.api.test.Helpers.baseApplicationBuilder.injector
-import repository.AdminDataRepository
+import repository.{AdminDataRepository, ToggleDataRepository}
 import service.FeatureToggleService
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -41,8 +41,9 @@ class FeatureToggleControllerSpec
     with BeforeAndAfterEach {
 
   private val mockAdminDataRepository = mock[AdminDataRepository]
-
+  private val mockToggleDataRepository = mock[ToggleDataRepository]
   private val mockFeatureToggleService = mock[FeatureToggleService]
+  private val toggleDetails = ToggleDetails("Test toggle", Some("Test Desc"), isEnabled = true)
   private val controllerComponents: ControllerComponents = injector().instanceOf[ControllerComponents]
   private val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("", "")
 
@@ -53,6 +54,8 @@ class FeatureToggleControllerSpec
       .thenReturn(Future.successful(Seq(Enabled(PspFromIvToPdv))))
     when(mockFeatureToggleService.getAll)
       .thenReturn(Future.successful(Seq(Enabled(PspFromIvToPdv))))
+    when(mockFeatureToggleService.getAllFeatureToggles)
+      .thenReturn(Future.successful(Seq[ToggleDetails](toggleDetails)))
   }
 
   "FeatureToggleController.getAll" must {
@@ -112,6 +115,89 @@ class FeatureToggleControllerSpec
 
       verify(mockFeatureToggleService, times(0))
         .set(toggleName = PspFromIvToPdv, enabled = true)
+    }
+  }
+
+  "FeatureToggleController.upsertFeatureToggle" must {
+    "set the feature toggles and return NO_CONTENT" in {
+      when(mockToggleDataRepository.upsertFeatureToggle(any()))
+        .thenReturn(Future.successful(()))
+
+      when(mockFeatureToggleService.upsertFeatureToggle(any()))
+        .thenReturn(Future.successful(()))
+
+      val controller = new FeatureToggleController(controllerComponents, mockFeatureToggleService)
+
+      val result = controller.upsertFeatureToggle(fakeRequest.withJsonBody(Json.obj(
+        "toggleName" -> "Test-toggle",
+        "toggleDescription" -> "Test description",
+        "isEnabled" -> true
+      )))
+
+      status(result) mustBe NO_CONTENT
+
+      verify(mockFeatureToggleService, times(1))
+        .upsertFeatureToggle(ToggleDetails("Test-toggle", Some("Test description"), isEnabled = true))
+    }
+
+    "not set the feature toggles and return BAD_REQUEST" in {
+      val controller = new FeatureToggleController(controllerComponents, mockFeatureToggleService)
+
+      val result = controller.upsertFeatureToggle(fakeRequest)
+
+      status(result) mustBe BAD_REQUEST
+
+      verify(mockFeatureToggleService, times(0))
+        .upsertFeatureToggle(ToggleDetails("Test-toggle", Some("Test description"), isEnabled = true))
+    }
+  }
+
+  "FeatureToggleController.deleteToggle" must {
+    "delete the feature toggle and return NO_CONTENT" in {
+      when(mockToggleDataRepository.upsertFeatureToggle(any()))
+        .thenReturn(Future.successful(()))
+
+      when(mockFeatureToggleService.deleteToggle(any()))
+        .thenReturn(Future.successful())
+
+      val controller = new FeatureToggleController(controllerComponents, mockFeatureToggleService)
+
+      val result = controller.deleteToggle("Test toggle")(fakeRequest)
+
+      status(result) mustBe NO_CONTENT
+
+      verify(mockFeatureToggleService, times(1))
+        .deleteToggle("Test toggle")
+    }
+  }
+
+  "FeatureToggleController.getToggle" must {
+    "get the feature toggle value and return OK" in {
+      when(mockToggleDataRepository.upsertFeatureToggle(any()))
+        .thenReturn(Future.successful(()))
+
+      when(mockFeatureToggleService.getToggle(any()))
+        .thenReturn(Future.successful(Some(toggleDetails)))
+
+      val controller = new FeatureToggleController(controllerComponents, mockFeatureToggleService)
+
+      val result = controller.getToggle("Test")(fakeRequest)
+
+      status(result) mustBe OK
+
+      verify(mockFeatureToggleService, times(1))
+        .getToggle("Test")
+    }
+  }
+
+  "FeatureToggleController.getAllFeatureToggles" must {
+    "return OK and the feature toggles when they exist" in {
+
+      val controller = new FeatureToggleController(controllerComponents, mockFeatureToggleService)
+
+      val result = controller.getAllFeatureToggles(fakeRequest)
+
+      status(result) mustBe OK
     }
   }
 }
