@@ -12,7 +12,7 @@ lazy val microservice = Project(appName, file("."))
     majorVersion := 0,
     libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test
   )
-  .settings(scalaVersion := "2.13.8")
+  .settings(scalaVersion := "2.13.12")
   .settings(publishingSettings: _*)
   .settings(
     RoutesKeys.routesImport ++= Seq("models.enumeration.JourneyType",

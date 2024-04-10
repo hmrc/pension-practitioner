@@ -16,7 +16,7 @@
 
 package service
 
-import akka.Done
+import org.apache.pekko.Done
 import models.FeatureToggle.{Disabled, Enabled}
 import models.FeatureToggleName.PspFromIvToPdv
 import models.{FeatureToggle, FeatureToggleName, ToggleDetails}

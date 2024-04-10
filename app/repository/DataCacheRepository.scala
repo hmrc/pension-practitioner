@@ -34,14 +34,15 @@ package repository
 
 import com.google.inject.Inject
 import com.mongodb.client.model.FindOneAndUpdateOptions
-import org.joda.time.{DateTime, DateTimeZone}
 import org.mongodb.scala.model._
 import play.api.libs.json._
 import play.api.{Configuration, Logging}
 import uk.gov.hmrc.mongo.MongoComponent
-import uk.gov.hmrc.mongo.play.json.formats.MongoJodaFormats
+import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 
+import java.time.temporal.ChronoUnit
+import java.time.{Instant, LocalDate, ZoneId}
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 import scala.concurrent.{ExecutionContext, Future}
@@ -74,16 +75,11 @@ class DataCacheRepository @Inject()(
     )
   ) with Logging {
 
-  import DataCacheRepository._
-
   private def selector(id: String) = Filters.equal("id", id)
 
-  private def getExpireAt: DateTime = {
-    DateTime
-      .now(DateTimeZone.UTC)
-      .toLocalDate
-      .plusDays(config.get[Int]("mongodb.psp-cache.timeToLiveInDays") + 1)
-      .toDateTimeAtStartOfDay()
+  private def getExpireAt: Instant = {
+    LocalDate.now().atStartOfDay(ZoneId.of("UTC")).toInstant
+      .plus(config.get[Int]("mongodb.psp-cache.timeToLiveInDays") + 1, ChronoUnit.DAYS)
   }
 
   def save(id: String, userData: JsValue)(implicit ec: ExecutionContext): Future[Unit] = {
@@ -92,7 +88,7 @@ class DataCacheRepository @Inject()(
     val modifier = Updates.combine(
       Updates.set("id", Codecs.toBson(id)),
       Updates.set("data", Codecs.toBson(userData)),
-      Updates.set("expireAt", Codecs.toBson(getExpireAt))
+      Updates.set("expireAt", getExpireAt)
     )
 
     collection.findOneAndUpdate(
@@ -121,5 +117,5 @@ class DataCacheRepository @Inject()(
 }
 
 object DataCacheRepository {
-  implicit val dateFormat: Format[DateTime] = MongoJodaFormats.dateTimeFormat
+  implicit val dateFormat: Format[Instant] = MongoJavatimeFormats.instantFormat
 }

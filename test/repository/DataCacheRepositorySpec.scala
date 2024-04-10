@@ -16,7 +16,6 @@
 
 package repository
 
-import org.joda.time.DateTime
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.mongodb.scala.model.Filters
@@ -29,8 +28,9 @@ import org.scalatestplus.mockito.MockitoSugar
 import play.api.Configuration
 import play.api.libs.json.{Format, JsString, JsValue, Json}
 import uk.gov.hmrc.mongo.MongoComponent
-import uk.gov.hmrc.mongo.play.json.formats.MongoJodaFormats
+import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
+import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class DataCacheRepositorySpec extends AnyWordSpec with MockitoSugar with Matchers with EmbeddedMongoDBSupport with BeforeAndAfter with
@@ -118,7 +118,7 @@ class DataCacheRepositorySpec extends AnyWordSpec with MockitoSugar with Matcher
 
 object DataCacheRepositorySpec extends MockitoSugar {
 
-  implicit val dateFormat: Format[DateTime] = MongoJodaFormats.dateTimeFormat
+  implicit val dateFormat: Format[Instant] = MongoJavatimeFormats.instantFormat
 
   private val id: String = "testId"
   private val idField: String = "id"

@@ -34,14 +34,14 @@ package repository
 
 import com.google.inject.Inject
 import com.mongodb.client.model.FindOneAndUpdateOptions
-import org.joda.time.{DateTime, DateTimeZone}
 import org.mongodb.scala.model._
 import play.api.libs.json._
 import play.api.{Configuration, Logging}
 import uk.gov.hmrc.mongo.MongoComponent
-import uk.gov.hmrc.mongo.play.json.formats.MongoJodaFormats
+import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 
+import java.time.Instant
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 import scala.concurrent.{ExecutionContext, Future}
@@ -73,8 +73,6 @@ class MinimalDetailsCacheRepository @Inject()(
     )
   ) with Logging {
 
-  import MinimalDetailsCacheRepository._
-
   private def selector(id: String) = Filters.equal("id", id)
 
   def upsert(id: String, data: JsValue)(implicit ec: ExecutionContext): Future[Unit] = {
@@ -83,7 +81,7 @@ class MinimalDetailsCacheRepository @Inject()(
     val modifier = Updates.combine(
       Updates.set("id", Codecs.toBson(id)),
       Updates.set("data", Codecs.toBson(data)),
-      Updates.set("lastUpdated", Codecs.toBson(DateTime.now(DateTimeZone.UTC)))
+      Updates.set("lastUpdated", Instant.now())
     )
 
     collection.findOneAndUpdate(
@@ -112,5 +110,5 @@ class MinimalDetailsCacheRepository @Inject()(
 }
 
 object MinimalDetailsCacheRepository {
-  implicit val dateFormat: Format[DateTime] = MongoJodaFormats.dateTimeFormat
+  implicit val dateFormat: Format[Instant] = MongoJavatimeFormats.instantFormat
 }

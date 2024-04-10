@@ -16,7 +16,7 @@
 
 package controllers
 
-import akka.stream.Materializer
+import org.apache.pekko.stream.Materializer
 import connectors.RegistrationConnector
 import models.registerWithId.RegisterWithIdResponse
 import models.registerWithoutId.{OrganisationRegistrant, RegisterWithoutIdIndividualRequest, RegisterWithoutIdResponse}
