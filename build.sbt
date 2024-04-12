@@ -1,7 +1,6 @@
 import play.sbt.routes.RoutesKeys
 import sbt.Keys.scalacOptions
 import uk.gov.hmrc.DefaultBuildSettings.integrationTestSettings
-import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
 
 val appName = "pension-practitioner"
 
@@ -13,7 +12,6 @@ lazy val microservice = Project(appName, file("."))
     libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test
   )
   .settings(scalaVersion := "2.13.12")
-  .settings(publishingSettings: _*)
   .settings(
     RoutesKeys.routesImport ++= Seq("models.enumeration.JourneyType",
       "models.FeatureToggleName"),
