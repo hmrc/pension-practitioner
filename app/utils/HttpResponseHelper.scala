@@ -16,7 +16,7 @@
 
 package utils
 
-import akka.util.ByteString
+import org.apache.pekko.util.ByteString
 import com.fasterxml.jackson.core.JsonParseException
 import play.api.Logger
 import play.api.http.HttpEntity
