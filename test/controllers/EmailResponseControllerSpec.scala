@@ -36,7 +36,7 @@ import repository.{AdminDataRepository, DataCacheRepository, MinimalDetailsCache
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.crypto.{ApplicationCrypto, PlainText}
 
-import java.time.LocalDateTime
+import java.time.Instant
 import scala.concurrent.Future
 
 class EmailResponseControllerSpec extends AsyncWordSpec with Matchers with MockitoSugar with BeforeAndAfterEach {
@@ -115,6 +115,6 @@ object EmailResponseControllerSpec {
     ), "Activated", None)
   ))
   private val eventCaptor = ArgumentCaptor.forClass(classOf[EmailAuditEvent])
-  private val emailEvents = EmailEvents(Seq(EmailEvent(Sent, LocalDateTime.now()), EmailEvent(Delivered, LocalDateTime.now()),
-    EmailEvent(PermanentBounce, LocalDateTime.now()), EmailEvent(Opened, LocalDateTime.now()), EmailEvent(Complained, LocalDateTime.now())))
+  private val emailEvents = EmailEvents(Seq(EmailEvent(Sent, Instant.now()), EmailEvent(Delivered, Instant.now()),
+    EmailEvent(PermanentBounce, Instant.now()), EmailEvent(Opened, Instant.now()), EmailEvent(Complained, Instant.now())))
 }
