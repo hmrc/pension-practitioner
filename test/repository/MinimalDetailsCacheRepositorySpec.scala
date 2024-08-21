@@ -29,11 +29,12 @@ import play.api.Configuration
 import play.api.libs.json.{Format, JsString, JsValue, Json}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
+import utils.LocalMongoDB
 
 import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class MinimalDetailsCacheRepositorySpec extends AnyWordSpec with MockitoSugar with Matchers with EmbeddedMongoDBSupport with BeforeAndAfter with
+class MinimalDetailsCacheRepositorySpec extends AnyWordSpec with MockitoSugar with Matchers with LocalMongoDB with BeforeAndAfter with
   BeforeAndAfterEach with BeforeAndAfterAll with ScalaFutures { // scalastyle:off magic.number
 
   override implicit val patienceConfig: PatienceConfig = PatienceConfig(Span(30, Seconds), Span(1, Millis))
@@ -47,15 +48,10 @@ class MinimalDetailsCacheRepositorySpec extends AnyWordSpec with MockitoSugar wi
       .thenReturn("minimal-detail")
     when(mockConfig.get[Int](ArgumentMatchers.eq("mongodb.minimal-detail.timeToLiveInSeconds"))(ArgumentMatchers.any()))
       .thenReturn(3600)
-    initMongoDExecutable()
-    startMongoD()
     minimalDetailsCacheRepository = buildFormRepository(mongoHost, mongoPort)
 
     super.beforeAll()
   }
-
-  override def afterAll(): Unit =
-    stopMongoD()
 
   "upsert" must {
     "save new data into the cache" in {
