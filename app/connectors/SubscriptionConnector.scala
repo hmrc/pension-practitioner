@@ -58,6 +58,8 @@ class SubscriptionConnector @Inject()(
     response.status match {
       case OK =>
         Right(response)
+      case FORBIDDEN if response.body.contains("ACTIVE_PSPID") =>
+        Right(response)
       case _ =>
         Left(handleErrorResponse("POST", url)(response))
     }
