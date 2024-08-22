@@ -16,7 +16,6 @@ object AppDependencies {
 
   val test = Seq(
     "uk.gov.hmrc.mongo"       %% "hmrc-mongo-test-play-30"    % mongoVersion        % Test,
-    "de.flapdoodle.embed"     %  "de.flapdoodle.embed.mongo"  % "3.5.1"             % Test,
     "uk.gov.hmrc"             %% "bootstrap-test-play-30"     % bootstrapVersion    % Test,
     "com.vladsch.flexmark"    % "flexmark-all"                % "0.64.8"            % "test, it",
     "org.pegdown"             %  "pegdown"                    % "1.6.0"             % "test, it",
