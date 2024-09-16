@@ -31,12 +31,13 @@ import play.api.Configuration
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.Codecs
+import utils.LocalMongoDB
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 
-class ToggleDataRepositorySpec extends AnyWordSpec with MockitoSugar with Matchers with EmbeddedMongoDBSupport with BeforeAndAfter with
+class ToggleDataRepositorySpec extends AnyWordSpec with MockitoSugar with Matchers with LocalMongoDB with BeforeAndAfter with
   BeforeAndAfterEach with BeforeAndAfterAll with ScalaFutures { // scalastyle:off magic.number
 
   override implicit val patienceConfig: PatienceConfig = PatienceConfig(Span(30, Seconds), Span(1, Millis))
@@ -49,14 +50,9 @@ class ToggleDataRepositorySpec extends AnyWordSpec with MockitoSugar with Matche
 
   override def beforeAll(): Unit = {
     when(mockAppConfig.get[String](path = "mongodb.toggle-data.name")).thenReturn("toggle-data")
-    initMongoDExecutable()
-    startMongoD()
     toggleDataRepository = buildFormRepository(mongoHost, mongoPort)
     super.beforeAll()
   }
-
-  override def afterAll(): Unit =
-    stopMongoD()
 
   private def upsertJsObject(jsonObjectToInsert: JsObject, toggleName: String): Future[Unit] = {
     toggleDataRepository.collection.findOneAndUpdate(
