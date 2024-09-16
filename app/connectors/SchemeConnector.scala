@@ -58,7 +58,6 @@ class SchemeConnectorImpl @Inject()(
       Seq(("idType", "pspid"), ("idValue", pspId))
     implicit val hc: HeaderCarrier =
       headerCarrier
-        .withExtraHeaders(CacheConnector.headers(headerCarrier): _*)
         .withExtraHeaders(headers: _*)
     val url: String = config.listOfSchemesUrl
 
