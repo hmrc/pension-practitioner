@@ -97,6 +97,6 @@ class AuditServiceImpl @Inject()(
       case Success(_) =>
         logger.debug(s"[AuditService][sendEvent] successfully sent $auditType")
       case Failure(e) =>
-        logger.error(s"[AuditService][sendEvent] failed to send event $auditType", e)
+        logger.warn(s"[AuditService][sendEvent] failed to send event $auditType", e)
     }
 }
