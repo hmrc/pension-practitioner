@@ -65,7 +65,7 @@ class SchemeConnectorImpl @Inject()(
       response.status match {
         case OK => Right(response.json)
         case _ =>
-          logger.error(s"List schemes with headers: (idType, pspid), (idValue $pspId) and url $url" +
+          logger.warn(s"List schemes with headers: (idType, pspid), (idValue $pspId) and url $url" +
             s" returned response ${response.status} with body ${response.body}")
           Left(response)
       }
