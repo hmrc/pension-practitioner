@@ -2,11 +2,11 @@ import play.sbt.PlayImport.ehcache
 import sbt._
 
 object AppDependencies {
-  private val bootstrapVersion = "8.4.0"
-  private val mongoVersion = "1.7.0"
+  private val bootstrapVersion = "8.5.0"
+  private val hmrcMongoVersion = "2.1.0"
 
   val compile = Seq(
-    "uk.gov.hmrc.mongo"       %% "hmrc-mongo-play-30"         % mongoVersion,
+    "uk.gov.hmrc.mongo"       %% "hmrc-mongo-play-30"         % hmrcMongoVersion,
     "uk.gov.hmrc"             %% "bootstrap-backend-play-30"  % bootstrapVersion,
     "com.networknt"           %  "json-schema-validator"      % "1.0.76",
     "uk.gov.hmrc"             %% "domain-play-30"             % "9.0.0",
@@ -15,8 +15,7 @@ object AppDependencies {
   )
 
   val test = Seq(
-    "uk.gov.hmrc.mongo"       %% "hmrc-mongo-test-play-30"    % mongoVersion        % Test,
-    "de.flapdoodle.embed"     %  "de.flapdoodle.embed.mongo"  % "3.5.1"             % Test,
+    "uk.gov.hmrc.mongo"       %% "hmrc-mongo-test-play-30"    % hmrcMongoVersion        % Test,
     "uk.gov.hmrc"             %% "bootstrap-test-play-30"     % bootstrapVersion    % Test,
     "com.vladsch.flexmark"    % "flexmark-all"                % "0.64.8"            % "test, it",
     "org.pegdown"             %  "pegdown"                    % "1.6.0"             % "test, it",
