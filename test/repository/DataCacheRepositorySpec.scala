@@ -29,29 +29,26 @@ import play.api.Configuration
 import play.api.libs.json.{Format, JsString, JsValue, Json}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
+import utils.LocalMongoDB
 
 import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class DataCacheRepositorySpec extends AnyWordSpec with MockitoSugar with Matchers with BeforeAndAfter with
+class DataCacheRepositorySpec extends AnyWordSpec with MockitoSugar with Matchers with LocalMongoDB with BeforeAndAfter with
   BeforeAndAfterAll with ScalaFutures { // scalastyle:off magic.number
 
   override implicit val patienceConfig: PatienceConfig = PatienceConfig(Span(30, Seconds), Span(1, Millis))
 
   import DataCacheRepositorySpec._
-  val mongoHost = "localhost"
-  var mongoPort: Int = 27017
+
   var dataCacheRepository: DataCacheRepository = _
 
   override def beforeAll(): Unit = {
     when(mockConfig.get[String](ArgumentMatchers.eq("mongodb.psp-cache.name"))(ArgumentMatchers.any()))
       .thenReturn("psp-journey")
-
     dataCacheRepository = buildFormRepository(mongoHost, mongoPort)
     super.beforeAll()
   }
-
-
 
   "save" must {
     "save new data into the cache" in {

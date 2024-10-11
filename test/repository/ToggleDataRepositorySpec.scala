@@ -31,12 +31,13 @@ import play.api.Configuration
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.Codecs
+import utils.LocalMongoDB
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 
-class ToggleDataRepositorySpec extends AnyWordSpec with MockitoSugar with Matchers with BeforeAndAfter with
+class ToggleDataRepositorySpec extends AnyWordSpec with MockitoSugar with Matchers with LocalMongoDB with BeforeAndAfter with
   BeforeAndAfterEach with BeforeAndAfterAll with ScalaFutures { // scalastyle:off magic.number
 
   override implicit val patienceConfig: PatienceConfig = PatienceConfig(Span(30, Seconds), Span(1, Millis))
@@ -44,8 +45,7 @@ class ToggleDataRepositorySpec extends AnyWordSpec with MockitoSugar with Matche
   import ToggleDataRepositorySpec._
 
   var toggleDataRepository: ToggleDataRepository = _
-  val mongoHost = "localhost"
-  var mongoPort: Int = 27017
+
   private val toggleDetails = ToggleDetails("Test-feature-toggle", Some("Test description"), true)
 
   override def beforeAll(): Unit = {

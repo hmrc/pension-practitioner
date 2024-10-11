@@ -29,10 +29,11 @@ import org.scalatestplus.mockito.MockitoSugar
 import play.api.Configuration
 import repository.FeatureToggleMongoFormatter.{FeatureToggles, featureToggles, id}
 import uk.gov.hmrc.mongo.MongoComponent
+import utils.LocalMongoDB
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class AdminDataRepositorySpec extends AnyWordSpec with MockitoSugar with Matchers with BeforeAndAfter with
+class AdminDataRepositorySpec extends AnyWordSpec with MockitoSugar with Matchers with LocalMongoDB with BeforeAndAfter with
   BeforeAndAfterEach with BeforeAndAfterAll with ScalaFutures { // scalastyle:off magic.number
 
   override implicit val patienceConfig: PatienceConfig = PatienceConfig(Span(30, Seconds), Span(1, Millis))
@@ -40,14 +41,12 @@ class AdminDataRepositorySpec extends AnyWordSpec with MockitoSugar with Matcher
   import AdminDataRepositorySpec._
 
   var adminDataRepository: AdminDataRepository = _
-  val mongoHost = "localhost"
-  var mongoPort: Int = 27017
+
   override def beforeAll(): Unit = {
     when(mockAppConfig.get[String](path = "mongodb.admin-data.name")).thenReturn("admin-data")
     adminDataRepository = buildFormRepository(mongoHost, mongoPort)
     super.beforeAll()
   }
-
 
   "getFeatureToggle" must {
     "get FeatureToggles from Mongo collection" in {

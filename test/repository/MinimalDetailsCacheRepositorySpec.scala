@@ -29,19 +29,18 @@ import play.api.Configuration
 import play.api.libs.json.{Format, JsString, JsValue, Json}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
+import utils.LocalMongoDB
 
 import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class MinimalDetailsCacheRepositorySpec extends AnyWordSpec with MockitoSugar with Matchers with BeforeAndAfter with
+class MinimalDetailsCacheRepositorySpec extends AnyWordSpec with MockitoSugar with Matchers with LocalMongoDB with BeforeAndAfter with
   BeforeAndAfterEach with BeforeAndAfterAll with ScalaFutures { // scalastyle:off magic.number
 
   override implicit val patienceConfig: PatienceConfig = PatienceConfig(Span(30, Seconds), Span(1, Millis))
 
   import MinimalDetailsCacheRepositorySpec._
 
-  val mongoHost = "localhost"
-  var mongoPort: Int = 27017
   var minimalDetailsCacheRepository: MinimalDetailsCacheRepository = _
 
   override def beforeAll(): Unit = {
@@ -53,8 +52,6 @@ class MinimalDetailsCacheRepositorySpec extends AnyWordSpec with MockitoSugar wi
 
     super.beforeAll()
   }
-
-
 
   "upsert" must {
     "save new data into the cache" in {
