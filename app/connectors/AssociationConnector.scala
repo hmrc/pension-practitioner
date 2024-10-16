@@ -22,39 +22,48 @@ import play.api.Logger
 import play.api.http.Status.OK
 import play.api.libs.json._
 import uk.gov.hmrc.http.HttpReads.Implicits._
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpException, HttpResponse}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpException, HttpResponse, StringContextOps}
 import utils.HttpResponseHelper
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class AssociationConnector @Inject()(
-                                      httpClient: HttpClient,
-                                      appConfig: AppConfig,
-                                      headerUtils: HeaderUtils
-                                    )
-  extends HttpResponseHelper {
+  httpClientV2: HttpClientV2,
+  appConfig: AppConfig,
+  headerUtils: HeaderUtils
+) extends HttpResponseHelper {
 
   private val logger = Logger(classOf[AssociationConnector])
 
+  def authorisePsp(json: JsValue, pstr: String
+                  )(implicit ec: ExecutionContext): Future[Either[HttpException, HttpResponse]] = {
 
-  def authorisePsp(json: JsValue, pstr: String)
-                  (implicit ec: ExecutionContext): Future[Either[HttpException, HttpResponse]] = {
-
-    val headerCarrier: HeaderCarrier = HeaderCarrier(extraHeaders = headerUtils.integrationFrameworkHeader())
-    val url = appConfig.pspAuthorisationUrl.format(pstr)
+    implicit val headerCarrier: HeaderCarrier = HeaderCarrier(extraHeaders = headerUtils.integrationFrameworkHeader())
+    val url = url"${appConfig.pspAuthorisationUrl.format(pstr)}"
     logger.debug(s"[Psp-Association-Outgoing-Payload] - ${json.toString()}")
-    httpClient.POST[JsValue, HttpResponse](url, json)(implicitly, implicitly, headerCarrier, implicitly) map (
-      response => responseToEither(response = response, url = url))
+
+    httpClientV2.post(url)
+      .withBody(json)
+      .setHeader(headerCarrier.extraHeaders: _*)
+      .execute[HttpResponse] map { response =>
+         responseToEither(response, url.toString)
+      }
   }
 
-  def deAuthorisePsp(json: JsValue, pstr: String)
-                    (implicit ec: ExecutionContext): Future[Either[HttpException, HttpResponse]] = {
+  def deAuthorisePsp(json: JsValue, pstr: String
+                    )(implicit ec: ExecutionContext): Future[Either[HttpException, HttpResponse]] = {
 
-    val headerCarrier: HeaderCarrier = HeaderCarrier(extraHeaders = headerUtils.integrationFrameworkHeader())
-    val url = appConfig.pspDeAuthorisationUrl.format(pstr)
+    implicit val headerCarrier: HeaderCarrier = HeaderCarrier(extraHeaders = headerUtils.integrationFrameworkHeader())
+    val url = url"${appConfig.pspDeAuthorisationUrl.format(pstr)}"
     logger.debug(s"[Psp-DeAuthorisation-Outgoing-Payload] - ${json.toString()}")
-    httpClient.POST[JsValue, HttpResponse](url, json)(implicitly, implicitly, headerCarrier, implicitly) map (
-      response => responseToEither(response = response, url = url))
+
+    httpClientV2.post(url)
+      .withBody(json)
+      .setHeader(headerCarrier.extraHeaders: _*)
+      .execute[HttpResponse] map { response =>
+        responseToEither(response, url.toString)
+      }
   }
 
   private def responseToEither(response: HttpResponse, url: String): Either[HttpException, HttpResponse] = {

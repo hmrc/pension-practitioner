@@ -24,7 +24,8 @@ import play.api.Logger
 import play.api.http.Status._
 import play.api.mvc.RequestHeader
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
-import uk.gov.hmrc.http.{HttpClient, _}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http._
 import utils.{ErrorHandler, InvalidPayloadHandler}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -33,35 +34,33 @@ import scala.util.{Failure, Success, Try}
 @ImplementedBy(classOf[MinimalConnectorImpl])
 trait MinimalConnector {
 
-  def getMinimalDetails(idValue: String, idType: String, regime: String)
-                       (implicit
-                        headerCarrier: HeaderCarrier,
-                        ec: ExecutionContext,
-                        request: RequestHeader): Future[Either[HttpResponse, MinimalDetails]]
+  def getMinimalDetails(idValue: String, idType: String, regime: String
+                       )(implicit headerCarrier: HeaderCarrier,
+                         ec: ExecutionContext,
+                         request: RequestHeader): Future[Either[HttpResponse, MinimalDetails]]
 }
 
 @Singleton
-class MinimalConnectorImpl @Inject()(httpClient: HttpClient,
-                                     appConfig: AppConfig,
-                                     invalidPayloadHandler: InvalidPayloadHandler,
-                                     headerUtils: HeaderUtils,
-                                     auditService: AuditService)
-  extends MinimalConnector
-    with ErrorHandler
-    with MinimalDetailsAuditService {
+class MinimalConnectorImpl @Inject()(
+    httpClientV2: HttpClientV2,
+    appConfig: AppConfig,
+    invalidPayloadHandler: InvalidPayloadHandler,
+    headerUtils: HeaderUtils,
+    auditService: AuditService
+) extends MinimalConnector with ErrorHandler with MinimalDetailsAuditService {
 
   private val logger = Logger(classOf[MinimalConnectorImpl])
 
-  override def getMinimalDetails(idValue: String, idType: String, regime: String)
-                                (implicit
-                                 headerCarrier: HeaderCarrier,
-                                 ec: ExecutionContext,
-                                 request: RequestHeader): Future[Either[HttpResponse, MinimalDetails]] = {
+  override def getMinimalDetails(idValue: String, idType: String, regime: String
+                                )(implicit headerCarrier: HeaderCarrier,
+                                  ec: ExecutionContext,
+                                  request: RequestHeader): Future[Either[HttpResponse, MinimalDetails]] = {
 
-    val hc: HeaderCarrier = HeaderCarrier(extraHeaders = headerUtils.integrationFrameworkHeader())
-    val url = appConfig.minimalDetailsUrl.format(regime, idType, idValue)
+    val url = url"${appConfig.minimalDetailsUrl.format(regime, idType, idValue)}"
 
-    httpClient.GET[HttpResponse](url)(implicitly, hc, implicitly) map { response =>
+    httpClientV2.get(url)
+      .setHeader(headerUtils.integrationFrameworkHeader(): _*)
+      .execute[HttpResponse] map { response =>
       response.status match {
         case OK =>
           logger.debug(s"[Get-psp-minimal-details-untransformed]${response.json}")
@@ -71,7 +70,7 @@ class MinimalConnectorImpl @Inject()(httpClient: HttpClient,
     } andThen sendGetMinimalDetailsEvent(idType, idValue)(auditService.sendEvent) andThen logWarning
   }
 
-  case object MinDetailsInvalidResponseException extends Exception
+  private case object MinDetailsInvalidResponseException extends Exception
 
   private def validateGetJson(response: HttpResponse): MinimalDetails =
     response.json.validate[MinimalDetails](MinimalDetails.reads).fold(
