@@ -21,7 +21,7 @@ import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
-import repository.{AdminDataRepository, DataCacheRepository, MinimalDetailsCacheRepository}
+import repository.{DataCacheRepository, MinimalDetailsCacheRepository}
 
 class HeaderUtilsSpec extends AnyWordSpec with Matchers {
 
@@ -60,7 +60,6 @@ object HeaderUtilsSpec extends MockitoSugar {
     "microservice.services.des-hod.authorizationToken" -> "test-token"
   ).overrides(Seq(
     bind[DataCacheRepository].toInstance(mock[DataCacheRepository]),
-    bind[AdminDataRepository].toInstance(mock[AdminDataRepository]),
     bind[MinimalDetailsCacheRepository].toInstance(mock[MinimalDetailsCacheRepository])
   )).build()
 
