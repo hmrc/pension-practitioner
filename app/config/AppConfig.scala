@@ -17,11 +17,11 @@
 package config
 
 import javax.inject.{Inject, Singleton}
-import play.api.Configuration
+import play.api.{Configuration, Environment, Mode}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 @Singleton
-class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig) {
+class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig, env: Environment) {
 
   lazy val appName: String = config.get[String](path = "appName")
 
@@ -47,5 +47,10 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
   lazy val pspDeAuthorisationUrl: String = s"$ifURL${config.get[String](path = "serviceUrls.psp-de-authorisation")}"
   lazy val minimalDetailsUrl: String = s"$ifURL${config.get[String]("serviceUrls.minimal-details")}"
   lazy val listOfSchemesUrl: String = s"$baseUrlPensionsScheme${config.get[String]("serviceUrls.listOfSchemes")}"
+
+  val mongoEncryptionKey: Option[String] = config.getOptional[String]("mongodb.encryption.key") match {
+      case None if env.mode == Mode.Prod => throw new RuntimeException("Encryption key is not set")
+      case x => x
+    }
 
 }
