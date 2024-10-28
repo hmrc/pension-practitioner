@@ -1,6 +1,5 @@
 import play.sbt.routes.RoutesKeys
 import sbt.Keys.scalacOptions
-import uk.gov.hmrc.DefaultBuildSettings.integrationTestSettings
 
 val appName = "pension-practitioner"
 
@@ -21,8 +20,6 @@ lazy val microservice = Project(appName, file("."))
   .settings(
     Test / parallelExecution := true
   )
-  .configs(IntegrationTest)
-  .settings(integrationTestSettings(): _*)
   .settings(CodeCoverageSettings.settings: _*)
   .settings(
     Test / fork := true,
