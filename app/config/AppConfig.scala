@@ -48,9 +48,6 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig,
   lazy val minimalDetailsUrl: String = s"$ifURL${config.get[String]("serviceUrls.minimal-details")}"
   lazy val listOfSchemesUrl: String = s"$baseUrlPensionsScheme${config.get[String]("serviceUrls.listOfSchemes")}"
 
-  val mongoEncryptionKey: Option[String] = config.getOptional[String]("mongodb.encryption.key") match {
-      case None if env.mode == Mode.Prod => throw new RuntimeException("Encryption key is not set")
-      case x => x
-    }
+  val mongoEncryptionKey: Option[String] = config.getOptional[String]("mongodb.encryption.key")
 
 }
