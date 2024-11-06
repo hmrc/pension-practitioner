@@ -17,9 +17,9 @@
 package service
 
 import com.google.inject.Inject
-import crypto.{DataEncryptor, EncryptedValue}
+import crypto.{EncryptedValue, SecureGCMCipher}
 import org.mongodb.scala.MongoCollection
-import play.api.libs.json.{JsObject, JsValue}
+import play.api.libs.json.{JsObject, JsValue, Json}
 import play.api.{Configuration, Logging}
 import repository.{DataCacheRepository, MinimalDetailsCacheRepository}
 import uk.gov.hmrc.mongo.MongoComponent
@@ -28,15 +28,16 @@ import uk.gov.hmrc.mongo.lock.{LockService, MongoLockRepository}
 import java.util.concurrent.TimeUnit
 import scala.concurrent.duration.{Duration, DurationInt}
 import scala.concurrent.{Await, ExecutionContext, Future}
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 class MigrationService @Inject()(mongoLockRepository: MongoLockRepository,
                                  mongoComponent: MongoComponent,
                                  dataCacheRepository: DataCacheRepository,
                                  minimalDetailsCacheRepository: MinimalDetailsCacheRepository,
-                                 dataEncryptor: DataEncryptor,
+                                 cipher: SecureGCMCipher,
                                  configuration: Configuration)(implicit ec: ExecutionContext) extends Logging {
-   private val lock = LockService(mongoLockRepository, "pension_practitioner_mongodb_migration_lock", Duration(10, TimeUnit.MINUTES))
+  private val lock = LockService(mongoLockRepository, "pension_practitioner_mongodb_migration_lock", Duration(10, TimeUnit.MINUTES))
+  private val encryptionKey = configuration.get[String]("mongodb.migration.encryptionKey")
 
   private def encryptCollections() = {
     logger.warn("[PODS-9952] Started encrypting collection")
@@ -48,7 +49,7 @@ class MigrationService @Inject()(mongoLockRepository: MongoLockRepository,
           if(alreadyEncrypted) {
             None
           } else {
-            val encryptedData = dataEncryptor.encrypt((jsValue \ "id").as[String], data.as[JsValue])
+            val encryptedData = Json.toJson(cipher.encrypt(data.as[JsValue].toString(), (jsValue \ "id").as[String], encryptionKey))
             val encryptedJsValue = (jsValue.as[JsObject] - "data") + ("data" -> encryptedData)
             Some(encryptedJsValue)
           }
@@ -61,7 +62,13 @@ class MigrationService @Inject()(mongoLockRepository: MongoLockRepository,
         val successfulInserts = newEncryptedValues.map { jsValue =>
           val id = (jsValue \ "id").as[String]
           val data = (jsValue \ "data").as[JsValue]
-          Try(Await.result(idAndDataToSave(id, data), 5.seconds)).toOption.isDefined
+          Try(Await.result(idAndDataToSave(id, data), 5.seconds)) match {
+            case Failure(exception) =>
+              logger.error(s"[PODS-9952] upsert failed", exception)
+              false
+            case Success(value) =>
+              true
+          }
         }.count(_ == true)
 
         logger.warn(s"[PODS-9952] Number of documents upserted for $collectionName: $successfulInserts")
@@ -78,14 +85,14 @@ class MigrationService @Inject()(mongoLockRepository: MongoLockRepository,
   }
 
   private def decryptCollections() = {
-    logger.warn("[PODS-9952] Started encrypting collection")
+    logger.warn("[PODS-9952] Started decrypting collection")
     def decryptCollection(collection: MongoCollection[JsValue], collectionName: String, idAndDataToSave: (String, JsValue) => Future[Unit]) = {
       collection.find().toFuture().map(seqJsValue => {
         val newDecryptedValues = seqJsValue.flatMap { jsValue =>
           val data = jsValue \ "data"
           val alreadyEncrypted = data.validate[EncryptedValue].fold(_ => false, _ => true)
           if(alreadyEncrypted) {
-            val decryptedData = dataEncryptor.decrypt((jsValue \ "id").as[String], data.as[JsValue])
+            val decryptedData = Json.parse(cipher.decrypt(data.as[EncryptedValue], (jsValue \ "id").as[String], encryptionKey))
             val decryptedJsValue = (jsValue.as[JsObject] - "data") + ("data" -> decryptedData)
             Some(decryptedJsValue)
           } else {
@@ -100,7 +107,13 @@ class MigrationService @Inject()(mongoLockRepository: MongoLockRepository,
         val successfulInserts = newDecryptedValues.map { jsValue =>
           val id = (jsValue \ "id").as[String]
           val data = (jsValue \ "data").as[JsValue]
-          Try(Await.result(idAndDataToSave(id, data), 5.seconds)).toOption.isDefined
+          Try(Await.result(idAndDataToSave(id, data), 5.seconds)) match {
+            case Failure(exception) =>
+              logger.error(s"[PODS-9952] upsert failed", exception)
+              false
+            case Success(value) =>
+              true
+          }
         }.count(_ == true)
 
         logger.warn(s"[PODS-9952] Number of documents upserted for $collectionName: $successfulInserts")
