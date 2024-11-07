@@ -23,11 +23,13 @@ import org.mockito.Mockito._
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AsyncWordSpec
 import org.scalatestplus.mockito.MockitoSugar
+import play.api.inject.NewInstanceInjector.instanceOf
 import play.api.libs.json.Json
-import play.api.mvc.AnyContentAsEmpty
+import play.api.mvc.{AnyContentAsEmpty, BodyParsers}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repository.MinimalDetailsCacheRepository
+import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -138,8 +140,10 @@ object MinimalDetailsControllerSpec extends MockitoSugar {
 
   val mockMinimalConnector: MinimalConnector = mock[MinimalConnector]
   val mockMinimalDetailsCacheRepository: MinimalDetailsCacheRepository = mock[MinimalDetailsCacheRepository]
+  private val mockAuthConnector: AuthConnector = mock[AuthConnector]
 
   def controller: MinimalDetailsController = new MinimalDetailsController(mockMinimalConnector, mockMinimalDetailsCacheRepository,
-    stubControllerComponents())
+    stubControllerComponents(),
+    new actions.AuthAction(mockAuthConnector, instanceOf[BodyParsers.Default]))
 
 }

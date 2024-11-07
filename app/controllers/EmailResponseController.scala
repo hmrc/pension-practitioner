@@ -18,6 +18,7 @@ package controllers
 
 import audit._
 import com.google.inject.Inject
+import controllers.actions.AuthAction
 import models.enumeration.JourneyType
 import models.{EmailEvents, Opened}
 import play.api.Logger
@@ -35,7 +36,8 @@ class EmailResponseController @Inject()(
                                          cc: ControllerComponents,
                                          crypto: ApplicationCrypto,
                                          parser: PlayBodyParsers,
-                                         val authConnector: AuthConnector)
+                                         val authConnector: AuthConnector,
+                                         authAction: AuthAction)
                                        (implicit ec: ExecutionContext)
   extends BackendController(cc) with AuthorisedFunctions {
 
@@ -43,7 +45,8 @@ class EmailResponseController @Inject()(
 
   private val logger = Logger(classOf[EmailResponseController])
 
-  def retrieveStatus(journeyType: JourneyType.Name, requestId: String, email: String, encryptedPspId: String): Action[JsValue] = Action(parser.tolerantJson) {
+  def retrieveStatus(journeyType: JourneyType.Name, requestId: String, email: String, encryptedPspId: String): Action[JsValue] =
+    authAction(parser.tolerantJson) {
     implicit request =>
       validatePspIdEmail(encryptedPspId, email) match {
         case Right(Tuple2(pspId, emailAddress)) =>
@@ -79,7 +82,7 @@ class EmailResponseController @Inject()(
   def retrieveStatusForPSPDeregistration(
                                           encryptedPspId: String,
                                           encryptedEmail: String
-                                        ): Action[JsValue] = Action(parser.tolerantJson) {
+                                        ): Action[JsValue] = authAction(parser.tolerantJson) {
     implicit request =>
       decryptAndValidateDetailsForPSPDereg(encryptedPspId, encryptedEmail) match {
         case Right(Tuple2(pspId, email)) =>

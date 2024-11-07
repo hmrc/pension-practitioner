@@ -31,10 +31,11 @@ import scala.concurrent.{ExecutionContext, Future}
 class MinimalDetailsController @Inject()(
                                           minimalConnector: MinimalConnector,
                                           minimalDetailsCacheRepository: MinimalDetailsCacheRepository,
-                                          cc: ControllerComponents
+                                          cc: ControllerComponents,
+                                          authAction: actions.AuthAction
                                         )(implicit ec: ExecutionContext) extends BackendController(cc) with ErrorHandler with HttpResponseHelper {
 
-  def getMinimalDetails: Action[AnyContent] = Action.async {
+  def getMinimalDetails: Action[AnyContent] = authAction.async {
     implicit request =>
       retrieveIdAndTypeFromHeaders { (idValue, idType, regime) =>
         getMinimalDetail(idValue, idType, regime).map {

@@ -18,6 +18,7 @@ package controllers
 
 import com.google.inject.Inject
 import connectors.AssociationConnector
+import controllers.actions.AuthAction
 import play.api.Logger
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions}
@@ -31,7 +32,8 @@ class AssociationController @Inject()(
                                        override val authConnector: AuthConnector,
                                        associationConnector: AssociationConnector,
                                        cc: ControllerComponents,
-                                       util: AuthUtil
+                                       util: AuthUtil,
+                                       authAction: AuthAction
                                      )(implicit ec: ExecutionContext)
   extends BackendController(cc)
     with HttpResponseHelper
@@ -40,7 +42,7 @@ class AssociationController @Inject()(
 
   private val logger = Logger(classOf[AssociationController])
 
-  def authorisePsp: Action[AnyContent] = Action.async {
+  def authorisePsp: Action[AnyContent] = authAction.async {
     implicit request =>
       util.doAuth { _ =>
         val feJson = request.body.asJson
@@ -59,7 +61,7 @@ class AssociationController @Inject()(
       }
   }
 
-  def deAuthorisePsp: Action[AnyContent] = Action.async {
+  def deAuthorisePsp: Action[AnyContent] = authAction.async {
     implicit request =>
       util.doAuth { _ =>
         val feJson = request.body.asJson

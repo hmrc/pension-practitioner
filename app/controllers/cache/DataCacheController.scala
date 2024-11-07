@@ -17,6 +17,7 @@
 package controllers.cache
 
 import com.google.inject.Inject
+import controllers.actions.AuthAction
 import play.api.Logger
 import play.api.mvc._
 import repository.DataCacheRepository
@@ -30,14 +31,15 @@ import scala.concurrent.{ExecutionContext, Future}
 class DataCacheController @Inject()(
                                      repository: DataCacheRepository,
                                      val authConnector: AuthConnector,
-                                     cc: ControllerComponents
+                                     cc: ControllerComponents,
+                                     authAction: AuthAction
                                    )(implicit ec: ExecutionContext) extends BackendController(cc) with AuthorisedFunctions {
 
   import DataCacheController._
 
   private val logger = Logger(classOf[DataCacheController])
 
-  def save: Action[AnyContent] = Action.async {
+  def save: Action[AnyContent] = authAction.async {
     implicit request =>
       getId { id =>
         request.body.asJson.map {

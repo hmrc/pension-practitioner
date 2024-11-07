@@ -34,13 +34,14 @@ class RegistrationController @Inject()(
                                         override val authConnector: AuthConnector,
                                         registerConnector: RegistrationConnector,
                                         cc: ControllerComponents,
-                                        util: AuthUtil
+                                        util: AuthUtil,
+                                        authAction: actions.AuthAction
                                       )(implicit ec: ExecutionContext)
   extends BackendController(cc)
     with ErrorHandler
     with AuthorisedFunctions {
 
-  def registerWithIdIndividual: Action[AnyContent] = Action.async {
+  def registerWithIdIndividual: Action[AnyContent] = authAction.async {
     implicit request => {
       util.doAuth { externalId =>
         request.headers.get("nino") match {
@@ -57,7 +58,7 @@ class RegistrationController @Inject()(
     }
   }
 
-  def registerWithIdOrganisation: Action[AnyContent] = Action.async {
+  def registerWithIdOrganisation: Action[AnyContent] = authAction.async {
     implicit request => {
       util.doAuth { externalId =>
         (request.headers.get("utr"), request.body.asJson) match {
@@ -81,7 +82,7 @@ class RegistrationController @Inject()(
     }
   }
 
-  def registrationNoIdIndividual: Action[RegisterWithoutIdIndividualRequest] = Action.async(parse.json[RegisterWithoutIdIndividualRequest]) {
+  def registrationNoIdIndividual: Action[RegisterWithoutIdIndividualRequest] = authAction.async(parse.json[RegisterWithoutIdIndividualRequest]) {
     implicit request => {
       util.doAuth { externalId =>
         registerConnector.registrationNoIdIndividual(externalId, request.body).map {
@@ -92,7 +93,7 @@ class RegistrationController @Inject()(
     }
   }
 
-  def registrationNoIdOrganisation: Action[OrganisationRegistrant] = Action.async(parse.json[OrganisationRegistrant]) {
+  def registrationNoIdOrganisation: Action[OrganisationRegistrant] = authAction.async(parse.json[OrganisationRegistrant]) {
     implicit request => {
       util.doAuth { externalId =>
         registerConnector.registrationNoIdOrganisation(externalId, request.body).map {

@@ -37,7 +37,8 @@ class SubscriptionController @Inject()(
                                         schemeConnector: SchemeConnector,
                                         pspSubscriptionTransformer: PSPSubscriptionTransformer,
                                         cc: ControllerComponents,
-                                        util: AuthUtil
+                                        util: AuthUtil,
+                                        authAction: actions.AuthAction
                                       )(implicit ec: ExecutionContext) extends BackendController(cc)
   with AuthorisedFunctions
   with HttpResponseHelper
@@ -45,7 +46,7 @@ class SubscriptionController @Inject()(
 
   private val logger = Logger(classOf[SubscriptionController])
 
-  def subscribePsp(journeyType: JourneyType.Name): Action[AnyContent] = Action.async { implicit request =>
+  def subscribePsp(journeyType: JourneyType.Name): Action[AnyContent] = authAction.async { implicit request =>
     util.doAuth { externalId =>
       val feJson = request.body.asJson
       logger.debug(s"[PSP-Subscription-Incoming-Payload]$feJson")
@@ -66,7 +67,7 @@ class SubscriptionController @Inject()(
     }
   }
 
-  def getPspDetails: Action[AnyContent] = Action.async {
+  def getPspDetails: Action[AnyContent] = authAction.async {
     implicit request =>
       util.doAuth { _ =>
         val pspId = request.headers.get("pspId")
@@ -83,7 +84,7 @@ class SubscriptionController @Inject()(
       }
   }
 
-  def deregisterPsp(pspId: String): Action[AnyContent] = Action.async { implicit request =>
+  def deregisterPsp(pspId: String): Action[AnyContent] = authAction.async { implicit request =>
     util.doAuth { _ =>
       val feJson = request.body.asJson
       logger.debug(s"[PSP-Deregistration-Payload]$feJson")
@@ -99,7 +100,7 @@ class SubscriptionController @Inject()(
     }
   }
 
-  def canDeregister(pspId: String): Action[AnyContent] = Action.async {
+  def canDeregister(pspId: String): Action[AnyContent] = authAction.async {
     implicit request =>
       schemeConnector.listOfSchemes(pspId).map {
         case Right(jsValue) =>
