@@ -17,72 +17,45 @@
 package controllers.cache
 
 import com.google.inject.Inject
-import controllers.actions.AuthAction
+import controllers.actions.NoEnrolmentAuthAction
 import play.api.Logger
 import play.api.mvc._
 import repository.DataCacheRepository
-import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
-import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions}
-import uk.gov.hmrc.http.{HeaderCarrier, UnauthorizedException}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class DataCacheController @Inject()(
                                      repository: DataCacheRepository,
-                                     val authConnector: AuthConnector,
                                      cc: ControllerComponents,
-                                     authAction: AuthAction
-                                   )(implicit ec: ExecutionContext) extends BackendController(cc) with AuthorisedFunctions {
-
-  import DataCacheController._
+                                     authAction: NoEnrolmentAuthAction
+                                   )(implicit ec: ExecutionContext) extends BackendController(cc) {
 
   private val logger = Logger(classOf[DataCacheController])
 
   def save: Action[AnyContent] = authAction.async {
     implicit request =>
-      getId { id =>
         request.body.asJson.map {
           jsValue =>
-            repository.save(id, jsValue)
+            repository.save(request.externalId, jsValue)
               .map(_ => Created)
         } getOrElse Future.successful(BadRequest)
-      }
+
   }
 
-  def get: Action[AnyContent] = Action.async {
+  def get: Action[AnyContent] = authAction.async {
     implicit request =>
-      getId { id =>
-        repository.get(id).map { response =>
-          logger.debug(message = s"DataCacheController.get: Response for request Id $id is $response")
+        repository.get(request.externalId).map { response =>
+          logger.debug(message = s"DataCacheController.get: Response for request Id ${request.externalId} is $response")
           response.map {
             Ok(_)
           } getOrElse NotFound
-        }
       }
   }
 
-  def remove: Action[AnyContent] = Action.async {
+  def remove: Action[AnyContent] = authAction.async {
     implicit request =>
-      getId { id =>
-        repository.remove(id).map(_ => Ok)
-      }
+        repository.remove(request.externalId).map(_ => Ok)
   }
-
-  private def getId(block: String => Future[Result])
-                   (implicit hc: HeaderCarrier): Future[Result] = {
-    authorised().retrieve(Retrievals.externalId) {
-      case Some(id) =>
-        block(id)
-      case _ => Future.failed(CredIdNotFoundFromAuth())
-    }
-  }
-
-}
-
-object DataCacheController {
-
-  case class CredIdNotFoundFromAuth(msg: String = "Not Authorised - Unable to retrieve credentials - id")
-    extends UnauthorizedException(msg)
 
 }

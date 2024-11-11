@@ -32,7 +32,7 @@ class MinimalDetailsController @Inject()(
                                           minimalConnector: MinimalConnector,
                                           minimalDetailsCacheRepository: MinimalDetailsCacheRepository,
                                           cc: ControllerComponents,
-                                          authAction: actions.AuthAction
+                                          authAction: actions.PsaPspAuthAction
                                         )(implicit ec: ExecutionContext) extends BackendController(cc) with ErrorHandler with HttpResponseHelper {
 
   def getMinimalDetails: Action[AnyContent] = authAction.async {

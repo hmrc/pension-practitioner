@@ -18,7 +18,7 @@ package service
 
 import models.FeatureToggle.Disabled
 import models.FeatureToggleName.PspFromIvToPdv
-import models.{ToggleDetails, _}
+import models._
 import play.api.cache.AsyncCacheApi
 import repository.{AdminDataRepository, ToggleDataRepository}
 

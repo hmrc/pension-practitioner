@@ -21,28 +21,29 @@ import play.api.mvc.Results._
 import play.api.mvc._
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
+import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
-import uk.gov.hmrc.auth.core.retrieve.~
-case class AuthRequest[A](request: Request[A], psaId: String, externalId: String) extends WrappedRequest[A](request)
+case class PsaPspAuthRequest[A](request: Request[A], psaId: Option[String], pspId: Option[String], externalId: String) extends WrappedRequest[A](request)
 
-class AuthAction @Inject()(
+class PsaPspAuthAction @Inject()(
                             override val authConnector: AuthConnector,
                             val parser: BodyParsers.Default
                           )(implicit val executionContext: ExecutionContext)
-  extends ActionBuilder[AuthRequest, AnyContent]
-    with ActionFunction[Request, AuthRequest]
+  extends ActionBuilder[PsaPspAuthRequest, AnyContent]
+    with ActionFunction[Request, PsaPspAuthRequest]
     with AuthorisedFunctions
     with Logging {
 
+  private val PSPEnrolmentKey: String = "HMRC-PODSPP-ORG"
+  private val PSPEnrolmentIdKey: String = "PspID"
   private val PSAEnrolmentKey: String = "HMRC-PODS-ORG"
   private val PSAEnrolmentIdKey: String = "PsaID"
-
-  def getEnrolmentIdentifier(
+  private def getEnrolmentIdentifier(
                               enrolments: Enrolments,
                               enrolmentKey: String,
                               enrolmentIdKey: String
@@ -54,26 +55,27 @@ class AuthAction @Inject()(
     yield identifier.value
 
   override def
-  invokeBlock[A](request: Request[A], block: AuthRequest[A] => Future[Result]): Future[Result] =
+  invokeBlock[A](request: Request[A], block: PsaPspAuthRequest[A] => Future[Result]): Future[Result] =
     invoke(request, block)(HeaderCarrierConverter.fromRequest(request))
 
-  def invoke[A](request: Request[A], block: AuthRequest[A] => Future[Result])
+  private def invoke[A](request: Request[A], block: PsaPspAuthRequest[A] => Future[Result])
                (implicit hc: HeaderCarrier): Future[Result] = {
-    authorised(Enrolment(PSAEnrolmentKey)).retrieve(Retrievals.authorisedEnrolments and Retrievals.externalId) {
+    authorised(Enrolment(PSAEnrolmentKey) or Enrolment(PSPEnrolmentKey)).retrieve(Retrievals.authorisedEnrolments and Retrievals.externalId) {
       case enrolments ~ Some(externalId) =>
-        val psaEnrolmentId = getEnrolmentIdentifier(
+        val psaId = getEnrolmentIdentifier(
           enrolments,
           PSAEnrolmentKey,
           PSAEnrolmentIdKey
         )
 
-        psaEnrolmentId.map {
-            psaId =>
-              block(AuthRequest(request, psaId, externalId))
-          }
-          .getOrElse {
-            Future.failed(InsufficientEnrolments(s"Unable to retrieve enrolment for either $PSAEnrolmentKey"))
-          }
+        val pspId = getEnrolmentIdentifier(
+          enrolments,
+          PSPEnrolmentKey,
+          PSPEnrolmentIdKey
+        )
+
+        block(PsaPspAuthRequest(request, psaId, pspId, externalId))
+
       case _ => Future.failed(new RuntimeException("No externalId found"))
     }
   } recover {

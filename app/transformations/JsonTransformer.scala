@@ -16,7 +16,7 @@
 
 package transformations
 
-import play.api.libs.json.{JsObject, JsPath, JsString, Json, Reads, __}
+import play.api.libs.json._
 
 trait JsonTransformer {
 
