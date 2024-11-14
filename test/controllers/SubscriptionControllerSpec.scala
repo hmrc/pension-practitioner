@@ -106,7 +106,8 @@ class SubscriptionControllerSpec extends AsyncWordSpec with Matchers with Mockit
 
   "subscribePsp" must {
     "return OK when valid response from API" in {
-
+      reset(authConnector)
+      AuthUtils.noEnrolmentAuthStub(authConnector)
       when(mockSubscriptionConnector.pspSubscription(any(), any())(any(), any()))
         .thenReturn(Future.successful(Right(HttpResponse(OK, response.toString))))
 
@@ -115,7 +116,8 @@ class SubscriptionControllerSpec extends AsyncWordSpec with Matchers with Mockit
     }
 
     "throw Upstream5XXResponse on Internal Server Error from API" in {
-
+      reset(authConnector)
+      AuthUtils.noEnrolmentAuthStub(authConnector)
       when(mockSubscriptionConnector.pspSubscription(any(), any())(any(), any()))
         .thenReturn(Future.failed(UpstreamErrorResponse(message = "Internal Server Error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR)))
 

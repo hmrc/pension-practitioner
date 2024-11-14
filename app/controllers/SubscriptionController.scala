@@ -35,14 +35,15 @@ class SubscriptionController @Inject()(
                                         schemeConnector: SchemeConnector,
                                         pspSubscriptionTransformer: PSPSubscriptionTransformer,
                                         cc: ControllerComponents,
-                                        authAction: actions.NoEnrolmentAuthAction
+                                        authAction: actions.PsaPspAuthAction,
+                                        noEnrolmentAuthAction: actions.NoEnrolmentAuthAction
                                       )(implicit ec: ExecutionContext) extends BackendController(cc)
   with HttpResponseHelper
   with ErrorHandler {
 
   private val logger = Logger(classOf[SubscriptionController])
 
-  def subscribePsp(journeyType: JourneyType.Name): Action[AnyContent] = authAction.async { implicit request =>
+  def subscribePsp(journeyType: JourneyType.Name): Action[AnyContent] = noEnrolmentAuthAction.async { implicit request =>
       val feJson = request.body.asJson
       logger.debug(s"[PSP-Subscription-Incoming-Payload]$feJson")
       feJson match {
