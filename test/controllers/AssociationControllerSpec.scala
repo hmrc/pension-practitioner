@@ -66,7 +66,8 @@ class AssociationControllerSpec
   val controller: AssociationController = application.injector.instanceOf[AssociationController]
 
   before {
-    reset(mockAssociationConnector, authConnector)
+    reset(mockAssociationConnector)
+    reset(authConnector)
     when(authConnector.authorise[Option[String]](any(), any())(any(), any()))
       .thenReturn(Future.successful(Some("Ext-137d03b9-d807-4283-a254-fb6c30aceef1")))
   }
