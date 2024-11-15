@@ -118,6 +118,8 @@ To access the **Scheme Registration journey**, enter the following information:
 
 For further information on the PODS Test Approach and wider testing including acceptance, accessibility, performance, security and E2E testing, visit the PODS Confluence page [here](https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?spaceKey=PODSP&title=PODS+Test+Approach).
 
+For Journey Tests, visit the [Journey Test Repository](| Journey tests(https://github.com/hmrc/pods-journey-tests).
+
 View the prototype [here](https://pods-event-reporting-prototype.herokuapp.com/).
 
 
