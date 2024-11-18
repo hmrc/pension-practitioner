@@ -20,22 +20,34 @@ import connectors.MinimalConnector
 import models._
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
+import org.scalatest.BeforeAndAfter
 import org.scalatest.matchers.must.Matchers
-import org.scalatest.wordspec.AsyncWordSpec
 import org.scalatestplus.mockito.MockitoSugar
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.libs.json.Json
-import play.api.mvc.AnyContentAsEmpty
+import play.api.mvc.{AnyContentAsEmpty, BodyParsers}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repository.MinimalDetailsCacheRepository
+import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http._
+import utils.AuthUtils
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class MinimalDetailsControllerSpec extends AsyncWordSpec with Matchers {
+class MinimalDetailsControllerSpec extends PlaySpec with Matchers with GuiceOneAppPerSuite with BeforeAndAfter {
 
   import MinimalDetailsControllerSpec._
+
+  def controller: MinimalDetailsController = new MinimalDetailsController(mockMinimalConnector, mockMinimalDetailsCacheRepository,
+    stubControllerComponents(),
+    new actions.PsaPspAuthAction(mockAuthConnector, app.injector.instanceOf[BodyParsers.Default]))
+
+  before {
+    AuthUtils.authStub(mockAuthConnector)
+  }
 
   "getMinimalDetails" must {
 
@@ -138,8 +150,6 @@ object MinimalDetailsControllerSpec extends MockitoSugar {
 
   val mockMinimalConnector: MinimalConnector = mock[MinimalConnector]
   val mockMinimalDetailsCacheRepository: MinimalDetailsCacheRepository = mock[MinimalDetailsCacheRepository]
-
-  def controller: MinimalDetailsController = new MinimalDetailsController(mockMinimalConnector, mockMinimalDetailsCacheRepository,
-    stubControllerComponents())
+  private val mockAuthConnector: AuthConnector = mock[AuthConnector]
 
 }

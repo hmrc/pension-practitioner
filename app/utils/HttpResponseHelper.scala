@@ -16,8 +16,8 @@
 
 package utils
 
-import org.apache.pekko.util.ByteString
 import com.fasterxml.jackson.core.JsonParseException
+import org.apache.pekko.util.ByteString
 import play.api.Logger
 import play.api.http.HttpEntity
 import play.api.http.Status._

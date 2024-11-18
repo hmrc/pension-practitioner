@@ -16,6 +16,7 @@
 
 package controllers.cache
 
+import controllers.actions.CredIdNotFoundFromAuth
 import org.apache.pekko.util.ByteString
 import org.mockito.ArgumentMatchers.{eq => eqTo, _}
 import org.mockito.Mockito._
@@ -36,8 +37,6 @@ import java.util.concurrent.ThreadLocalRandom
 import scala.concurrent.Future
 
 class DataCacheControllerSpec extends AnyWordSpec with Matchers with MockitoSugar with BeforeAndAfter {
-
-  import DataCacheController._
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
