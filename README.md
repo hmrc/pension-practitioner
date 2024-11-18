@@ -1,15 +1,13 @@
 # Pension Practitioner
 
-## Contents
 - [Overview](#overview)
 - [Requirements](#requirements)
 - [Running the Service](#running-the-service)
 - [Enrolments](#enrolments)
 - [Compile & Test](#compile--test)
-- [Identity Verification Testing](#identity-verification-testing)
 - [Navigation and Dependent Services](#navigation-and-dependent-services)
 - [Service Documentation](#service-documentation)
-- [Endpoints Used](#endpoints-used)
+- [Endpoints Used](#endpoints)
 - [License](#license)
 
 ## Overview
@@ -142,11 +140,13 @@ The Pension Practitioner Frontend integrates with the Manage Pension Schemes (MP
 There are numerous APIs implemented throughout the MPS architecture, and the relevant endpoints are illustrated below. For an overview of all PODS APIs, refer to the [PODS API Documentation](https://confluence.tools.tax.service.gov.uk/display/PODSP/PODS+API+Latest+Version).
 
 
-## Service-Specific Documentation [To Do]
+## Service Documentation
+[To Do]
 Include relevant links or details to any additional, service-specific documents (e.g., stubs, testing protocols) when available. 
 
 
-## API Endpoints [To Do]
+## Endpoints
+[To Do]
 
 | *Task*                                                                  | *Supported Methods* | *Description*                                                                                            |
 |-------------------------------------------------------------------------|---------------------|----------------------------------------------------------------------------------------------------------|
@@ -175,4 +175,4 @@ This code is open source software Licensed under the Apache License, Version 2.0
 
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 
-[Back to Top](#pension-practitioner)
+[↥ Back to Top](#pension-practitioner)
