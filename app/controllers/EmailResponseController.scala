@@ -35,15 +35,17 @@ class EmailResponseController @Inject()(
                                          cc: ControllerComponents,
                                          crypto: ApplicationCrypto,
                                          parser: PlayBodyParsers,
-                                         val authConnector: AuthConnector)
+                                         val authConnector: AuthConnector
+                                       )
                                        (implicit ec: ExecutionContext)
-  extends BackendController(cc) with AuthorisedFunctions {
+  extends BackendController(cc) {
 
   import EmailResponseController._
 
   private val logger = Logger(classOf[EmailResponseController])
 
-  def retrieveStatus(journeyType: JourneyType.Name, requestId: String, email: String, encryptedPspId: String): Action[JsValue] = Action(parser.tolerantJson) {
+  def retrieveStatus(journeyType: JourneyType.Name, requestId: String, email: String, encryptedPspId: String): Action[JsValue] =
+    Action(parser.tolerantJson) {
     implicit request =>
       validatePspIdEmail(encryptedPspId, email) match {
         case Right(Tuple2(pspId, emailAddress)) =>

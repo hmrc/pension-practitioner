@@ -36,6 +36,7 @@ import transformations.userAnswersToDes.PSPSubscriptionTransformer
 import transformations.userAnswersToDes.PSPSubscriptionTransformerSpec._
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http._
+import utils.AuthUtils
 
 import scala.concurrent.Future
 
@@ -100,13 +101,13 @@ class SubscriptionControllerSpec extends AsyncWordSpec with Matchers with Mockit
     reset(mockSubscriptionConnector)
     reset(mockPspSubscriptionTransformer)
     reset(authConnector)
-    when(authConnector.authorise[Option[String]](any(), any())(any(), any()))
-      .thenReturn(Future.successful(Some("Ext-137d03b9-d807-4283-a254-fb6c30aceef1")))
+    AuthUtils.authStub(authConnector)
   }
 
   "subscribePsp" must {
     "return OK when valid response from API" in {
-
+      reset(authConnector)
+      AuthUtils.noEnrolmentAuthStub(authConnector)
       when(mockSubscriptionConnector.pspSubscription(any(), any())(any(), any()))
         .thenReturn(Future.successful(Right(HttpResponse(OK, response.toString))))
 
@@ -115,7 +116,8 @@ class SubscriptionControllerSpec extends AsyncWordSpec with Matchers with Mockit
     }
 
     "throw Upstream5XXResponse on Internal Server Error from API" in {
-
+      reset(authConnector)
+      AuthUtils.noEnrolmentAuthStub(authConnector)
       when(mockSubscriptionConnector.pspSubscription(any(), any())(any(), any()))
         .thenReturn(Future.failed(UpstreamErrorResponse(message = "Internal Server Error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR)))
 
