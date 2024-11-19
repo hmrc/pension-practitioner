@@ -66,7 +66,8 @@ class RegistrationControllerSpec
   implicit val mat: Materializer = application.materializer
 
   before {
-    reset(mockRegistrationConnector, authConnector)
+    reset(mockRegistrationConnector)
+    reset(authConnector)
     when(authConnector.authorise[Option[String]](any(), any())(any(), any())) thenReturn Future.successful(Some(externalId))
   }
   private val controller = application.injector.instanceOf[RegistrationController]

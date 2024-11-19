@@ -67,7 +67,8 @@ class AssociationControllerSpec
   val controller: AssociationController = application.injector.instanceOf[AssociationController]
 
   before {
-    reset(mockAssociationConnector, authConnector)
+    reset(mockAssociationConnector)
+    reset(authConnector)
     AuthUtils.authStub(authConnector)
   }
 
