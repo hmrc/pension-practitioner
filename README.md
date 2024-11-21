@@ -7,7 +7,7 @@
 - [Compile & Test](#compile--test)
 - [Navigation and Dependent Services](#navigation-and-dependent-services)
 - [Service Documentation](#service-documentation)
-- [Endpoints Used](#endpoints)
+- [Endpoints](#endpoints)
 - [License](#license)
 
 ## Overview
