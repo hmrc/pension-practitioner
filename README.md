@@ -147,8 +147,6 @@ Include relevant links or details to any additional, service-specific documents 
 ## Endpoints
 [To Do]
 
-| *Task*                                                                  | *Supported Methods* | *Description*                                                                                            |
-|-------------------------------------------------------------------------|---------------------|----------------------------------------------------------------------------------------------------------|
 **Standard Path**
 ```POST   /register-with-id/individual```
 
@@ -159,6 +157,7 @@ Registers an individual based on the NINO from ETMP
 |-------------------------------|------------------------------------------|----------------------------------------------|-------------------------------------------|
 | ```INSERT ARGS```             | INSERT REQUEST HERE                      | INSERT RESPONSE HERE                         | INSERT ERROR CODES AND RESPONSES          |
 
+---
 
 **Standard Path**
 ```POST   /register-with-id/organisation```
@@ -170,6 +169,7 @@ Registers an organisation from ETMP based on the UTR
 |-------------------------------|------------------------------------------|----------------------------------------------|-------------------------------------------|
 | ```INSERT ARGS```             | INSERT REQUEST HERE                      | INSERT RESPONSE HERE                         | INSERT ERROR CODES AND RESPONSES          |
 
+---
 
 **Standard Path**
 ```POST   /register-with-no-id/organisation```
@@ -182,6 +182,7 @@ Registers an organisation on ETMP who does not have a UTR. Typically this will b
 | ```INSERT ARGS```             | INSERT REQUEST HERE                      | INSERT RESPONSE HERE                         | INSERT ERROR CODES AND RESPONSES          |
 |     | POST                |   |
 
+---
 
 **Standard Path**
 ```POST   /register-with-no-id/individual```
@@ -193,6 +194,7 @@ Registers an individual on ETMP who does not have a UTR/NINO. Typically this wil
 |-------------------------------|------------------------------------------|----------------------------------------------|-------------------------------------------|
 | ```INSERT ARGS```             | INSERT REQUEST HERE                      | INSERT RESPONSE HERE                         | INSERT ERROR CODES AND RESPONSES          |
 
+---
 
 **Standard Path**
 ```GET   /journey-cache```
@@ -204,6 +206,7 @@ Returns the data from Psp Data Cache
 |-------------------------------|------------------------------------------|----------------------------------------------|-------------------------------------------|
 | ```INSERT ARGS```             | INSERT REQUEST HERE                      | INSERT RESPONSE HERE                         | INSERT ERROR CODES AND RESPONSES          |
 
+---
 
 **Standard Path**
 ```POST   /journey-cache```
@@ -215,6 +218,7 @@ Saves the data to Psp Data Cache
 |-------------------------------|------------------------------------------|----------------------------------------------|-------------------------------------------|
 | ```INSERT ARGS```             | INSERT REQUEST HERE                      | INSERT RESPONSE HERE                         | INSERT ERROR CODES AND RESPONSES          |
 
+---
 
 **Standard Path**
 ```DELETE   /journey-cache```
@@ -226,6 +230,7 @@ Delete the data from Psp Data Cache
 |-------------------------------|------------------------------------------|----------------------------------------------|-------------------------------------------|
 | ```INSERT ARGS```             | INSERT REQUEST HERE                      | INSERT RESPONSE HERE                         | INSERT ERROR CODES AND RESPONSES          |
 
+---
 
 **Standard Path**
 ```POST   /subscribePsp/:journeyType```
@@ -237,6 +242,7 @@ Subscribe a pension scheme practitioner
 |-------------------------------|------------------------------------------|----------------------------------------------|-------------------------------------------|
 | ```INSERT ARGS```             | INSERT REQUEST HERE                      | INSERT RESPONSE HERE                         | INSERT ERROR CODES AND RESPONSES          |
 
+---
 
 **Standard Path**
 ```GET   /getPsp```
@@ -248,6 +254,7 @@ Get Psp subscription details
 |-------------------------------|------------------------------------------|----------------------------------------------|-------------------------------------------|
 | ```INSERT ARGS```             | INSERT REQUEST HERE                      | INSERT RESPONSE HERE                         | INSERT ERROR CODES AND RESPONSES          |
 
+---
 
 **Standard Path**
 ```POST   /deregisterPsp/:pspId``` 
@@ -259,6 +266,7 @@ De-register a Psp
 |-------------------------------|------------------------------------------|----------------------------------------------|-------------------------------------------|
 | ```INSERT ARGS```             | INSERT REQUEST HERE                      | INSERT RESPONSE HERE                         | INSERT ERROR CODES AND RESPONSES          |
 
+---
 
 **Standard Path**
 ```POST   /authorise-psp```
@@ -270,6 +278,7 @@ Authorise a Psp
 |-------------------------------|------------------------------------------|----------------------------------------------|-------------------------------------------|
 | ```INSERT ARGS```             | INSERT REQUEST HERE                      | INSERT RESPONSE HERE                         | INSERT ERROR CODES AND RESPONSES          |
 
+---
 
 **Standard Path**
 ```POST   /de-authorise-psp```
@@ -281,6 +290,7 @@ De-authorise a Psp
 |-------------------------------|------------------------------------------|----------------------------------------------|-------------------------------------------|
 | ```INSERT ARGS```             | INSERT REQUEST HERE                      | INSERT RESPONSE HERE                         | INSERT ERROR CODES AND RESPONSES          |
 
+---
 
 **Standard Path**
 ```POST   /email-response/:journeyType/:requestId/:email/:pspId```
@@ -292,6 +302,7 @@ Sends an audit event with the correct response returned from an email service
 |-------------------------------|------------------------------------------|----------------------------------------------|-------------------------------------------|
 | ```INSERT ARGS```             | INSERT REQUEST HERE                      | INSERT RESPONSE HERE                         | INSERT ERROR CODES AND RESPONSES          |
 
+---
 
 **Standard Path**
 ```POST   /email-response-psp-dereg/:encryptedPspId/:encryptedEmail```
@@ -303,6 +314,7 @@ Sends an Psp de-registration email with the correct response returned from an em
 |-------------------------------|------------------------------------------|----------------------------------------------|-------------------------------------------|
 | ```INSERT ARGS```             | INSERT REQUEST HERE                      | INSERT RESPONSE HERE                         | INSERT ERROR CODES AND RESPONSES          |
 
+---
 
 **Standard Path**
 ```GET   /get-minimal-details```
@@ -314,6 +326,7 @@ Get minimal Psp details
 |-------------------------------|------------------------------------------|----------------------------------------------|-------------------------------------------|
 | ```INSERT ARGS```             | INSERT REQUEST HERE                      | INSERT RESPONSE HERE                         | INSERT ERROR CODES AND RESPONSES          |
 
+---
 
 **Standard Path**
 ```GET   /can-deregister/:id```
@@ -325,6 +338,7 @@ Can de-register a Psp
 |-------------------------------|------------------------------------------|----------------------------------------------|-------------------------------------------|
 | ```INSERT ARGS```             | INSERT REQUEST HERE                      | INSERT RESPONSE HERE                         | INSERT ERROR CODES AND RESPONSES          |
 
+---
 
 ## License
 This code is open source software Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at:
