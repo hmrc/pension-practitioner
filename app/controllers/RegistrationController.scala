@@ -22,83 +22,72 @@ import models.registerWithId.Organisation
 import models.registerWithoutId.{OrganisationRegistrant, RegisterWithoutIdIndividualRequest}
 import play.api.libs.json.Json
 import play.api.mvc._
-import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.http.{Request => _, _}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import utils.ErrorHandler
 import utils.ValidationUtils._
-import utils.{AuthUtil, ErrorHandler}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class RegistrationController @Inject()(
-                                        override val authConnector: AuthConnector,
                                         registerConnector: RegistrationConnector,
                                         cc: ControllerComponents,
-                                        util: AuthUtil
+                                        authAction: actions.NoEnrolmentAuthAction
                                       )(implicit ec: ExecutionContext)
   extends BackendController(cc)
-    with ErrorHandler
-    with AuthorisedFunctions {
+    with ErrorHandler {
 
-  def registerWithIdIndividual: Action[AnyContent] = Action.async {
+  def registerWithIdIndividual: Action[AnyContent] = authAction.async {
     implicit request => {
-      util.doAuth { externalId =>
-        request.headers.get("nino") match {
-          case Some(nino) =>
-            val registerWithIdData = Json.obj(fields = "regime" -> "PODP", "requiresNameMatch" -> false, "isAnAgent" -> false)
-            registerConnector.registerWithIdIndividual(externalId, nino, registerWithIdData).map {
-              case Right(response) => Ok(Json.toJson(response))
-              case Left(e) => result(e)
-            }
-          case _ =>
-            Future.failed(new BadRequestException(s"Bad Request with missing nino for register with id call for individual"))
-        }
+      request.headers.get("nino") match {
+        case Some(nino) =>
+          val registerWithIdData = Json.obj(fields = "regime" -> "PODP", "requiresNameMatch" -> false, "isAnAgent" -> false)
+          registerConnector.registerWithIdIndividual(request.externalId, nino, registerWithIdData).map {
+            case Right(response) => Ok(Json.toJson(response))
+            case Left(e) => result(e)
+          }
+        case _ =>
+          Future.failed(new BadRequestException(s"Bad Request with missing nino for register with id call for individual"))
       }
     }
   }
 
-  def registerWithIdOrganisation: Action[AnyContent] = Action.async {
+  def registerWithIdOrganisation: Action[AnyContent] = authAction.async {
     implicit request => {
-      util.doAuth { externalId =>
-        (request.headers.get("utr"), request.body.asJson) match {
-          case (Some(utr), Some(jsBody)) =>
-            val registerWithIdData =
-              Json.obj(
-                fields = "regime" -> "PODP",
-                "requiresNameMatch" -> true,
-                "isAnAgent" -> false,
-                "organisation" -> Json.toJson(jsBody.convertTo[Organisation])
-              )
-            registerConnector.registerWithIdOrganisation(externalId, utr, registerWithIdData).map {
-              case Right(response) => Ok(Json.toJson(response))
-              case Left(e) => result(e)
-            }
+      (request.headers.get("utr"), request.body.asJson) match {
+        case (Some(utr), Some(jsBody)) =>
+          val registerWithIdData =
+            Json.obj(
+              fields = "regime" -> "PODP",
+              "requiresNameMatch" -> true,
+              "isAnAgent" -> false,
+              "organisation" -> Json.toJson(jsBody.convertTo[Organisation])
+            )
+          registerConnector.registerWithIdOrganisation(request.externalId, utr, registerWithIdData).map {
+            case Right(response) => Ok(Json.toJson(response))
+            case Left(e) => result(e)
+          }
 
-          case _ =>
-            Future.failed(new BadRequestException("Bad Request with missing utr or request body for register with id call for organisation"))
-        }
+        case _ =>
+          Future.failed(new BadRequestException("Bad Request with missing utr or request body for register with id call for organisation"))
       }
     }
   }
 
-  def registrationNoIdIndividual: Action[RegisterWithoutIdIndividualRequest] = Action.async(parse.json[RegisterWithoutIdIndividualRequest]) {
+  def registrationNoIdIndividual: Action[RegisterWithoutIdIndividualRequest] = authAction.async(parse.json[RegisterWithoutIdIndividualRequest]) {
     implicit request => {
-      util.doAuth { externalId =>
-        registerConnector.registrationNoIdIndividual(externalId, request.body).map {
-          case Right(response) => Ok(Json.toJson(response))
-          case Left(e) => result(e)
-        }
+      registerConnector.registrationNoIdIndividual(request.externalId, request.body).map {
+        case Right(response) => Ok(Json.toJson(response))
+        case Left(e) => result(e)
       }
     }
   }
 
-  def registrationNoIdOrganisation: Action[OrganisationRegistrant] = Action.async(parse.json[OrganisationRegistrant]) {
+  def registrationNoIdOrganisation: Action[OrganisationRegistrant] = authAction.async(parse.json[OrganisationRegistrant]) {
     implicit request => {
-      util.doAuth { externalId =>
-        registerConnector.registrationNoIdOrganisation(externalId, request.body).map {
-          case Right(response) => Ok(Json.toJson(response))
-          case Left(e) => result(e)
-        }
+      registerConnector.registrationNoIdOrganisation(request.externalId, request.body).map {
+        case Right(response) => Ok(Json.toJson(response))
+        case Left(e) => result(e)
       }
     }
   }

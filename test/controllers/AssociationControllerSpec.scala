@@ -32,6 +32,7 @@ import play.api.test.Helpers._
 import repository.{AdminDataRepository, DataCacheRepository, MinimalDetailsCacheRepository}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http._
+import utils.AuthUtils
 
 import scala.concurrent.Future
 
@@ -66,9 +67,9 @@ class AssociationControllerSpec
   val controller: AssociationController = application.injector.instanceOf[AssociationController]
 
   before {
-    reset(mockAssociationConnector, authConnector)
-    when(authConnector.authorise[Option[String]](any(), any())(any(), any()))
-      .thenReturn(Future.successful(Some("Ext-137d03b9-d807-4283-a254-fb6c30aceef1")))
+    reset(mockAssociationConnector)
+    reset(authConnector)
+    AuthUtils.authStub(authConnector)
   }
 
   "authorise PSP" must {

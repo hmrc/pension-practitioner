@@ -17,11 +17,11 @@
 package config
 
 import javax.inject.{Inject, Singleton}
-import play.api.{Configuration, Environment, Mode}
+import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 @Singleton
-class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig, env: Environment) {
+class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig) {
 
   lazy val appName: String = config.get[String](path = "appName")
 
