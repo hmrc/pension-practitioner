@@ -43,7 +43,9 @@ class MinimalDetailsControllerSpec extends PlaySpec with Matchers with GuiceOneA
 
   def controller: MinimalDetailsController = new MinimalDetailsController(mockMinimalConnector, mockMinimalDetailsCacheRepository,
     stubControllerComponents(),
-    new actions.PsaPspAuthAction(mockAuthConnector, app.injector.instanceOf[BodyParsers.Default]))
+    new actions.PsaPspAuthAction(mockAuthConnector, app.injector.instanceOf[BodyParsers.Default]),
+    new actions.PspAuthAction(mockAuthConnector, app.injector.instanceOf[BodyParsers.Default])
+  )
 
   before {
     AuthUtils.authStub(mockAuthConnector)
@@ -115,6 +117,78 @@ class MinimalDetailsControllerSpec extends PlaySpec with Matchers with GuiceOneA
       when(mockMinimalConnector.getMinimalDetails(any(), any(), any())(any(), any(), any()))
         .thenReturn(Future.successful(Left(HttpResponse(NOT_FOUND, "not found"))))
       val result = controller.getMinimalDetails(fakeRequest.withHeaders(("pspId", "A2123456")))
+
+      status(result) mustBe NOT_FOUND
+      contentAsString(result) mustBe "not found"
+    }
+  }
+
+  "getMinimalDetailsSelf" must {
+
+    "return OK when service returns successfully" in {
+
+      when(mockMinimalDetailsCacheRepository.get(any())(any()))
+        .thenReturn(Future.successful {
+          Some(Json.toJson(minimalDetailsIndividualUser))
+        })
+
+
+      val result = controller.getMinimalDetailsSelf(fakeRequest)
+
+      status(result) mustBe OK
+      contentAsJson(result) mustBe Json.toJson(minimalDetailsIndividualUser)
+    }
+
+    "return OK when service returns successfully with Validation Error " in {
+
+      when(mockMinimalDetailsCacheRepository.get(any())(any()))
+        .thenReturn(Future.successful {
+          Some(Json.obj())
+        })
+      when(mockMinimalConnector.getMinimalDetails(any(), any(), any())(any(), any(), any()))
+        .thenReturn(Future.successful(Right(minimalDetailsIndividualUser)))
+
+      when(mockMinimalDetailsCacheRepository.upsert(any(), any())(any()))
+        .thenReturn(Future.successful((): Unit))
+      val result = controller.getMinimalDetailsSelf(fakeRequest)
+
+      status(result) mustBe OK
+      contentAsJson(result) mustBe Json.toJson(minimalDetailsIndividualUser)
+    }
+
+    "return OK when service returns successfully with None data " in {
+
+      when(mockMinimalDetailsCacheRepository.get(any())(any()))
+        .thenReturn(Future.successful {
+          None
+        })
+      when(mockMinimalConnector.getMinimalDetails(any(), any(), any())(any(), any(), any()))
+        .thenReturn(Future.successful(Right(minimalDetailsIndividualUser)))
+
+      when(mockMinimalDetailsCacheRepository.upsert(any(), any())(any()))
+        .thenReturn(Future.successful((): Unit))
+      val result = controller.getMinimalDetailsSelf(fakeRequest)
+
+      status(result) mustBe OK
+      contentAsJson(result) mustBe Json.toJson(minimalDetailsIndividualUser)
+    }
+
+    "return bad request when connector returns BAD_REQUEST" in {
+
+      when(mockMinimalConnector.getMinimalDetails(any(), any(), any())(any(), any(), any()))
+        .thenReturn(Future.successful(Left(HttpResponse(BAD_REQUEST, "bad request"))))
+
+      val result = controller.getMinimalDetailsSelf(fakeRequest)
+
+      status(result) mustBe BAD_REQUEST
+      contentAsString(result) mustBe "bad request"
+    }
+
+    "return not found when connector returns NOT_FOUND" in {
+
+      when(mockMinimalConnector.getMinimalDetails(any(), any(), any())(any(), any(), any()))
+        .thenReturn(Future.successful(Left(HttpResponse(NOT_FOUND, "not found"))))
+      val result = controller.getMinimalDetailsSelf(fakeRequest)
 
       status(result) mustBe NOT_FOUND
       contentAsString(result) mustBe "not found"
