@@ -32,7 +32,8 @@ class MinimalDetailsController @Inject()(
                                           minimalConnector: MinimalConnector,
                                           minimalDetailsCacheRepository: MinimalDetailsCacheRepository,
                                           cc: ControllerComponents,
-                                          authAction: actions.PsaPspAuthAction
+                                          authAction: actions.PsaPspAuthAction,
+                                          pspAuthAction: actions.PspAuthAction
                                         )(implicit ec: ExecutionContext) extends BackendController(cc) with ErrorHandler with HttpResponseHelper {
 
   def getMinimalDetails: Action[AnyContent] = authAction.async {
@@ -42,6 +43,14 @@ class MinimalDetailsController @Inject()(
           case Right(minDetails) => Ok(Json.toJson(minDetails))
           case Left(e) => result(e)
         }
+      }
+  }
+
+  def getMinimalDetailsSelf: Action[AnyContent] = pspAuthAction.async {
+    implicit request =>
+      getMinimalDetail(request.pspId.value, "pspid", "podp").map {
+        case Right(minDetails) => Ok(Json.toJson(minDetails))
+        case Left(e) => result(e)
       }
   }
 
