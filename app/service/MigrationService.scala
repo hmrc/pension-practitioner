@@ -22,7 +22,6 @@ import org.mongodb.scala.MongoCollection
 import play.api.libs.json.{JsObject, JsValue, Json}
 import play.api.{Configuration, Logging}
 import repository.{DataCacheRepository, MinimalDetailsCacheRepository}
-import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.lock.{LockService, MongoLockRepository}
 
 import java.util.concurrent.TimeUnit
@@ -31,7 +30,6 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
 class MigrationService @Inject()(mongoLockRepository: MongoLockRepository,
-                                 mongoComponent: MongoComponent,
                                  dataCacheRepository: DataCacheRepository,
                                  minimalDetailsCacheRepository: MinimalDetailsCacheRepository,
                                  cipher: SecureGCMCipher,

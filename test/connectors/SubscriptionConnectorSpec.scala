@@ -107,6 +107,21 @@ class SubscriptionConnectorSpec
       }
     }
 
+    "return FORBIDDEN when DES has returned ForbiddenException" in {
+      val data = Json.obj(fields = "Id" -> "value")
+      server.stubFor(
+        post(urlEqualTo(pspSubscriptionUrl))
+          .withRequestBody(equalTo(Json.stringify(data)))
+          .willReturn(
+            forbidden()
+          )
+      )
+
+      connector.pspSubscription(externalId, data).collect {
+        case Left(res) if res.responseCode == FORBIDDEN => succeed
+      }
+    }
+
     "return NOT FOUND when DES has returned NotFoundException" in {
       val data = Json.obj(fields = "Id" -> "value")
       server.stubFor(
