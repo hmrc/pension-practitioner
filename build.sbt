@@ -13,8 +13,7 @@ lazy val microservice = Project(appName, file("."))
   .settings(scalaVersion := "2.13.12")
   .settings(
     RoutesKeys.routesImport ++= Seq("models.enumeration.JourneyType",
-      "models.SchemeReferenceNumber",
-      "models.FeatureToggleName"),
+      "models.SchemeReferenceNumber"),
     PlayKeys.devSettings += "play.server.http.port" -> "8209",
     scalacOptions += "-Wconf:src=routes/.*:s"
   )

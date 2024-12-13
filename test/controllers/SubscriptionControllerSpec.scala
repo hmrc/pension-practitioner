@@ -31,7 +31,7 @@ import play.api.inject.guice.{GuiceApplicationBuilder, GuiceableModule}
 import play.api.libs.json._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import repository.{AdminDataRepository, DataCacheRepository, MinimalDetailsCacheRepository}
+import repository.{DataCacheRepository, MinimalDetailsCacheRepository}
 import transformations.userAnswersToDes.PSPSubscriptionTransformer
 import transformations.userAnswersToDes.PSPSubscriptionTransformerSpec._
 import uk.gov.hmrc.auth.core.AuthConnector
@@ -87,7 +87,6 @@ class SubscriptionControllerSpec extends AsyncWordSpec with Matchers with Mockit
       bind[SubscriptionConnector].toInstance(mockSubscriptionConnector),
       bind[SchemeConnector].toInstance(mockSchemeConnector),
       bind[DataCacheRepository].toInstance(mock[DataCacheRepository]),
-      bind[AdminDataRepository].toInstance(mock[AdminDataRepository]),
       bind[MinimalDetailsCacheRepository].toInstance(mock[MinimalDetailsCacheRepository])
     )
 
