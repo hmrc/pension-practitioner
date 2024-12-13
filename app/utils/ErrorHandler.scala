@@ -19,10 +19,10 @@ package utils
 import org.apache.pekko.util.ByteString
 import play.api.Logger
 import play.api.http.HttpEntity
+import play.api.http.Status.OK
 import play.api.libs.json.JsResultException
 import play.api.mvc.{ResponseHeader, Result}
 import uk.gov.hmrc.http._
-import play.api.http.Status.OK
 
 import scala.concurrent.Future
 import scala.util.matching.Regex

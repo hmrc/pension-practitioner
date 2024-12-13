@@ -1,6 +1,5 @@
 import play.sbt.routes.RoutesKeys
 import sbt.Keys.scalacOptions
-import uk.gov.hmrc.DefaultBuildSettings.integrationTestSettings
 
 val appName = "pension-practitioner"
 
@@ -13,15 +12,15 @@ lazy val microservice = Project(appName, file("."))
   )
   .settings(scalaVersion := "2.13.12")
   .settings(
-    RoutesKeys.routesImport ++= Seq("models.enumeration.JourneyType"),
+    RoutesKeys.routesImport ++= Seq("models.enumeration.JourneyType",
+      "models.SchemeReferenceNumber",
+      "models.FeatureToggleName"),
     PlayKeys.devSettings += "play.server.http.port" -> "8209",
     scalacOptions += "-Wconf:src=routes/.*:s"
   )
   .settings(
     Test / parallelExecution := true
   )
-  .configs(IntegrationTest)
-  .settings(integrationTestSettings(): _*)
   .settings(CodeCoverageSettings.settings: _*)
   .settings(
     Test / fork := true,

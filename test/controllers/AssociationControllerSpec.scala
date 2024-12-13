@@ -29,9 +29,10 @@ import play.api.inject.guice.{GuiceApplicationBuilder, GuiceableModule}
 import play.api.libs.json._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import repository.{DataCacheRepository, MinimalDetailsCacheRepository}
+import repository.{AdminDataRepository, DataCacheRepository, MinimalDetailsCacheRepository}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http._
+import utils.{AuthUtils, FakePsaSchemeAuthAction, FakePspSchemeAuthAction}
 
 import scala.concurrent.Future
 
@@ -55,7 +56,10 @@ class AssociationControllerSpec
       bind[AuthConnector].toInstance(authConnector),
       bind[AssociationConnector].toInstance(mockAssociationConnector),
       bind[DataCacheRepository].toInstance(mock[DataCacheRepository]),
-      bind[MinimalDetailsCacheRepository].toInstance(mock[MinimalDetailsCacheRepository])
+      bind[AdminDataRepository].toInstance(mock[AdminDataRepository]),
+      bind[MinimalDetailsCacheRepository].toInstance(mock[MinimalDetailsCacheRepository]),
+      bind[actions.PsaSchemeAuthAction].toInstance(new FakePsaSchemeAuthAction),
+      bind[actions.PspSchemeAuthAction].toInstance(new FakePspSchemeAuthAction)
     )
 
   val application: Application = new GuiceApplicationBuilder()
@@ -65,9 +69,9 @@ class AssociationControllerSpec
   val controller: AssociationController = application.injector.instanceOf[AssociationController]
 
   before {
-    reset(mockAssociationConnector, authConnector)
-    when(authConnector.authorise[Option[String]](any(), any())(any(), any()))
-      .thenReturn(Future.successful(Some("Ext-137d03b9-d807-4283-a254-fb6c30aceef1")))
+    reset(mockAssociationConnector)
+    reset(authConnector)
+    AuthUtils.authStub(authConnector)
   }
 
   "authorise PSP" must {
@@ -87,6 +91,32 @@ class AssociationControllerSpec
 
       recoverToExceptionIf[UpstreamErrorResponse] {
         controller.authorisePsp()(fakeRequest.withHeaders(("pstr", pstr)).withJsonBody(testJson))
+      } map {
+        _.statusCode mustBe INTERNAL_SERVER_ERROR
+      }
+    }
+
+  }
+
+  "authorise PSP SRN" must {
+    "return OK when valid response from IF" in {
+
+      when(mockAssociationConnector.authorisePsp(any(), any())(any()))
+        .thenReturn(Future.successful(Right(HttpResponse(OK, response.toString))))
+      AuthUtils.authStubPsa(authConnector)
+
+
+      val result = controller.authorisePspSrn(AuthUtils.srn)(fakeRequest.withHeaders(("pstr", pstr)).withJsonBody(testJson))
+      status(result) mustBe OK
+    }
+
+    "throw Upstream5XXResponse on Internal Server Error from IF" in {
+
+      when(mockAssociationConnector.authorisePsp(any(), any())(any()))
+        .thenReturn(Future.failed(UpstreamErrorResponse(message = "Internal Server Error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR)))
+      AuthUtils.authStubPsa(authConnector)
+      recoverToExceptionIf[UpstreamErrorResponse] {
+        controller.authorisePspSrn(AuthUtils.srn)(fakeRequest.withHeaders(("pstr", pstr)).withJsonBody(testJson))
       } map {
         _.statusCode mustBe INTERNAL_SERVER_ERROR
       }
@@ -120,6 +150,125 @@ class AssociationControllerSpec
       }
     }
 
+  }
+
+  "deAuthorisePspSrn" must {
+    val testJson = Json.obj(
+      "ceaseNumber" -> AuthUtils.pspId,
+      "initiatedIDNumber" -> AuthUtils.psaId
+    )
+    "return OK when valid response from IF" in {
+
+      when(mockAssociationConnector.deAuthorisePsp(any(), any())(any()))
+        .thenReturn(Future.successful(
+          Right(HttpResponse(OK, response.toString))
+        ))
+      AuthUtils.authStubPsa(authConnector)
+      val result = controller.deAuthorisePspSrn(AuthUtils.srn)(fakeRequest.withHeaders(("pstr", pstr)).withJsonBody(testJson))
+      status(result) mustBe OK
+    }
+
+    "throw Upstream5XXResponse on Internal Server Error from IF" in {
+
+      when(mockAssociationConnector.deAuthorisePsp(any(), any())(any()))
+        .thenReturn(Future.failed(
+          UpstreamErrorResponse(message = "Internal Server Error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR)
+        ))
+      AuthUtils.authStubPsa(authConnector)
+
+      recoverToExceptionIf[UpstreamErrorResponse] {
+        controller.deAuthorisePspSrn(AuthUtils.srn)(fakeRequest.withHeaders(("pstr", pstr)).withJsonBody(testJson))
+      } map {
+        _.statusCode mustBe INTERNAL_SERVER_ERROR
+      }
+    }
+    "return BadRequest if initiatedIDNumber not available in body" in {
+      AuthUtils.authStubPsa(authConnector)
+      val result = controller.deAuthorisePspSrn(AuthUtils.srn)(fakeRequest.withHeaders(("pstr", pstr)).withJsonBody(Json.parse("{}")))
+      status(result) mustBe BAD_REQUEST
+    }
+    "return BadRequest if initiatedIDNumber is not a string" in {
+      AuthUtils.authStubPsa(authConnector)
+      val result = controller.deAuthorisePspSrn(AuthUtils.srn)(fakeRequest.withHeaders(("pstr", pstr)).
+        withJsonBody(Json.parse("""{ "initiatedIDNumber": true }""")))
+      status(result) mustBe BAD_REQUEST
+    }
+    "return Forbidden if initiatedIDNumber does not match PspId in session" in {
+      AuthUtils.authStubPsa(authConnector)
+      val result = controller.deAuthorisePspSrn(AuthUtils.srn)(fakeRequest.withHeaders(("pstr", pstr)).
+        withJsonBody(Json.parse("""{ "initiatedIDNumber": "A9999999" }""")))
+      status(result) mustBe FORBIDDEN
+    }
+  }
+
+  "deAuthorisePspSelf" must {
+    val testJson = Json.obj(
+      "ceaseNumber" -> AuthUtils.pspId,
+      "initiatedIDNumber" -> AuthUtils.pspId
+    )
+    "return OK when valid response from IF" in {
+
+      when(mockAssociationConnector.deAuthorisePsp(any(), any())(any()))
+        .thenReturn(Future.successful(
+          Right(HttpResponse(OK, response.toString))
+        ))
+
+      val result = controller.deAuthorisePspSelf(AuthUtils.srn)(fakeRequest.withHeaders(("pstr", pstr)).withJsonBody(testJson))
+      status(result) mustBe OK
+    }
+
+    "throw Upstream5XXResponse on Internal Server Error from IF" in {
+
+      when(mockAssociationConnector.deAuthorisePsp(any(), any())(any()))
+        .thenReturn(Future.failed(
+          UpstreamErrorResponse(message = "Internal Server Error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR)
+        ))
+
+      recoverToExceptionIf[UpstreamErrorResponse] {
+        controller.deAuthorisePspSelf(AuthUtils.srn)(fakeRequest.withHeaders(("pstr", pstr)).withJsonBody(testJson))
+      } map {
+        _.statusCode mustBe INTERNAL_SERVER_ERROR
+      }
+    }
+    "return BadRequest if required json body values are missing or are not strings" in {
+
+      val seq = Seq(
+        Json.obj(),
+        Json.obj(
+          "ceaseNumber" -> true,
+          "initiatedIDNumber" -> "21000005"
+        ),
+        Json.obj(
+          "initiatedIDNumber" -> "21000005"
+        ),
+        Json.obj(
+          "ceaseNumber" -> "21000005"
+        )
+      )
+
+      seq.map { json =>
+        val result = controller.deAuthorisePspSelf(AuthUtils.srn)(fakeRequest.withHeaders(("pstr", pstr)).withJsonBody(json))
+        status(result)
+      }.forall(_ == BAD_REQUEST) mustBe true
+    }
+
+    "return Forbidden if ceaseNumber or initiatedIDNumber does not match authenticated PSP id" in {
+      val seq = Seq(
+        Json.obj(
+          "ceaseNumber" -> "21000005",
+          "initiatedIDNumber" -> "21000006"
+        ),
+        Json.obj(
+          "ceaseNumber" -> "21000006",
+          "initiatedIDNumber" -> "21000005"
+        )
+      )
+
+      seq.map { json =>
+        val result = controller.deAuthorisePspSelf(AuthUtils.srn)(fakeRequest.withHeaders(("pstr", pstr)).withJsonBody(json))
+        status(result)
+      }.forall(_ == FORBIDDEN) mustBe true
+    }
   }
 
   def errorResponse(code: String): String = {
