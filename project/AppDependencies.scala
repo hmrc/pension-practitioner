@@ -11,6 +11,7 @@ object AppDependencies {
     "com.networknt"           %  "json-schema-validator"      % "1.5.1",
     "uk.gov.hmrc"             %% "domain-play-30"             % "10.0.0",
     "com.fasterxml.jackson.module" %% "jackson-module-scala"  % "2.17.2",
+    "uk.gov.hmrc"             %% "crypto"                     % "8.1.0",
     caffeine
   )
 

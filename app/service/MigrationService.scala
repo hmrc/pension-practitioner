@@ -17,11 +17,12 @@
 package service
 
 import com.google.inject.Inject
-import crypto.{EncryptedValue, SecureGCMCipher}
+import crypto.AesGcmAdCrypto
 import org.mongodb.scala.MongoCollection
-import play.api.libs.json.{JsObject, JsValue, Json}
+import play.api.libs.json.{JsObject, JsValue, Json, OFormat}
 import play.api.{Configuration, Logging}
 import repository.{DataCacheRepository, MinimalDetailsCacheRepository}
+import uk.gov.hmrc.crypto.EncryptedValue
 import uk.gov.hmrc.mongo.lock.{LockService, MongoLockRepository}
 
 import java.util.concurrent.TimeUnit
@@ -32,22 +33,25 @@ import scala.util.{Failure, Success, Try}
 class MigrationService @Inject()(mongoLockRepository: MongoLockRepository,
                                  dataCacheRepository: DataCacheRepository,
                                  minimalDetailsCacheRepository: MinimalDetailsCacheRepository,
-                                 cipher: SecureGCMCipher,
+                                 cipher: AesGcmAdCrypto,
                                  configuration: Configuration)(implicit ec: ExecutionContext) extends Logging {
   private val lock = LockService(mongoLockRepository, "pension_practitioner_mongodb_migration_lock", Duration(10, TimeUnit.MINUTES))
-  private val encryptionKey = configuration.get[String]("mongodb.migration.encryptionKey")
+//  private val encryptionKey = configuration.get[String]("mongodb.migration.encryptionKey")
 
   private def encryptCollections() = {
+    implicit val encryptedValueFormat: OFormat[EncryptedValue] = Json.format[EncryptedValue]
+
     logger.warn("[PODS-9952] Started encrypting collection")
     def encryptCollection(collection: MongoCollection[JsValue], collectionName: String, idAndDataToSave: (String, JsValue) => Future[Unit]) = {
       collection.find().toFuture().map(seqJsValue => {
+        println(s"\n\n\n existing items in collection: $seqJsValue")
         val newEncryptedValues = seqJsValue.flatMap { jsValue =>
           val data = jsValue \ "data"
           val alreadyEncrypted = data.validate[EncryptedValue].fold(_ => false, _ => true)
           if(alreadyEncrypted) {
             None
           } else {
-            val encryptedData = Json.toJson(cipher.encrypt(data.as[JsValue].toString(), (jsValue \ "id").as[String], encryptionKey))
+            val encryptedData = Json.toJson(cipher.encrypt(data.as[JsValue].toString(), (jsValue \ "id").as[String]))
             val encryptedJsValue = (jsValue.as[JsObject] - "data") + ("data" -> encryptedData)
             Some(encryptedJsValue)
           }
@@ -83,6 +87,8 @@ class MigrationService @Inject()(mongoLockRepository: MongoLockRepository,
   }
 
   private def decryptCollections() = {
+    implicit val encryptedValueFormat: OFormat[EncryptedValue] = Json.format[EncryptedValue]
+
     logger.warn("[PODS-9952] Started decrypting collection")
     def decryptCollection(collection: MongoCollection[JsValue], collectionName: String, idAndDataToSave: (String, JsValue) => Future[Unit]) = {
       collection.find().toFuture().map(seqJsValue => {
@@ -90,7 +96,7 @@ class MigrationService @Inject()(mongoLockRepository: MongoLockRepository,
           val data = jsValue \ "data"
           val alreadyEncrypted = data.validate[EncryptedValue].fold(_ => false, _ => true)
           if(alreadyEncrypted) {
-            val decryptedData = Json.parse(cipher.decrypt(data.as[EncryptedValue], (jsValue \ "id").as[String], encryptionKey))
+            val decryptedData = Json.parse(cipher.decrypt(data.as[EncryptedValue], (jsValue \ "id").as[String]))
             val decryptedJsValue = (jsValue.as[JsObject] - "data") + ("data" -> decryptedData)
             Some(decryptedJsValue)
           } else {

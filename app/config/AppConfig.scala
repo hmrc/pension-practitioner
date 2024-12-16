@@ -50,6 +50,6 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
   lazy val listOfSchemesUrl: String = s"$baseUrlPensionsScheme${config.get[String]("serviceUrls.listOfSchemes")}"
   lazy val checkAssociationUrl: String = s"$baseUrlPensionsScheme${config.get[String]("serviceUrls.checkAssociation")}"
 
-  val mongoEncryptionKey: Option[String] = config.getOptional[String]("mongodb.encryption.key")
+  val mongoEncryptionKey: String = config.get[String]("mongodb.encryption.key")
 
 }

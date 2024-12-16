@@ -16,26 +16,23 @@
 
 package crypto
 
-import config.AppConfig
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.{JsValue, Json, OFormat}
 
 import javax.inject.{Inject, Singleton}
+import uk.gov.hmrc.crypto.EncryptedValue
 
 @Singleton
-class DataEncryptor @Inject() (cipher: SecureGCMCipher, appConfig: AppConfig){
-  def encrypt(id:String, data: JsValue):JsValue = {
-    appConfig.mongoEncryptionKey.map { encryptionKey =>
-      Json.toJson(cipher.encrypt(data.toString, id, encryptionKey))
-    }.getOrElse(data)
+class DataEncryptor @Inject()(cipher: AesGcmAdCrypto){
+  implicit val encryptedValueFormat: OFormat[EncryptedValue] = Json.format[EncryptedValue]
+
+  def encrypt(id: String, data: JsValue): EncryptedValue = {
+    cipher.encrypt(data.toString, id)
   }
 
   def decrypt(id:String, jsValue: JsValue): JsValue = {
     jsValue.validate[EncryptedValue]
       .map { encryptedValue =>
-        appConfig.mongoEncryptionKey.map { encryptionKey =>
-          Json.parse(cipher.decrypt(encryptedValue, id, encryptionKey))
-        }.getOrElse(throw new RuntimeException("Cannot decrypt mongoDB data. Encryption key not available."))
-      }
-      .getOrElse(jsValue)
+          Json.parse(cipher.decrypt(encryptedValue, id))
+      }.getOrElse(jsValue)
   }
 }

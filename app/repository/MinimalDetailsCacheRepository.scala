@@ -38,6 +38,7 @@ import crypto.DataEncryptor
 import org.mongodb.scala.model._
 import play.api.libs.json._
 import play.api.{Configuration, Logging}
+import uk.gov.hmrc.crypto.EncryptedValue
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
@@ -79,6 +80,7 @@ class MinimalDetailsCacheRepository @Inject()(
 
   def upsert(id: String, data: JsValue)(implicit ec: ExecutionContext): Future[Unit] = {
     logger.debug("Calling save in PSP Minimal Details Cache")
+    implicit val encryptedValueFormat: OFormat[EncryptedValue] = Json.format[EncryptedValue]
 
     val modifier = Updates.combine(
       Updates.set("id", Codecs.toBson(id)),
