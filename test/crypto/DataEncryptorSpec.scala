@@ -16,29 +16,20 @@
 
 package crypto
 
-import config.AppConfig
-import org.mockito.Mockito.when
-import org.scalatest.BeforeAndAfterAll
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, OFormat}
+import uk.gov.hmrc.crypto.EncryptedValue
 
-class DataEncryptorSpec extends AnyFreeSpec with Matchers with GuiceOneAppPerSuite with BeforeAndAfterAll with MockitoSugar {
+class DataEncryptorSpec extends AnyFreeSpec with Matchers with GuiceOneAppPerSuite with MockitoSugar {
 
-  private val encryptor      = app.injector.instanceOf[DataEncryptor]
-  private val mockAppConfig = mock[AppConfig]
+  private val encryptor = app.injector.instanceOf[DataEncryptor]
 
-  private val encryptorNoKey = new DataEncryptor(
-    app.injector.instanceOf[SecureGCMCipher],
-    mockAppConfig
-  )
+  private val encryptorNoKey = new DataEncryptorImpl(None)
 
-  override def beforeAll(): Unit = {
-    super.beforeAll()
-    when(mockAppConfig.mongoEncryptionKey).thenReturn(None)
-  }
+  private implicit val encryptedValueFormat: OFormat[EncryptedValue] = Json.format[EncryptedValue]
 
   private val id  = "id"
   private val notEncryptedJsValue = Json.parse("""{"value": true}""")
@@ -51,7 +42,6 @@ class DataEncryptorSpec extends AnyFreeSpec with Matchers with GuiceOneAppPerSui
     }
     "must not encrypt if no key is provided" in {
       encryptorNoKey.encrypt(id, notEncryptedJsValue) mustBe notEncryptedJsValue
-
     }
   }
 

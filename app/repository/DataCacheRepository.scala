@@ -87,7 +87,6 @@ class DataCacheRepository @Inject()(
 
   def save(id: String, userData: JsValue)(implicit ec: ExecutionContext): Future[Unit] = {
     logger.debug("Calling save in PSP Cache")
-    implicit val encryptedValueFormat: OFormat[EncryptedValue] = Json.format[EncryptedValue]
 
     val modifier = Updates.combine(
       Updates.set("id", Codecs.toBson(id)),

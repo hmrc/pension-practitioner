@@ -16,23 +16,35 @@
 
 package crypto
 
+import config.AppConfig
+import play.api.Logging
 import play.api.libs.json.{JsValue, Json, OFormat}
+import uk.gov.hmrc.crypto.{EncryptedValue, SymmetricCryptoFactory}
 
 import javax.inject.{Inject, Singleton}
-import uk.gov.hmrc.crypto.EncryptedValue
 
 @Singleton
-class DataEncryptor @Inject()(cipher: AesGcmAdCrypto){
-  implicit val encryptedValueFormat: OFormat[EncryptedValue] = Json.format[EncryptedValue]
+class DataEncryptor @Inject()(appConfig: AppConfig) extends DataEncryptorImpl(appConfig.mongoEncryptionKey)
 
-  def encrypt(id: String, data: JsValue): EncryptedValue = {
-    cipher.encrypt(data.toString, id)
+class DataEncryptorImpl(key: Option[String]) extends Logging {
+  private implicit val encryptedValueFormat: OFormat[EncryptedValue] = Json.format[EncryptedValue]
+  private lazy val aesGcmAdCrypto = key.map { key => SymmetricCryptoFactory.aesGcmAdCrypto(key) }
+
+  def encrypt(id: String, data: JsValue): JsValue = {
+    aesGcmAdCrypto.map { cipher =>
+      Json.toJson(cipher.encrypt(data.toString, id))
+    }.getOrElse {
+      logger.warn("Encryption key not set, data is not being encrypted")
+      data
+    }
+
   }
 
   def decrypt(id:String, jsValue: JsValue): JsValue = {
     jsValue.validate[EncryptedValue]
       .map { encryptedValue =>
-          Json.parse(cipher.decrypt(encryptedValue, id))
+        val cipher = aesGcmAdCrypto.getOrElse(throw new RuntimeException("Unable to initialise crypto instance."))
+        Json.parse(cipher.decrypt(encryptedValue, id))
       }.getOrElse(jsValue)
   }
 }
