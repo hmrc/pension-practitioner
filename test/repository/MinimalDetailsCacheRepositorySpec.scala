@@ -16,6 +16,7 @@
 
 package repository
 
+import crypto.DataEncryptor
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.mongodb.scala.model.Filters
@@ -25,6 +26,7 @@ import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, BeforeAndAfterEach}
 import org.scalatestplus.mockito.MockitoSugar
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
 import play.api.libs.json.{Format, JsString, JsValue, Json}
 import uk.gov.hmrc.mongo.MongoComponent
@@ -35,11 +37,24 @@ import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class MinimalDetailsCacheRepositorySpec extends AnyWordSpec with MockitoSugar with Matchers with LocalMongoDB with BeforeAndAfter with
-  BeforeAndAfterEach with BeforeAndAfterAll with ScalaFutures { // scalastyle:off magic.number
+  BeforeAndAfterEach with BeforeAndAfterAll with ScalaFutures with GuiceOneAppPerSuite { // scalastyle:off magic.number
 
   override implicit val patienceConfig: PatienceConfig = PatienceConfig(Span(30, Seconds), Span(1, Millis))
 
-  import MinimalDetailsCacheRepositorySpec._
+  implicit val dateFormat: Format[Instant] = MongoJavatimeFormats.instantFormat
+
+  private val id: String = "testId"
+  private val idField: String = "id"
+  private val userData: JsValue = Json.obj("testing" -> "123")
+
+  private val mockConfig = mock[Configuration]
+  private val dummyData = JsString("dummy data")
+
+  private def buildFormRepository(mongoHost: String, mongoPort: Int) = {
+    val databaseName = "pension-administrator"
+    val mongoUri = s"mongodb://$mongoHost:$mongoPort/$databaseName?heartbeatFrequencyMS=1000&rm.failover=default"
+    new MinimalDetailsCacheRepository(MongoComponent(mongoUri), mockConfig, app.injector.instanceOf[DataEncryptor])
+  }
 
   var minimalDetailsCacheRepository: MinimalDetailsCacheRepository = _
 
@@ -114,23 +129,3 @@ class MinimalDetailsCacheRepositorySpec extends AnyWordSpec with MockitoSugar wi
     }
   }
 }
-
-object MinimalDetailsCacheRepositorySpec extends AnyWordSpec with MockitoSugar {
-
-  implicit val dateFormat: Format[Instant] = MongoJavatimeFormats.instantFormat
-
-  private val id: String = "testId"
-  private val idField: String = "id"
-  private val userData: JsValue = Json.obj("testing" -> "123")
-
-  private val mockConfig = mock[Configuration]
-  private val dummyData = JsString("dummy data")
-
-  private def buildFormRepository(mongoHost: String, mongoPort: Int) = {
-    val databaseName = "pension-administrator"
-    val mongoUri = s"mongodb://$mongoHost:$mongoPort/$databaseName?heartbeatFrequencyMS=1000&rm.failover=default"
-    new MinimalDetailsCacheRepository(MongoComponent(mongoUri), mockConfig)
-  }
-}
-
-

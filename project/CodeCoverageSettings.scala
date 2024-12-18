@@ -4,7 +4,7 @@ import scoverage.ScoverageKeys
 object CodeCoverageSettings {
 
   private val coverageExcludedFiles = "<empty>;Reverse.*;.*repository.*;" +
-    ".*BuildInfo.*;.*javascript.*;.*Routes.*;.*GuiceInjector;"
+    ".*BuildInfo.*;.*javascript.*;.*Routes.*;.*GuiceInjector;.*MigrationService"
 
   val settings: Seq[Setting[_]] = Seq(
     ScoverageKeys.coverageExcludedFiles := coverageExcludedFiles,
