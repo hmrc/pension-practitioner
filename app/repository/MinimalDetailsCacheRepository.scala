@@ -34,6 +34,7 @@ package repository
 
 import com.google.inject.Inject
 import com.mongodb.client.model.FindOneAndUpdateOptions
+import crypto.DataEncryptor
 import org.mongodb.scala.model._
 import play.api.libs.json._
 import play.api.{Configuration, Logging}
@@ -49,7 +50,8 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class MinimalDetailsCacheRepository @Inject()(
                                                mongoComponent: MongoComponent,
-                                               config: Configuration
+                                               config: Configuration,
+                                               cipher: DataEncryptor
                                              )(implicit ec: ExecutionContext)
   extends PlayMongoRepository[JsValue](
     collectionName = config.get[String]("mongodb.minimal-detail.name"),
@@ -80,7 +82,7 @@ class MinimalDetailsCacheRepository @Inject()(
 
     val modifier = Updates.combine(
       Updates.set("id", Codecs.toBson(id)),
-      Updates.set("data", Codecs.toBson(data)),
+      Updates.set("data", Codecs.toBson(cipher.encrypt(id, data))),
       Updates.set("lastUpdated", Instant.now())
     )
 
@@ -96,7 +98,7 @@ class MinimalDetailsCacheRepository @Inject()(
     collection.find(filter = selector(id))
       .toFuture().map(_.headOption).map { optJsVal =>
       optJsVal.flatMap { jsVal =>
-        (jsVal \ "data").asOpt[JsValue]
+        (jsVal \ "data").asOpt[JsValue].map { cipher.decrypt(id, _) }
       }
     }
   }

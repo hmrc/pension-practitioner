@@ -26,3 +26,6 @@ lazy val microservice = Project(appName, file("."))
     Test / javaOptions += "-Dconfig.file=conf/test.application.conf"
   )
   .settings(resolvers += Resolver.jcenterRepo)
+  .settings(
+    resolvers += MavenRepository("HMRC-open-artefacts-maven2", "https://open.artefacts.tax.service.gov.uk/maven2")
+  )
