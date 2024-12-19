@@ -29,7 +29,7 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import repository.{AdminDataRepository, DataCacheRepository, MinimalDetailsCacheRepository}
+import repository.{DataCacheRepository, MinimalDetailsCacheRepository}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -50,7 +50,6 @@ class DataCacheControllerSpec extends AnyWordSpec with Matchers with MockitoSuga
     "microservice.services.des-hod.env" -> "local",
     "microservice.services.des-hod.authorizationToken" -> "test-token"
   ).overrides(Seq(
-    bind[AdminDataRepository].toInstance(mock[AdminDataRepository]),
     bind[MinimalDetailsCacheRepository].toInstance(mock[MinimalDetailsCacheRepository]),
     bind[AuthConnector].toInstance(authConnector),
     bind[DataCacheRepository].toInstance(repo),
