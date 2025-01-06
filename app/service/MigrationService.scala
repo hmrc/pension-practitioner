@@ -112,7 +112,6 @@ class MigrationService @Inject()(mongoLockRepository: MongoLockRepository,
         val successfulInserts = newDecryptedValues.map { jsValue =>
           val id = (jsValue \ "id").as[String]
           val data = (jsValue \ "data").as[JsValue]
-          println(data)
           Try(Await.result(idAndDataToSave(id, data), 40.seconds)) match {
             case Failure(exception) =>
               logger.error(s"[PODS-9952] upsert failed", exception)
