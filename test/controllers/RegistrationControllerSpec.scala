@@ -16,10 +16,10 @@
 
 package controllers
 
-import org.apache.pekko.stream.Materializer
 import connectors.RegistrationConnector
 import models.registerWithId.RegisterWithIdResponse
 import models.registerWithoutId.{OrganisationRegistrant, RegisterWithoutIdIndividualRequest, RegisterWithoutIdResponse}
+import org.apache.pekko.stream.Materializer
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
@@ -34,7 +34,7 @@ import play.api.inject.guice.{GuiceApplicationBuilder, GuiceableModule}
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{INTERNAL_SERVER_ERROR, contentAsJson, status, _}
-import repository.{AdminDataRepository, DataCacheRepository, MinimalDetailsCacheRepository}
+import repository.{DataCacheRepository, MinimalDetailsCacheRepository}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http._
 
@@ -56,7 +56,6 @@ class RegistrationControllerSpec
       bind[AuthConnector].toInstance(authConnector),
       bind[RegistrationConnector].toInstance(mockRegistrationConnector),
       bind[DataCacheRepository].toInstance(mock[DataCacheRepository]),
-      bind[AdminDataRepository].toInstance(mock[AdminDataRepository]),
       bind[MinimalDetailsCacheRepository].toInstance(mock[MinimalDetailsCacheRepository])
     )
 
