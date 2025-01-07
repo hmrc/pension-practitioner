@@ -95,6 +95,14 @@ class AssociationControllerSpec
       }
     }
 
+    "throw BadRequestException on invalid request" in {
+      recoverToExceptionIf[BadRequestException] {
+        controller.authorisePsp()(fakeRequest.withHeaders(("pstr", pstr)))
+      } map { result =>
+        result.responseCode mustBe BAD_REQUEST
+      }
+    }
+
   }
 
   "authorise PSP SRN" must {

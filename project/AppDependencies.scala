@@ -1,4 +1,4 @@
-import play.sbt.PlayImport.ehcache
+import play.sbt.PlayImport.caffeine
 import sbt._
 
 object AppDependencies {
@@ -11,7 +11,7 @@ object AppDependencies {
     "com.networknt"           %  "json-schema-validator"      % "1.5.1",
     "uk.gov.hmrc"             %% "domain-play-30"             % "10.0.0",
     "com.fasterxml.jackson.module" %% "jackson-module-scala"  % "2.17.2",
-    ehcache
+    caffeine
   )
 
   val test = Seq(
