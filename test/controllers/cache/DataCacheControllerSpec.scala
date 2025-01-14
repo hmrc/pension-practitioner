@@ -16,8 +16,8 @@
 
 package controllers.cache
 
+import controllers.actions.CredIdNotFoundFromAuth
 import org.apache.pekko.util.ByteString
-import org.apache.commons.lang3.RandomUtils
 import org.mockito.ArgumentMatchers.{eq => eqTo, _}
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfter
@@ -29,15 +29,14 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import repository.{AdminDataRepository, DataCacheRepository, MinimalDetailsCacheRepository}
+import repository.{DataCacheRepository, MinimalDetailsCacheRepository}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
 
+import java.util.concurrent.ThreadLocalRandom
 import scala.concurrent.Future
 
 class DataCacheControllerSpec extends AnyWordSpec with Matchers with MockitoSugar with BeforeAndAfter {
-
-  import DataCacheController._
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
@@ -51,7 +50,6 @@ class DataCacheControllerSpec extends AnyWordSpec with Matchers with MockitoSuga
     "microservice.services.des-hod.env" -> "local",
     "microservice.services.des-hod.authorizationToken" -> "test-token"
   ).overrides(Seq(
-    bind[AdminDataRepository].toInstance(mock[AdminDataRepository]),
     bind[MinimalDetailsCacheRepository].toInstance(mock[MinimalDetailsCacheRepository]),
     bind[AuthConnector].toInstance(authConnector),
     bind[DataCacheRepository].toInstance(repo),
@@ -113,7 +111,7 @@ class DataCacheControllerSpec extends AnyWordSpec with Matchers with MockitoSuga
         when(repo.save(any(), any())(any())) thenReturn Future.successful((): Unit)
         when(authConnector.authorise[Option[String]](any(), any())(any(), any())) thenReturn Future.successful(Some(id))
 
-        val result = controller.save(fakePostRequest.withRawBody(ByteString(RandomUtils.nextBytes(512001))))
+        val result = controller.save(fakePostRequest.withRawBody(ByteString(nextBytes(512001))))
         status(result) mustEqual BAD_REQUEST
       }
 
@@ -141,5 +139,10 @@ class DataCacheControllerSpec extends AnyWordSpec with Matchers with MockitoSuga
         an[CredIdNotFoundFromAuth] must be thrownBy status(result)
       }
     }
+  }
+  private def nextBytes(count: Int): Array[Byte] = {
+    val result = new Array[Byte](count)
+    ThreadLocalRandom.current.nextBytes(result)
+    result
   }
 }

@@ -24,8 +24,8 @@ import play.api.Logger
 import play.api.http.Status._
 import play.api.mvc.RequestHeader
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
-import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http._
+import uk.gov.hmrc.http.client.HttpClientV2
 import utils.{ErrorHandler, InvalidPayloadHandler}
 
 import scala.concurrent.{ExecutionContext, Future}

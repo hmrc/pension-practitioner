@@ -10,14 +10,27 @@ POST          /journey-cache                                                    
 DELETE        /journey-cache                                                                                    controllers.cache.DataCacheController.remove
 
 POST          /subscribePsp/:journeyType                                                                        controllers.SubscriptionController.subscribePsp(journeyType: JourneyType.Name)
+#Deprecated
 GET           /getPsp                                                                                           controllers.SubscriptionController.getPspDetails
+GET           /getPsp-self                                                                                      controllers.SubscriptionController.getPspDetailsSelf
+#Deprecated
 POST          /deregisterPsp/:pspId                                                                             controllers.SubscriptionController.deregisterPsp(pspId: String)
+POST          /deregisterPsp-self                                                                               controllers.SubscriptionController.deregisterPspSelf
+#Deprecated
+GET           /can-deregister/:id                                                                               controllers.SubscriptionController.canDeregister(id: String)
+GET           /can-deregister-self                                                                              controllers.SubscriptionController.canDeregisterSelf
+#Deprecated
 POST          /authorise-psp                                                                                    controllers.AssociationController.authorisePsp
+POST          /authorise-psp/:srn                                                                               controllers.AssociationController.authorisePspSrn(srn: SchemeReferenceNumber)
+#Deprecated
 POST          /de-authorise-psp                                                                                 controllers.AssociationController.deAuthorisePsp
+POST          /de-authorise-psp/:srn                                                                            controllers.AssociationController.deAuthorisePspSrn(srn: SchemeReferenceNumber)
+POST          /de-authorise-psp-self/:srn                                                                       controllers.AssociationController.deAuthorisePspSelf(srn: SchemeReferenceNumber)
 
 POST          /email-response/:journeyType/:requestId/:email/:pspId                                             controllers.EmailResponseController.retrieveStatus(journeyType: JourneyType.Name, requestId: String, email: String, pspId: String)
-
 POST          /email-response-psp-dereg/:encryptedPspId/:encryptedEmail                                         controllers.EmailResponseController.retrieveStatusForPSPDeregistration(encryptedPspId, encryptedEmail)
 
+#Deprecated
 GET           /get-minimal-details                                                                              controllers.MinimalDetailsController.getMinimalDetails
-GET           /can-deregister/:id                                                                               controllers.SubscriptionController.canDeregister(id: String)
+GET           /get-minimal-details-self                                                                         controllers.MinimalDetailsController.getMinimalDetailsSelf
+

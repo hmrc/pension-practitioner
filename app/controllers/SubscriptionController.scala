@@ -24,29 +24,27 @@ import play.api.Logger
 import play.api.libs.json._
 import play.api.mvc._
 import transformations.userAnswersToDes.PSPSubscriptionTransformer
-import uk.gov.hmrc.auth.core._
-import uk.gov.hmrc.http.{Request => _, _}
+import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import utils.{AuthUtil, ErrorHandler, HttpResponseHelper}
+import utils.{ErrorHandler, HttpResponseHelper}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class SubscriptionController @Inject()(
-                                        override val authConnector: AuthConnector,
                                         subscriptionConnector: SubscriptionConnector,
                                         schemeConnector: SchemeConnector,
                                         pspSubscriptionTransformer: PSPSubscriptionTransformer,
                                         cc: ControllerComponents,
-                                        util: AuthUtil
+                                        authAction: actions.PsaPspAuthAction,
+                                        pspAuthAction: actions.PspAuthAction,
+                                        noEnrolmentAuthAction: actions.NoEnrolmentAuthAction
                                       )(implicit ec: ExecutionContext) extends BackendController(cc)
-  with AuthorisedFunctions
   with HttpResponseHelper
   with ErrorHandler {
 
   private val logger = Logger(classOf[SubscriptionController])
 
-  def subscribePsp(journeyType: JourneyType.Name): Action[AnyContent] = Action.async { implicit request =>
-    util.doAuth { externalId =>
+  def subscribePsp(journeyType: JourneyType.Name): Action[AnyContent] = noEnrolmentAuthAction.async { implicit request =>
       val feJson = request.body.asJson
       logger.debug(s"[PSP-Subscription-Incoming-Payload]$feJson")
       feJson match {
@@ -54,7 +52,7 @@ class SubscriptionController @Inject()(
           json.transform(pspSubscriptionTransformer.transformPsp) match {
             case JsSuccess(data, _) =>
               logger.debug(s"[PSP-Subscription-Outgoing-Payload]$data")
-              subscriptionConnector.pspSubscription(externalId, data) map {
+              subscriptionConnector.pspSubscription(request.externalId, data) map {
                 case Right(response) => result(response)
                 case Left(e) => result(e)
               }
@@ -63,12 +61,11 @@ class SubscriptionController @Inject()(
         case _ =>
           Future.failed(new BadRequestException("Bad Request with no request body returned for PSP subscription"))
       }
-    }
   }
 
-  def getPspDetails: Action[AnyContent] = Action.async {
+  def getPspDetails: Action[AnyContent] = authAction.async {
     implicit request =>
-      util.doAuth { _ =>
+
         val pspId = request.headers.get("pspId")
         pspId match {
           case Some(id) =>
@@ -80,11 +77,20 @@ class SubscriptionController @Inject()(
             }
           case _ => Future.failed(new BadRequestException("No PSP Id in the header"))
         }
+
+  }
+
+  def getPspDetailsSelf: Action[AnyContent] = pspAuthAction.async {
+    implicit request =>
+      subscriptionConnector.getSubscriptionDetails(request.pspId.value).map {
+        case Right(pspDetails) =>
+          logger.debug(s"[Get-psp-details-transformed]$pspDetails")
+          Ok(Json.toJson(pspDetails))
+        case Left(e) => result(e)
       }
   }
 
-  def deregisterPsp(pspId: String): Action[AnyContent] = Action.async { implicit request =>
-    util.doAuth { _ =>
+  def deregisterPsp(pspId: String): Action[AnyContent] = authAction.async { implicit request =>
       val feJson = request.body.asJson
       logger.debug(s"[PSP-Deregistration-Payload]$feJson")
       feJson match {
@@ -96,12 +102,41 @@ class SubscriptionController @Inject()(
         case _ =>
           Future.failed(new BadRequestException("Bad Request with no request body for PSP subscription"))
       }
+  }
+
+  def deregisterPspSelf: Action[AnyContent] = pspAuthAction.async { implicit request =>
+    val feJson = request.body.asJson
+    logger.debug(s"[PSP-Deregistration-Payload]$feJson")
+    feJson match {
+      case Some(json) =>
+        subscriptionConnector.pspDeregistration(request.pspId.value, json) map {
+          case Right(response) => result(response)
+          case Left(e) => result(e)
+        }
+      case _ =>
+        Future.failed(new BadRequestException("Bad Request with no request body for PSP subscription"))
     }
   }
 
-  def canDeregister(pspId: String): Action[AnyContent] = Action.async {
+  def canDeregister(pspId: String): Action[AnyContent] = authAction.async {
     implicit request =>
       schemeConnector.listOfSchemes(pspId).map {
+        case Right(jsValue) =>
+          jsValue.validate[ListOfSchemes] match {
+            case JsSuccess(listOfSchemes, _) =>
+              val schemes = listOfSchemes.schemeDetails.getOrElse(List.empty)
+              val canDeregister = schemes == List.empty || !schemes.exists(_.schemeStatus == "Open")
+
+              Ok(Json.toJson(canDeregister))
+            case JsError(errors) => throw JsResultException(errors)
+          }
+        case Left(e) => result(e)
+      }
+  }
+
+  def canDeregisterSelf: Action[AnyContent] = pspAuthAction.async {
+    implicit request =>
+      schemeConnector.listOfSchemes(request.pspId.value).map {
         case Right(jsValue) =>
           jsValue.validate[ListOfSchemes] match {
             case JsSuccess(listOfSchemes, _) =>

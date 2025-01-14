@@ -34,6 +34,7 @@ package repository
 
 import com.google.inject.Inject
 import com.mongodb.client.model.FindOneAndUpdateOptions
+import crypto.DataEncryptor
 import org.mongodb.scala.model._
 import play.api.libs.json._
 import play.api.{Configuration, Logging}
@@ -50,7 +51,8 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class DataCacheRepository @Inject()(
                                      mongoComponent: MongoComponent,
-                                     config: Configuration
+                                     config: Configuration,
+                                     cipher: DataEncryptor
                                    )(implicit val ec: ExecutionContext)
   extends PlayMongoRepository[JsValue](
     collectionName = config.get[String]("mongodb.psp-cache.name"),
@@ -87,7 +89,7 @@ class DataCacheRepository @Inject()(
 
     val modifier = Updates.combine(
       Updates.set("id", Codecs.toBson(id)),
-      Updates.set("data", Codecs.toBson(userData)),
+      Updates.set("data", Codecs.toBson(cipher.encrypt(id, userData))),
       Updates.set("expireAt", getExpireAt)
     )
 
@@ -103,7 +105,7 @@ class DataCacheRepository @Inject()(
     collection.find(filter = selector(id))
       .toFuture().map(_.headOption).map { optJsVal =>
       optJsVal.flatMap { jsVal =>
-        (jsVal \ "data").asOpt[JsValue]
+       (jsVal \ "data").asOpt[JsValue].map { cipher.decrypt(id, _) }
       }
     }
   }

@@ -26,13 +26,14 @@ import org.scalatest.wordspec.AsyncWordSpec
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject.bind
 import play.api.inject.guice.GuiceableModule
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.{JsBoolean, JsValue, Json}
 import play.api.mvc.RequestHeader
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import repository.{AdminDataRepository, DataCacheRepository, MinimalDetailsCacheRepository}
+import repository.{DataCacheRepository, MinimalDetailsCacheRepository}
+import uk.gov.hmrc.domain.PsaId
 import uk.gov.hmrc.http._
-import utils.WireMockHelper
+import utils.{AuthUtils, WireMockHelper}
 
 class SchemeConnectorSpec
   extends AsyncWordSpec
@@ -50,15 +51,15 @@ class SchemeConnectorSpec
 
   private val mockAuditService = mock[AuditService]
   private val mockHeaderUtils = mock[HeaderUtils]
+  private val checkForAssociationUrl = "/pensions-scheme/is-psa-associated"
 
-  private lazy val connector: SchemeConnector = injector.instanceOf[SchemeConnector]
+  private lazy val connector: SchemeConnector = app.injector.instanceOf[SchemeConnector]
 
   override protected def bindings: Seq[GuiceableModule] =
     Seq(
       bind[AuditService].toInstance(mockAuditService),
       bind[HeaderUtils].toInstance(mockHeaderUtils),
       bind[DataCacheRepository].toInstance(mock[DataCacheRepository]),
-      bind[AdminDataRepository].toInstance(mock[AdminDataRepository]),
       bind[MinimalDetailsCacheRepository].toInstance(mock[MinimalDetailsCacheRepository])
     )
 
@@ -101,6 +102,46 @@ class SchemeConnectorSpec
       connector.listOfSchemes(pspId).map { response =>
         response.swap.getOrElse(HttpResponse(0, "")).body contains "NOT_FOUND"
         response.swap.getOrElse(HttpResponse(0, "")).status mustBe NOT_FOUND
+      }
+    }
+
+    "checkForAssociation" must {
+      lazy val connector: SchemeConnector = injector.instanceOf[SchemeConnector]
+
+      "handle OK (200)" in {
+
+        server.stubFor(
+          get(urlEqualTo(checkForAssociationUrl))
+            .withHeader("Content-Type", equalTo("application/json"))
+            .withHeader("psaId", equalTo(AuthUtils.psaId))
+            .withHeader("schemeReferenceNumber", equalTo(AuthUtils.srn))
+            .willReturn(
+              ok(JsBoolean(true).toString())
+                .withHeader("Content-Type", "application/json")
+            )
+        )
+
+        connector.checkForAssociation(Left(PsaId(AuthUtils.psaId)), AuthUtils.srn) map { response =>
+          response.value mustBe true
+        }
+
+      }
+
+      "relay BadRequestException when headers are missing" in {
+
+        server.stubFor(
+          get(urlEqualTo(checkForAssociationUrl))
+            .withHeader("Content-Type", equalTo("application/json"))
+            .willReturn(
+              badRequest
+                .withBody("Bad Request with missing parameters PSA Id or SRN")
+            )
+        )
+
+        connector.checkForAssociation(Left(PsaId(AuthUtils.psaId)), AuthUtils.srn) map { response =>
+          response.left.value mustBe a[BadRequestException]
+        }
+
       }
     }
   }

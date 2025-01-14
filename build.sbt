@@ -13,7 +13,7 @@ lazy val microservice = Project(appName, file("."))
   .settings(scalaVersion := "2.13.12")
   .settings(
     RoutesKeys.routesImport ++= Seq("models.enumeration.JourneyType",
-      "models.FeatureToggleName"),
+      "models.SchemeReferenceNumber"),
     PlayKeys.devSettings += "play.server.http.port" -> "8209",
     scalacOptions += "-Wconf:src=routes/.*:s"
   )
@@ -26,3 +26,6 @@ lazy val microservice = Project(appName, file("."))
     Test / javaOptions += "-Dconfig.file=conf/test.application.conf"
   )
   .settings(resolvers += Resolver.jcenterRepo)
+  .settings(
+    resolvers += MavenRepository("HMRC-open-artefacts-maven2", "https://open.artefacts.tax.service.gov.uk/maven2")
+  )

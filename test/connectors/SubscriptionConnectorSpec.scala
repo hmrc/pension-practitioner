@@ -32,7 +32,7 @@ import play.api.inject.guice.GuiceableModule
 import play.api.libs.json.{JsString, Json}
 import play.api.mvc.RequestHeader
 import play.api.test.FakeRequest
-import repository.{AdminDataRepository, DataCacheRepository, MinimalDetailsCacheRepository}
+import repository.{DataCacheRepository, MinimalDetailsCacheRepository}
 import uk.gov.hmrc.http._
 import utils.WireMockHelper
 
@@ -59,7 +59,6 @@ class SubscriptionConnectorSpec
       bind[AuditService].toInstance(mockAuditService),
       bind[HeaderUtils].toInstance(mockHeaderUtils),
       bind[DataCacheRepository].toInstance(mock[DataCacheRepository]),
-      bind[AdminDataRepository].toInstance(mock[AdminDataRepository]),
       bind[MinimalDetailsCacheRepository].toInstance(mock[MinimalDetailsCacheRepository])
     )
 
@@ -104,6 +103,21 @@ class SubscriptionConnectorSpec
 
       connector.pspSubscription(externalId, data).collect {
         case Left(res) if res.responseCode == BAD_REQUEST => succeed
+      }
+    }
+
+    "return FORBIDDEN when DES has returned ForbiddenException" in {
+      val data = Json.obj(fields = "Id" -> "value")
+      server.stubFor(
+        post(urlEqualTo(pspSubscriptionUrl))
+          .withRequestBody(equalTo(Json.stringify(data)))
+          .willReturn(
+            forbidden()
+          )
+      )
+
+      connector.pspSubscription(externalId, data).collect {
+        case Left(res) if res.responseCode == FORBIDDEN => succeed
       }
     }
 
