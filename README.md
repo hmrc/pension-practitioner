@@ -140,206 +140,29 @@ The Pension Practitioner Frontend integrates with the Manage Pension Schemes (MP
 There are numerous APIs implemented throughout the MPS architecture, and the relevant endpoints are illustrated below. For an overview of all PODS APIs, refer to the [PODS API Documentation](https://confluence.tools.tax.service.gov.uk/display/PODSP/PODS+API+Latest+Version).
 
 
-## Service Documentation
-[To Do]
-Include relevant links or details to any additional, service-specific documents (e.g., stubs, testing protocols) when available. 
-
 ## Note on terminology
 The terms scheme reference number and submission reference number (SRN) are interchangeable within the PODS codebase; some downstream APIs use scheme reference number, some use submission reference number, probably because of oversight on part of the technical teams who developed these APIs. This detail means the same thing, the reference number that was returned from ETMP when the scheme details were submitted.
 
 ## Endpoints
-[To Do]
 
-**Standard Path**
-```POST   /register-with-id/individual```
-
-**Description**
-Registers an individual based on the NINO from ETMP
-
-| *Args*                        | *Expected Requests*                      | *Samples Response*                           | *Error Codes/Responses*                   |
-|-------------------------------|------------------------------------------|----------------------------------------------|-------------------------------------------|
-| ```INSERT ARGS```             | INSERT REQUEST HERE                      | INSERT RESPONSE HERE                         | INSERT ERROR CODES AND RESPONSES          |
-
----
-
-**Standard Path**
-```POST   /register-with-id/organisation```
-
-**Description**
-Registers an organisation from ETMP based on the UTR
-
-| *Args*                        | *Expected Requests*                      | *Samples Response*                           | *Error Codes/Responses*                   |
-|-------------------------------|------------------------------------------|----------------------------------------------|-------------------------------------------|
-| ```INSERT ARGS```             | INSERT REQUEST HERE                      | INSERT RESPONSE HERE                         | INSERT ERROR CODES AND RESPONSES          |
-
----
-
-**Standard Path**
-```POST   /register-with-no-id/organisation```
-
-**Description**
-Registers an organisation on ETMP who does not have a UTR. Typically this will be a non-UK organisation
-
-| *Args*                        | *Expected Requests*                      | *Samples Response*                           | *Error Codes/Responses*                   |
-|-------------------------------|------------------------------------------|----------------------------------------------|-------------------------------------------|
-| ```INSERT ARGS```             | INSERT REQUEST HERE                      | INSERT RESPONSE HERE                         | INSERT ERROR CODES AND RESPONSES          |
-|     | POST                |   |
-
----
-
-**Standard Path**
-```POST   /register-with-no-id/individual```
-
-**Description**
-Registers an individual on ETMP who does not have a UTR/NINO. Typically this will be a non-UK individual
-
-| *Args*                        | *Expected Requests*                      | *Samples Response*                           | *Error Codes/Responses*                   |
-|-------------------------------|------------------------------------------|----------------------------------------------|-------------------------------------------|
-| ```INSERT ARGS```             | INSERT REQUEST HERE                      | INSERT RESPONSE HERE                         | INSERT ERROR CODES AND RESPONSES          |
-
----
-
-**Standard Path**
-```GET   /journey-cache```
-
-**Description**
-Returns the data from Psp Data Cache
-
-| *Args*                        | *Expected Requests*                      | *Samples Response*                           | *Error Codes/Responses*                   |
-|-------------------------------|------------------------------------------|----------------------------------------------|-------------------------------------------|
-| ```INSERT ARGS```             | INSERT REQUEST HERE                      | INSERT RESPONSE HERE                         | INSERT ERROR CODES AND RESPONSES          |
-
----
-
-**Standard Path**
-```POST   /journey-cache```
-
-**Description**
-Saves the data to Psp Data Cache
-
-| *Args*                        | *Expected Requests*                      | *Samples Response*                           | *Error Codes/Responses*                   |
-|-------------------------------|------------------------------------------|----------------------------------------------|-------------------------------------------|
-| ```INSERT ARGS```             | INSERT REQUEST HERE                      | INSERT RESPONSE HERE                         | INSERT ERROR CODES AND RESPONSES          |
-
----
-
-**Standard Path**
-```DELETE   /journey-cache```
-
-**Description**
-Delete the data from Psp Data Cache
-
-| *Args*                        | *Expected Requests*                      | *Samples Response*                           | *Error Codes/Responses*                   |
-|-------------------------------|------------------------------------------|----------------------------------------------|-------------------------------------------|
-| ```INSERT ARGS```             | INSERT REQUEST HERE                      | INSERT RESPONSE HERE                         | INSERT ERROR CODES AND RESPONSES          |
-
----
-
-**Standard Path**
-```POST   /subscribePsp/:journeyType```
-
-**Description**
-Subscribe a pension scheme practitioner
-
-| *Args*                        | *Expected Requests*                      | *Samples Response*                           | *Error Codes/Responses*                   |
-|-------------------------------|------------------------------------------|----------------------------------------------|-------------------------------------------|
-| ```INSERT ARGS```             | INSERT REQUEST HERE                      | INSERT RESPONSE HERE                         | INSERT ERROR CODES AND RESPONSES          |
-
----
-
-**Standard Path**
-```GET   /getPsp```
-
-**Description**
-Get Psp subscription details
-
-| *Args*                        | *Expected Requests*                      | *Samples Response*                           | *Error Codes/Responses*                   |
-|-------------------------------|------------------------------------------|----------------------------------------------|-------------------------------------------|
-| ```INSERT ARGS```             | INSERT REQUEST HERE                      | INSERT RESPONSE HERE                         | INSERT ERROR CODES AND RESPONSES          |
-
----
-
-**Standard Path**
-```POST   /deregisterPsp/:pspId``` 
-
-**Description**
-De-register a Psp
-
-| *Args*                        | *Expected Requests*                      | *Samples Response*                           | *Error Codes/Responses*                   |
-|-------------------------------|------------------------------------------|----------------------------------------------|-------------------------------------------|
-| ```INSERT ARGS```             | INSERT REQUEST HERE                      | INSERT RESPONSE HERE                         | INSERT ERROR CODES AND RESPONSES          |
-
----
-
-**Standard Path**
-```POST   /authorise-psp```
-
-**Description**
-Authorise a Psp
-
-| *Args*                        | *Expected Requests*                      | *Samples Response*                           | *Error Codes/Responses*                   |
-|-------------------------------|------------------------------------------|----------------------------------------------|-------------------------------------------|
-| ```INSERT ARGS```             | INSERT REQUEST HERE                      | INSERT RESPONSE HERE                         | INSERT ERROR CODES AND RESPONSES          |
-
----
-
-**Standard Path**
-```POST   /de-authorise-psp```
-
-**Description**
-De-authorise a Psp
-
-| *Args*                        | *Expected Requests*                      | *Samples Response*                           | *Error Codes/Responses*                   |
-|-------------------------------|------------------------------------------|----------------------------------------------|-------------------------------------------|
-| ```INSERT ARGS```             | INSERT REQUEST HERE                      | INSERT RESPONSE HERE                         | INSERT ERROR CODES AND RESPONSES          |
-
----
-
-**Standard Path**
-```POST   /email-response/:journeyType/:requestId/:email/:pspId```
-
-**Description**
-Sends an audit event with the correct response returned from an email service
-
-| *Args*                        | *Expected Requests*                      | *Samples Response*                           | *Error Codes/Responses*                   |
-|-------------------------------|------------------------------------------|----------------------------------------------|-------------------------------------------|
-| ```INSERT ARGS```             | INSERT REQUEST HERE                      | INSERT RESPONSE HERE                         | INSERT ERROR CODES AND RESPONSES          |
-
----
-
-**Standard Path**
-```POST   /email-response-psp-dereg/:encryptedPspId/:encryptedEmail```
-
-**Description**
-Sends an Psp de-registration email with the correct response returned from an email service
-
-| *Args*                        | *Expected Requests*                      | *Samples Response*                           | *Error Codes/Responses*                   |
-|-------------------------------|------------------------------------------|----------------------------------------------|-------------------------------------------|
-| ```INSERT ARGS```             | INSERT REQUEST HERE                      | INSERT RESPONSE HERE                         | INSERT ERROR CODES AND RESPONSES          |
-
----
-
-**Standard Path**
-```GET   /get-minimal-details```
-
-**Description**
-Get minimal Psp details
-
-| *Args*                        | *Expected Requests*                      | *Samples Response*                           | *Error Codes/Responses*                   |
-|-------------------------------|------------------------------------------|----------------------------------------------|-------------------------------------------|
-| ```INSERT ARGS```             | INSERT REQUEST HERE                      | INSERT RESPONSE HERE                         | INSERT ERROR CODES AND RESPONSES          |
-
----
-
-**Standard Path**
-```GET   /can-deregister/:id```
-
-**Description**
-Can de-register a Psp
-
-| *Args*                        | *Expected Requests*                      | *Samples Response*                           | *Error Codes/Responses*                   |
-|-------------------------------|------------------------------------------|----------------------------------------------|-------------------------------------------|
-| ```INSERT ARGS```             | INSERT REQUEST HERE                      | INSERT RESPONSE HERE                         | INSERT ERROR CODES AND RESPONSES          |
+| *Task*                                                                  | *Supported Methods* | *Description*                                                                                            |
+|-------------------------------------------------------------------------|---------------------|----------------------------------------------------------------------------------------------------------|
+| ```/register-with-id/individual                                  ```    | POST                | Registers an individual based on the NINO from ETMP                                                      |
+| ```/register-with-id/organisation                                   ``` | POST                | Registers an organisation from ETMP based on the UTR                                                     |
+| ```/register-with-no-id/organisation                             ```    | POST                | Registers an organisation on ETMP who does not have a UTR. Typically this will be a non-UK organisation  |
+| ```/register-with-no-id/individual                               ```    | POST                | Registers an individual on ETMP who does not have a UTR/NINO. Typically this will be a non-UK individual |
+| ```/journey-cache                                     ```               | GET                 | Returns the data from Psp Data Cache                                                                     |
+| ```/journey-cache                                     ```               | POST                | Saves the data to Psp Data Cache                                                                         |
+| ```/journey-cache                                     ```               | DELETE              | Delete the data from Psp Data Cache                                                                      |
+| ```/subscribePsp/:journeyType                                    ```    | POST                | Subscribe a pension scheme practitioner                                                                  |
+| ```/getPsp                                                       ```    | GET                 | Get Psp subscription details                                                                             |
+| ```/deregisterPsp/:pspId                                         ```    | POST                | De-register a Psp                                                                                        |
+| ```/authorise-psp                                                ```    | POST                | Authorise a Psp                                                                                          |
+| ```/de-authorise-psp                                             ```    | POST                | De-authorise a Psp                                                                                       |
+| ```/email-response/:journeyType/:requestId/:email/:pspId        ```     | POST                | Sends an audit event with the correct response returned from an email service                            |
+| ```/email-response-psp-dereg/:encryptedPspId/:encryptedEmail     ```    | POST                | Sends an Psp de-registration email with the correct response returned from an email service              |
+| ```/get-minimal-details                                    ```          | GET                 | Get minimal Psp details                                                                                  |
+| ```/can-deregister/:id                                     ```          | GET                 | Can de-register a Psp                 
 
 ---
 
