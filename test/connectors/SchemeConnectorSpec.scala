@@ -27,8 +27,6 @@ import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject.bind
 import play.api.inject.guice.GuiceableModule
 import play.api.libs.json.{JsBoolean, JsValue, Json}
-import play.api.mvc.RequestHeader
-import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repository.{DataCacheRepository, MinimalDetailsCacheRepository}
 import uk.gov.hmrc.domain.PsaId
@@ -45,7 +43,6 @@ class SchemeConnectorSpec
   import SchemeConnectorSpec._
 
   private implicit lazy val hc: HeaderCarrier = HeaderCarrier()
-  private implicit lazy val rh: RequestHeader = FakeRequest("", "")
 
   override protected def portConfigKey: String = "microservice.services.pensions-scheme.port"
 
