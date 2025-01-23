@@ -2,7 +2,7 @@ import play.sbt.PlayImport.caffeine
 import sbt._
 
 object AppDependencies {
-  private val bootstrapVersion = "9.5.0"
+  private val bootstrapVersion = "9.7.0"
   private val mongoVersion = "2.3.0"
 
   val compile = Seq(
