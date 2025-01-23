@@ -36,30 +36,12 @@ class MinimalDetailsController @Inject()(
                                           pspAuthAction: actions.PspAuthAction
                                         )(implicit ec: ExecutionContext) extends BackendController(cc) with ErrorHandler with HttpResponseHelper {
 
-  def getMinimalDetails: Action[AnyContent] = authAction.async {
-    implicit request =>
-      retrieveIdAndTypeFromHeaders { (idValue, idType, regime) =>
-        getMinimalDetail(idValue, idType, regime).map {
-          case Right(minDetails) => Ok(Json.toJson(minDetails))
-          case Left(e) => result(e)
-        }
-      }
-  }
-
   def getMinimalDetailsSelf: Action[AnyContent] = pspAuthAction.async {
     implicit request =>
       getMinimalDetail(request.pspId.value, "pspid", "podp").map {
         case Right(minDetails) => Ok(Json.toJson(minDetails))
         case Left(e) => result(e)
       }
-  }
-
-  private def retrieveIdAndTypeFromHeaders(block: (String, String, String) => Future[Result])(implicit request: RequestHeader): Future[Result] = {
-    (request.headers.get("psaId"), request.headers.get("pspId")) match {
-      case (Some(id), None) => block(id, "psaid", "poda")
-      case (None, Some(id)) => block(id, "pspid", "podp")
-      case _ => Future.failed(new BadRequestException("No PSA or PSP Id in the header for get minimal details"))
-    }
   }
 
   private def getMinimalDetail(idValue: String, idType: String, regime: String)(

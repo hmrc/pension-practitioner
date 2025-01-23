@@ -63,23 +63,6 @@ class SubscriptionController @Inject()(
       }
   }
 
-  def getPspDetails: Action[AnyContent] = authAction.async {
-    implicit request =>
-
-        val pspId = request.headers.get("pspId")
-        pspId match {
-          case Some(id) =>
-            subscriptionConnector.getSubscriptionDetails(id).map {
-              case Right(pspDetails) =>
-                logger.debug(s"[Get-psp-details-transformed]$pspDetails")
-                Ok(Json.toJson(pspDetails))
-              case Left(e) => result(e)
-            }
-          case _ => Future.failed(new BadRequestException("No PSP Id in the header"))
-        }
-
-  }
-
   def getPspDetailsSelf: Action[AnyContent] = pspAuthAction.async {
     implicit request =>
       subscriptionConnector.getSubscriptionDetails(request.pspId.value).map {
@@ -87,20 +70,6 @@ class SubscriptionController @Inject()(
           logger.debug(s"[Get-psp-details-transformed]$pspDetails")
           Ok(Json.toJson(pspDetails))
         case Left(e) => result(e)
-      }
-  }
-
-  def deregisterPsp(pspId: String): Action[AnyContent] = authAction.async { implicit request =>
-      val feJson = request.body.asJson
-      logger.debug(s"[PSP-Deregistration-Payload]$feJson")
-      feJson match {
-        case Some(json) =>
-          subscriptionConnector.pspDeregistration(pspId, json) map {
-            case Right(response) => result(response)
-            case Left(e) => result(e)
-          }
-        case _ =>
-          Future.failed(new BadRequestException("Bad Request with no request body for PSP subscription"))
       }
   }
 
@@ -116,22 +85,6 @@ class SubscriptionController @Inject()(
       case _ =>
         Future.failed(new BadRequestException("Bad Request with no request body for PSP subscription"))
     }
-  }
-
-  def canDeregister(pspId: String): Action[AnyContent] = authAction.async {
-    implicit request =>
-      schemeConnector.listOfSchemes(pspId).map {
-        case Right(jsValue) =>
-          jsValue.validate[ListOfSchemes] match {
-            case JsSuccess(listOfSchemes, _) =>
-              val schemes = listOfSchemes.schemeDetails.getOrElse(List.empty)
-              val canDeregister = schemes == List.empty || !schemes.exists(_.schemeStatus == "Open")
-
-              Ok(Json.toJson(canDeregister))
-            case JsError(errors) => throw JsResultException(errors)
-          }
-        case Left(e) => result(e)
-      }
   }
 
   def canDeregisterSelf: Action[AnyContent] = pspAuthAction.async {

@@ -73,38 +73,6 @@ class AssociationControllerSpec
     AuthUtils.authStub(authConnector)
   }
 
-  "authorise PSP" must {
-    "return OK when valid response from IF" in {
-
-      when(mockAssociationConnector.authorisePsp(any(), any())(any()))
-        .thenReturn(Future.successful(Right(HttpResponse(OK, response.toString))))
-
-      val result = controller.authorisePsp()(fakeRequest.withHeaders(("pstr", pstr)).withJsonBody(testJson))
-      status(result) mustBe OK
-    }
-
-    "throw Upstream5XXResponse on Internal Server Error from IF" in {
-
-      when(mockAssociationConnector.authorisePsp(any(), any())(any()))
-        .thenReturn(Future.failed(UpstreamErrorResponse(message = "Internal Server Error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR)))
-
-      recoverToExceptionIf[UpstreamErrorResponse] {
-        controller.authorisePsp()(fakeRequest.withHeaders(("pstr", pstr)).withJsonBody(testJson))
-      } map {
-        _.statusCode mustBe INTERNAL_SERVER_ERROR
-      }
-    }
-
-    "throw BadRequestException on invalid request" in {
-      recoverToExceptionIf[BadRequestException] {
-        controller.authorisePsp()(fakeRequest.withHeaders(("pstr", pstr)))
-      } map { result =>
-        result.responseCode mustBe BAD_REQUEST
-      }
-    }
-
-  }
-
   "authorise PSP SRN" must {
     "return OK when valid response from IF" in {
 
@@ -124,34 +92,6 @@ class AssociationControllerSpec
       AuthUtils.authStubPsa(authConnector)
       recoverToExceptionIf[UpstreamErrorResponse] {
         controller.authorisePspSrn(AuthUtils.srn)(fakeRequest.withHeaders(("pstr", pstr)).withJsonBody(testJson))
-      } map {
-        _.statusCode mustBe INTERNAL_SERVER_ERROR
-      }
-    }
-
-  }
-
-  "deAuthorisePsp" must {
-    "return OK when valid response from IF" in {
-
-      when(mockAssociationConnector.deAuthorisePsp(any(), any())(any()))
-        .thenReturn(Future.successful(
-          Right(HttpResponse(OK, response.toString))
-        ))
-
-      val result = controller.deAuthorisePsp()(fakeRequest.withHeaders(("pstr", pstr)).withJsonBody(testJson))
-      status(result) mustBe OK
-    }
-
-    "throw Upstream5XXResponse on Internal Server Error from IF" in {
-
-      when(mockAssociationConnector.deAuthorisePsp(any(), any())(any()))
-        .thenReturn(Future.failed(
-          UpstreamErrorResponse(message = "Internal Server Error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR)
-        ))
-
-      recoverToExceptionIf[UpstreamErrorResponse] {
-        controller.deAuthorisePsp()(fakeRequest.withHeaders(("pstr", pstr)).withJsonBody(testJson))
       } map {
         _.statusCode mustBe INTERNAL_SERVER_ERROR
       }
