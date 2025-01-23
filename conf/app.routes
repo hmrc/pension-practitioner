@@ -14,11 +14,8 @@ POST          /subscribePsp/:journeyType                                        
 GET           /getPsp-self                                                                                      controllers.SubscriptionController.getPspDetailsSelf
 POST          /deregisterPsp-self                                                                               controllers.SubscriptionController.deregisterPspSelf
 GET           /can-deregister-self                                                                              controllers.SubscriptionController.canDeregisterSelf
-#Deprecated
-POST          /authorise-psp                                                                                    controllers.AssociationController.authorisePsp
+
 POST          /authorise-psp/:srn                                                                               controllers.AssociationController.authorisePspSrn(srn: SchemeReferenceNumber)
-#Deprecated
-POST          /de-authorise-psp                                                                                 controllers.AssociationController.deAuthorisePsp
 POST          /de-authorise-psp/:srn                                                                            controllers.AssociationController.deAuthorisePspSrn(srn: SchemeReferenceNumber)
 POST          /de-authorise-psp-self/:srn                                                                       controllers.AssociationController.deAuthorisePspSelf(srn: SchemeReferenceNumber)
 
