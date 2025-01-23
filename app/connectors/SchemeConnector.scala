@@ -22,7 +22,6 @@ import models.SchemeReferenceNumber
 import play.api.Logging
 import play.api.http.Status._
 import play.api.libs.json.JsValue
-import play.api.mvc.RequestHeader
 import uk.gov.hmrc.domain.{PsaId, PspId}
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http._
@@ -70,8 +69,7 @@ class SchemeConnector @Inject()(
 
   def listOfSchemes(pspId: String
                             )(implicit headerCarrier: HeaderCarrier,
-                             ec: ExecutionContext,
-                             request: RequestHeader
+                             ec: ExecutionContext
                             ): Future[Either[HttpResponse, JsValue]] = {
 
     val headers: Seq[(String, String)] = Seq(("idType", "pspid"), ("idValue", pspId))
