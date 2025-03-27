@@ -89,7 +89,7 @@ class SubscriptionController @Inject()(
 
   def canDeregisterSelf: Action[AnyContent] = pspAuthAction.async {
     implicit request =>
-      schemeConnector.listOfSchemes(request.pspId.value).map {
+      schemeConnector.listOfSchemes.map {
         case Right(jsValue) =>
           jsValue.validate[ListOfSchemes] match {
             case JsSuccess(listOfSchemes, _) =>
