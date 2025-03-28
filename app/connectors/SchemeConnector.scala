@@ -71,7 +71,7 @@ class SchemeConnector @Inject()(
                              ec: ExecutionContext
                             ): Future[Either[HttpResponse, JsValue]] = {
 
-    val headers: Seq[(String, String)] = Seq(("idType", "pspid"))
+    val headers: Seq[(String, String)] = Seq(("idType", "PSP"))
     val url = url"${config.listOfSchemesUrl}"
 
     httpClientV2.get(url)
