@@ -32,7 +32,6 @@ class MinimalDetailsController @Inject()(
                                           minimalConnector: MinimalConnector,
                                           minimalDetailsCacheRepository: MinimalDetailsCacheRepository,
                                           cc: ControllerComponents,
-                                          authAction: actions.PsaPspAuthAction,
                                           pspAuthAction: actions.PspAuthAction
                                         )(implicit ec: ExecutionContext) extends BackendController(cc) with ErrorHandler with HttpResponseHelper {
 

@@ -19,10 +19,10 @@ package controllers
 import connectors.MinimalConnector
 import models._
 import org.mockito.ArgumentMatchers._
+import org.scalatestplus.mockito.MockitoSugar
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfter
 import org.scalatest.matchers.must.Matchers
-import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.libs.json.Json
@@ -37,13 +37,12 @@ import utils.AuthUtils
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class MinimalDetailsControllerSpec extends PlaySpec with Matchers with GuiceOneAppPerSuite with BeforeAndAfter {
+class MinimalDetailsControllerSpec extends PlaySpec with Matchers with GuiceOneAppPerSuite with BeforeAndAfter with MockitoSugar {
 
   import MinimalDetailsControllerSpec._
 
   def controller: MinimalDetailsController = new MinimalDetailsController(mockMinimalConnector, mockMinimalDetailsCacheRepository,
     stubControllerComponents(),
-    new actions.PsaPspAuthAction(mockAuthConnector, app.injector.instanceOf[BodyParsers.Default]),
     new actions.PspAuthAction(mockAuthConnector, app.injector.instanceOf[BodyParsers.Default])
   )
 

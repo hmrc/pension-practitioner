@@ -17,12 +17,12 @@
 package controllers
 
 import connectors.AssociationConnector
-import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers._
+import org.scalatestplus.mockito.MockitoSugar
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfter
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AsyncWordSpec
-import org.scalatestplus.mockito.MockitoSugar
 import play.api.Application
 import play.api.inject.bind
 import play.api.inject.guice.{GuiceApplicationBuilder, GuiceableModule}

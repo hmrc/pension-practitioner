@@ -10,12 +10,17 @@ lazy val microservice = Project(appName, file("."))
     majorVersion := 0,
     libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test
   )
-  .settings(scalaVersion := "2.13.12")
+  .settings(scalaVersion := "2.13.16")
   .settings(
     RoutesKeys.routesImport ++= Seq("models.enumeration.JourneyType",
       "models.SchemeReferenceNumber"),
     PlayKeys.devSettings += "play.server.http.port" -> "8209",
-    scalacOptions += "-Wconf:src=routes/.*:s"
+    scalacOptions ++= Seq(
+      "-feature",
+      "-Xfatal-warnings",
+      "-Wconf:src=routes/.*:s",
+      "-deprecation"
+    )
   )
   .settings(
     Test / parallelExecution := true
