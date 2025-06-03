@@ -18,7 +18,6 @@ package controllers
 
 import connectors.{SchemeConnector, SubscriptionConnector}
 import models.enumeration.JourneyType
-import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfter
@@ -50,7 +49,6 @@ class SubscriptionControllerSpec extends AsyncWordSpec with Matchers with Mockit
   private val mockSchemeConnector = mock[SchemeConnector]
   private val authConnector: AuthConnector = mock[AuthConnector]
   private val response: JsValue = Json.obj("response-key" -> "response-value")
-  private val pspId: String = AuthUtils.pspId
   private val deregistrationRequestJson: JsValue = Json.obj("request-key" -> "request-value")
 
   def listOfSchemesJson(statuses: Seq[String] = Seq("Open", "Open")): JsObject = Json.obj(
