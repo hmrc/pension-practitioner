@@ -67,12 +67,11 @@ class SchemeConnector @Inject()(
 
   }
 
-  def listOfSchemes(pspId: String
-                            )(implicit headerCarrier: HeaderCarrier,
+  def listOfSchemes(implicit headerCarrier: HeaderCarrier,
                              ec: ExecutionContext
                             ): Future[Either[HttpResponse, JsValue]] = {
 
-    val headers: Seq[(String, String)] = Seq(("idType", "pspid"), ("idValue", pspId))
+    val headers: Seq[(String, String)] = Seq(("idType", "PSP"))
     val url = url"${config.listOfSchemesUrl}"
 
     httpClientV2.get(url)
@@ -81,7 +80,7 @@ class SchemeConnector @Inject()(
         response.status match {
           case OK => Right(response.json)
           case _ =>
-            logger.warn(s"List schemes with headers: (idType, pspid), (idValue $pspId) and url $url" +
+            logger.warn(s"List schemes with headers: (idType, pspid) and url $url" +
               s" returned response ${response.status} with body ${response.body}")
             Left(response)
         }
