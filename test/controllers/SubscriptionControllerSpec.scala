@@ -18,7 +18,6 @@ package controllers
 
 import connectors.{SchemeConnector, SubscriptionConnector}
 import models.enumeration.JourneyType
-import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfter
@@ -50,7 +49,6 @@ class SubscriptionControllerSpec extends AsyncWordSpec with Matchers with Mockit
   private val mockSchemeConnector = mock[SchemeConnector]
   private val authConnector: AuthConnector = mock[AuthConnector]
   private val response: JsValue = Json.obj("response-key" -> "response-value")
-  private val pspId: String = AuthUtils.pspId
   private val deregistrationRequestJson: JsValue = Json.obj("request-key" -> "request-value")
 
   def listOfSchemesJson(statuses: Seq[String] = Seq("Open", "Open")): JsObject = Json.obj(
@@ -190,7 +188,7 @@ class SubscriptionControllerSpec extends AsyncWordSpec with Matchers with Mockit
 
   "canDeregisterSelf" must {
     "return OK and false when canDeregister called with psa ID having some schemes" in {
-      when(mockSchemeConnector.listOfSchemes(ArgumentMatchers.eq(pspId))(any(), any()))
+      when(mockSchemeConnector.listOfSchemes(any(), any()))
         .thenReturn(Future.successful(Right(listOfSchemesJson())))
       val result = controller.canDeregisterSelf(fakeRequest)
 
@@ -199,7 +197,7 @@ class SubscriptionControllerSpec extends AsyncWordSpec with Matchers with Mockit
     }
 
     "return OK and true when canDeregister called with psa ID having no scheme detail item at all" in {
-      when(mockSchemeConnector.listOfSchemes(ArgumentMatchers.eq(pspId))(any(), any()))
+      when(mockSchemeConnector.listOfSchemes(any(), any()))
         .thenReturn(Future.successful(Right(noSchemesJson)))
       val result = controller.canDeregisterSelf(fakeRequest)
 
@@ -208,7 +206,7 @@ class SubscriptionControllerSpec extends AsyncWordSpec with Matchers with Mockit
     }
 
     "return OK and false when canDeregister called with psa ID having only wound-up schemes" in {
-      when(mockSchemeConnector.listOfSchemes(ArgumentMatchers.eq(pspId))(any(), any()))
+      when(mockSchemeConnector.listOfSchemes(any(), any()))
         .thenReturn(Future.successful(Right(listOfSchemesJson(Seq("Wound-up", "Deregistered")))))
       val result = controller.canDeregisterSelf(fakeRequest)
 
@@ -217,7 +215,7 @@ class SubscriptionControllerSpec extends AsyncWordSpec with Matchers with Mockit
     }
 
     "return OK and false when canDeregister called with psp ID having both wound-up schemes and non-wound-up schemes" in {
-      when(mockSchemeConnector.listOfSchemes(ArgumentMatchers.eq(pspId))(any(), any()))
+      when(mockSchemeConnector.listOfSchemes(any(), any()))
         .thenReturn(Future.successful(Right(listOfSchemesJson(Seq("Open", "Wound-up")))))
       val result = controller.canDeregisterSelf(fakeRequest)
 
@@ -226,7 +224,7 @@ class SubscriptionControllerSpec extends AsyncWordSpec with Matchers with Mockit
     }
 
     "return http exception when non OK httpresponse returned" in {
-      when(mockSchemeConnector.listOfSchemes(ArgumentMatchers.eq(pspId))(any(), any()))
+      when(mockSchemeConnector.listOfSchemes(any(), any()))
         .thenReturn(Future.successful(Left(HttpResponse(BAD_REQUEST, "bad request"))))
       val result = controller.canDeregisterSelf(fakeRequest)
       status(result) mustBe BAD_REQUEST

@@ -33,20 +33,13 @@ import scala.concurrent.{ExecutionContext, Future}
 class SchemeConnector @Inject()(
   httpClientV2: HttpClientV2,
   config: AppConfig
-)(implicit ec: ExecutionContext) extends HttpResponseHelper with ErrorHandler with Logging {
+)(implicit ec: ExecutionContext)
+  extends HttpResponseHelper
+    with ErrorHandler
+    with Logging {
 
   def checkForAssociation(psaIdOrPspId: Either[PsaId, PspId], srn: SchemeReferenceNumber)
-                                  (implicit headerCarrier: HeaderCarrier): Future[Either[HttpException, Boolean]] =
-    checkForAssociationCall(psaIdOrPspId, srn) map {
-      case Right(json) => json.validate[Boolean].fold(
-        _ => Left(new InternalServerException("Response from pension-scheme cannot be parsed to boolean")),
-        Right(_)
-      )
-      case Left(ex) => Left(ex)
-    }
-
-  private def checkForAssociationCall(psaIdOrPspId: Either[PsaId, PspId], srn: SchemeReferenceNumber)
-                                     (implicit headerCarrier: HeaderCarrier): Future[Either[HttpException, JsValue]] = {
+                         (implicit headerCarrier: HeaderCarrier): Future[Either[HttpException, Boolean]] = {
 
     val id = psaIdOrPspId match {
       case Left(psaId) => ("psaId", psaId.value)
@@ -54,34 +47,46 @@ class SchemeConnector @Inject()(
     }
     val headers: Seq[(String, String)] = Seq(id, ("schemeReferenceNumber", srn), ("Content-Type", "application/json"))
 
-
-    httpClientV2.get(url"${config.checkAssociationUrl}")
+    httpClientV2
+      .get(url"${config.checkAssociationUrl}")
       .setHeader(headers: _*)
-      .execute[HttpResponse] map { response =>
-      val badResponse = Seq("Bad Request with missing parameters PSA Id or SRN")
-      response.status match {
-        case OK => Right(response.json)
-        case _ => Left(handleErrorResponse("GET", config.checkAssociationUrl, badResponse: _*)(response))
+      .execute[HttpResponse]
+      .map { response =>
+        response.status match {
+          case OK =>
+            response
+              .json
+              .validate[Boolean]
+              .fold(_ =>
+                Left(new InternalServerException("Response from pension-scheme cannot be parsed to boolean")),
+                Right(_)
+              )
+          case _ =>
+            Left(handleErrorResponse(
+              httpMethod = "GET",
+              url        = config.checkAssociationUrl,
+              args       = Seq("Bad Request with missing parameters PSA Id or SRN"): _*
+            )(response))
+        }
       }
-    }
 
   }
 
-  def listOfSchemes(pspId: String
-                            )(implicit headerCarrier: HeaderCarrier,
-                             ec: ExecutionContext
-                            ): Future[Either[HttpResponse, JsValue]] = {
+  def listOfSchemes(implicit headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[Either[HttpResponse, JsValue]] = {
 
-    val headers: Seq[(String, String)] = Seq(("idType", "pspid"), ("idValue", pspId))
+    val headers: Seq[(String, String)] = Seq(("idType", "pspid"))
     val url = url"${config.listOfSchemesUrl}"
 
-    httpClientV2.get(url)
+    httpClientV2
+      .get(url)
       .setHeader(headers: _*)
-      .execute[HttpResponse].map { response =>
+      .execute[HttpResponse]
+      .map { response =>
         response.status match {
-          case OK => Right(response.json)
+          case OK =>
+            Right(response.json)
           case _ =>
-            logger.warn(s"List schemes with headers: (idType, pspid), (idValue $pspId) and url $url" +
+            logger.warn(s"List schemes with headers: (idType, pspid) and url $url" +
               s" returned response ${response.status} with body ${response.body}")
             Left(response)
         }

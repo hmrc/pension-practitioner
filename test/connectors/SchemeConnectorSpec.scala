@@ -60,9 +60,8 @@ class SchemeConnectorSpec
       bind[MinimalDetailsCacheRepository].toInstance(mock[MinimalDetailsCacheRepository])
     )
 
-  private val pspId = "21000000"
   private val idType = "pspid"
-  private val listOfSchemesUrl = "/pensions-scheme/list-of-schemes"
+  private val listOfSchemesUrl = "/pensions-scheme/list-of-schemes-self"
 
   when(mockHeaderUtils.integrationFrameworkHeader()).thenReturn(Nil)
 
@@ -74,12 +73,11 @@ class SchemeConnectorSpec
             ok
               .withHeader("Content-Type", "application/json")
               .withHeader("idType", idType)
-              .withHeader("idValue", pspId)
               .withBody(listOfSchemesPayload.toString())
           )
       )
 
-      connector.listOfSchemes(pspId).map { response =>
+      connector.listOfSchemes.map { response =>
         response.toOption.get mustBe listOfSchemesPayload
       }
     }
@@ -91,13 +89,12 @@ class SchemeConnectorSpec
             notFound()
               .withHeader("Content-Type", "application/json")
               .withHeader("idType", idType)
-              .withHeader("idValue", pspId)
               .withBody(errorResponse("NOT_FOUND"))
           )
       )
 
-      connector.listOfSchemes(pspId).map { response =>
-        response.swap.getOrElse(HttpResponse(0, "")).body contains "NOT_FOUND"
+      connector.listOfSchemes.map { response =>
+        response.swap.getOrElse(HttpResponse(0, "")).body must include("NOT_FOUND")
         response.swap.getOrElse(HttpResponse(0, "")).status mustBe NOT_FOUND
       }
     }
