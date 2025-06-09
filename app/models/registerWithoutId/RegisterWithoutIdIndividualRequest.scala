@@ -41,9 +41,9 @@ object RegisterWithoutIdIndividualRequest {
           "address" -> Json.obj(
             "addressLine1" -> registrant.address.addressLine1,
             "addressLine2" -> registrant.address.addressLine2,
-            "addressLine3" -> registrant.address.addressLine3.map(JsString).getOrElse[JsValue](JsNull),
-            "addressLine4" -> registrant.address.addressLine4.map(JsString).getOrElse[JsValue](JsNull),
-            "postalCode" -> registrant.address.postcode.map(JsString).getOrElse[JsValue](JsNull),
+            "addressLine3" -> registrant.address.addressLine3.map(JsString.apply).getOrElse[JsValue](JsNull),
+            "addressLine4" -> registrant.address.addressLine4.map(JsString.apply).getOrElse[JsValue](JsNull),
+            "postalCode" -> registrant.address.postcode.map(JsString.apply).getOrElse[JsValue](JsNull),
             "countryCode" -> registrant.address.country
           ),
           "contactDetails" -> Json.obj()

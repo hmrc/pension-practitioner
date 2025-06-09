@@ -33,6 +33,10 @@
 package repository
 
 import com.google.inject.Inject
+import org.mongodb.scala.SingleObservableFuture
+import org.mongodb.scala.gridfs.SingleObservableFuture
+import org.mongodb.scala.ObservableFuture
+import org.mongodb.scala.gridfs.ObservableFuture
 import com.mongodb.client.model.FindOneAndUpdateOptions
 import crypto.DataEncryptor
 import org.mongodb.scala.model._

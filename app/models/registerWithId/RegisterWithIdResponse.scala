@@ -40,7 +40,7 @@ object RegisterWithIdResponse {
       (JsPath \ "organisation").writeNullable[OrganisationType] and
       (JsPath \ "address").write(Address.defaultWrites) and
       (JsPath \ "contactDetails").write[ContactCommDetailsType]
-    ) (unlift(RegisterWithIdResponse.unapply))
+    ) (unlift(RegisterWithIdResponse.unapply()))
 }
 
 case class OrganisationType(organisationName: String,
