@@ -78,7 +78,7 @@ class SchemeConnectorSpec
       )
 
       connector.listOfSchemes.map { response =>
-        response.toOption.get mustBe listOfSchemesPayload
+        response.toOption.get `mustBe` listOfSchemesPayload
       }
     }
 
@@ -95,7 +95,7 @@ class SchemeConnectorSpec
 
       connector.listOfSchemes.map { response =>
         response.swap.getOrElse(HttpResponse(0, "")).body must include("NOT_FOUND")
-        response.swap.getOrElse(HttpResponse(0, "")).status mustBe NOT_FOUND
+        response.swap.getOrElse(HttpResponse(0, "")).status `mustBe` NOT_FOUND
       }
     }
 
@@ -116,7 +116,7 @@ class SchemeConnectorSpec
         )
 
         connector.checkForAssociation(Left(PsaId(AuthUtils.psaId)), AuthUtils.srn) map { response =>
-          response.value mustBe true
+          response.value `mustBe` true
         }
 
       }
@@ -133,7 +133,7 @@ class SchemeConnectorSpec
         )
 
         connector.checkForAssociation(Left(PsaId(AuthUtils.psaId)), AuthUtils.srn) map { response =>
-          response.left.value mustBe a[BadRequestException]
+          response.left.value `mustBe` a[BadRequestException]
         }
 
       }

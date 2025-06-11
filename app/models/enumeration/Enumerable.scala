@@ -16,11 +16,12 @@
 
 package models.enumeration
 
-import play.api.libs.json._
+import play.api.libs.json.*
 
 trait Enumerable[A] {
 
   def withName(str: String): Option[A]
+//  def nameOf(value: A): String
 }
 
 object Enumerable {
@@ -41,7 +42,7 @@ object Enumerable {
       }
     }
 
-    implicit def writes[A: Enumerable]: Writes[A] = {
+    implicit def writes[A]: Writes[A] = {
       Writes(value => JsString(value.toString))
     }
   }

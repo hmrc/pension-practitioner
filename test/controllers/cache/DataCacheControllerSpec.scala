@@ -65,8 +65,8 @@ class DataCacheControllerSpec extends AnyWordSpec with Matchers with MockitoSuga
   "DataCacheController" when {
     "calling get" must {
       "return OK with the data" in {
-        when(repo.get(eqTo(id))(any())) thenReturn Future.successful(Some(Json.obj("testId" -> "data")))
-        when(authConnector.authorise[Option[String]](any(), any())(any(), any())) thenReturn Future.successful(Some(id))
+        when(repo.get(eqTo(id))(using any())) `thenReturn` Future.successful(Some(Json.obj("testId" -> "data")))
+        when(authConnector.authorise[Option[String]](any(), any())(using any(), any())) `thenReturn` Future.successful(Some(id))
 
         val result = controller.get(fakeRequest)
         status(result) mustEqual OK
@@ -74,22 +74,22 @@ class DataCacheControllerSpec extends AnyWordSpec with Matchers with MockitoSuga
       }
 
       "return NOT FOUND when the data doesn't exist" in {
-        when(repo.get(eqTo(id))(any())) thenReturn Future.successful(None)
-        when(authConnector.authorise[Option[String]](any(), any())(any(), any())) thenReturn Future.successful(Some(id))
+        when(repo.get(eqTo(id))(using any())) `thenReturn` Future.successful(None)
+        when(authConnector.authorise[Option[String]](any(), any())(using any(), any())) `thenReturn` Future.successful(Some(id))
 
         val result = controller.get(fakeRequest)
         status(result) mustEqual NOT_FOUND
       }
 
       "throw an exception when the repository call fails" in {
-        when(repo.get(eqTo(id))(any())) thenReturn Future.failed(new Exception())
-        when(authConnector.authorise[Option[String]](any(), any())(any(), any())) thenReturn Future.successful(Some(id))
+        when(repo.get(eqTo(id))(using any())) `thenReturn` Future.failed(new Exception())
+        when(authConnector.authorise[Option[String]](any(), any())(using any(), any())) `thenReturn` Future.successful(Some(id))
         val result = controller.get(fakeRequest)
         an[Exception] must be thrownBy status(result)
       }
 
       "throw an exception when the call is not authorised" in {
-        when(authConnector.authorise[Option[String]](any(), any())(any(), any())) thenReturn Future.successful(None)
+        when(authConnector.authorise[Option[String]](any(), any())(using any(), any())) `thenReturn` Future.successful(None)
 
         val result = controller.get(fakeRequest)
         an[CredIdNotFoundFromAuth] must be thrownBy status(result)
@@ -100,23 +100,23 @@ class DataCacheControllerSpec extends AnyWordSpec with Matchers with MockitoSuga
     "calling save" must {
 
       "return OK when the data is saved successfully" in {
-        when(repo.save(any(), any())(any())) thenReturn Future.successful((): Unit)
-        when(authConnector.authorise[Option[String]](any(), any())(any(), any())) thenReturn Future.successful(Some(id))
+        when(repo.save(any(), any())(using any())) `thenReturn` Future.successful((): Unit)
+        when(authConnector.authorise[Option[String]](any(), any())(using any(), any())) `thenReturn` Future.successful(Some(id))
 
         val result = controller.save(fakePostRequest.withJsonBody(Json.obj("value" -> "data")))
         status(result) mustEqual CREATED
       }
 
       "return BAD REQUEST when the request body cannot be parsed" in {
-        when(repo.save(any(), any())(any())) thenReturn Future.successful((): Unit)
-        when(authConnector.authorise[Option[String]](any(), any())(any(), any())) thenReturn Future.successful(Some(id))
+        when(repo.save(any(), any())(using any())) `thenReturn` Future.successful((): Unit)
+        when(authConnector.authorise[Option[String]](any(), any())(using any(), any())) `thenReturn` Future.successful(Some(id))
 
         val result = controller.save(fakePostRequest.withRawBody(ByteString(nextBytes(512001))))
         status(result) mustEqual BAD_REQUEST
       }
 
       "throw an exception when the call is not authorised" in {
-        when(authConnector.authorise[Option[String]](any(), any())(any(), any())) thenReturn Future.successful(None)
+        when(authConnector.authorise[Option[String]](any(), any())(using any(), any())) `thenReturn` Future.successful(None)
 
         val result = controller.save(fakePostRequest.withJsonBody(Json.obj(fields = "value" -> "data")))
         an[CredIdNotFoundFromAuth] must be thrownBy status(result)
@@ -125,15 +125,15 @@ class DataCacheControllerSpec extends AnyWordSpec with Matchers with MockitoSuga
 
     "calling remove" must {
       "return OK when the data is removed successfully" in {
-        when(repo.remove(eqTo(id))(any())) thenReturn Future.successful((): Unit)
-        when(authConnector.authorise[Option[String]](any(), any())(any(), any())) thenReturn Future.successful(Some(id))
+        when(repo.remove(eqTo(id))(using any())) `thenReturn` Future.successful((): Unit)
+        when(authConnector.authorise[Option[String]](any(), any())(using any(), any())) `thenReturn` Future.successful(Some(id))
 
         val result = controller.remove(fakeRequest)
         status(result) mustEqual OK
       }
 
       "throw an exception when the call is not authorised" in {
-        when(authConnector.authorise[Option[String]](any(), any())(any(), any())) thenReturn Future.successful(None)
+        when(authConnector.authorise[Option[String]](any(), any())(using any(), any())) `thenReturn` Future.successful(None)
 
         val result = controller.remove(fakeRequest)
         an[CredIdNotFoundFromAuth] must be thrownBy status(result)

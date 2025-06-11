@@ -59,7 +59,7 @@ class AssociationConnectorSpec extends AsyncWordSpec with Matchers with WireMock
       )
 
       connector.authorisePsp(data, pstr) map {
-        _.value.status mustBe OK
+        _.value.status `mustBe` OK
       }
     }
 
@@ -74,7 +74,7 @@ class AssociationConnectorSpec extends AsyncWordSpec with Matchers with WireMock
       )
 
       connector.authorisePsp(data, pstr) map {
-        _.left.value.responseCode mustBe BAD_REQUEST
+        _.left.value.responseCode `mustBe` BAD_REQUEST
       }
     }
 
@@ -107,7 +107,7 @@ class AssociationConnectorSpec extends AsyncWordSpec with Matchers with WireMock
         connector.authorisePsp(data, pstr)
       ) map {
         ex =>
-          ex.statusCode mustBe INTERNAL_SERVER_ERROR
+          ex.statusCode `mustBe` INTERNAL_SERVER_ERROR
       }
     }
 
@@ -126,7 +126,7 @@ class AssociationConnectorSpec extends AsyncWordSpec with Matchers with WireMock
       )
 
       connector.deAuthorisePsp(data, pstr) map {
-        _.value.status mustBe OK
+        _.value.status `mustBe` OK
       }
     }
 
@@ -174,7 +174,7 @@ class AssociationConnectorSpec extends AsyncWordSpec with Matchers with WireMock
         connector.deAuthorisePsp(data, pstr)
       ) map {
         ex =>
-          ex.statusCode mustBe INTERNAL_SERVER_ERROR
+          ex.statusCode `mustBe` INTERNAL_SERVER_ERROR
       }
     }
 

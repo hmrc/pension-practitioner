@@ -75,7 +75,7 @@ class PsaAuthActionSpec extends PlaySpec with GuiceOneAppPerSuite with BeforeAnd
         running(app) {
           val bodyParsers = app.injector.instanceOf[BodyParsers.Default]
 
-          when(mockAuthConnector.authorise[RetrievalsType](any(), any())(any(), any()))
+          when(mockAuthConnector.authorise[RetrievalsType](any(), any())(using any(), any()))
             .thenReturn(Future.successful(new~(Enrolments(Set.empty), Some("id"))))
 
           val action = new PsaAuthAction(mockAuthConnector, bodyParsers)
@@ -98,7 +98,7 @@ class PsaAuthActionSpec extends PlaySpec with GuiceOneAppPerSuite with BeforeAnd
           val controller = new Harness(authAction)
           val result = controller.onPageLoad()(FakeRequest())
 
-          status(result) mustBe UNAUTHORIZED
+          status(result) `mustBe` UNAUTHORIZED
         }
       }
     }

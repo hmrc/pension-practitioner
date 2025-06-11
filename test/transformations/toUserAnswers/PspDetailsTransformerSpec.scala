@@ -29,22 +29,22 @@ class PspDetailsTransformerSpec extends AnyFreeSpec with Matchers with OptionVal
   "A PspDetailsTransformer" - {
     "must transform from UserAnswers to ETMP AFT Return format for UK individual" in {
       val transformedJson = individualUK.transform(transformer.transformToUserAnswers).asOpt.value
-      transformedJson mustBe uaIndividualUK
+      transformedJson `mustBe` uaIndividualUK
     }
 
     "must transform from UserAnswers to ETMP AFT Return format for Non UK individual" in {
       val transformedJson = individualNonUk.transform(transformer.transformToUserAnswers).asOpt.value
-      transformedJson mustBe uaIndividualNonUk
+      transformedJson `mustBe` uaIndividualNonUk
     }
 
     "must transform from UserAnswers to ETMP AFT Return format for UK company" in {
       val transformedJson = companyUK.transform(transformer.transformToUserAnswers).asOpt.value
-      transformedJson mustBe uaCompanyUk
+      transformedJson `mustBe` uaCompanyUk
     }
 
     "must transform from UserAnswers to ETMP AFT Return format for Non UK partnership" in {
       val transformedJson = partnershipNonUK.transform(transformer.transformToUserAnswers).asOpt.value
-      transformedJson mustBe uaPartnershipNonUK
+      transformedJson `mustBe` uaPartnershipNonUK
     }
   }
 

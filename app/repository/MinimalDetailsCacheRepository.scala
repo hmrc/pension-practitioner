@@ -35,7 +35,6 @@ package repository
 import com.google.inject.Inject
 import com.mongodb.client.model.FindOneAndUpdateOptions
 import crypto.DataEncryptor
-import org.mongodb.scala.{ObservableFuture, SingleObservableFuture}
 import org.mongodb.scala.gridfs.{ObservableFuture, SingleObservableFuture}
 import org.mongodb.scala.model.*
 import play.api.libs.json.*

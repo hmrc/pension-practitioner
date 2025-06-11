@@ -20,26 +20,26 @@ import models.registerWithoutId
 import models.registerWithoutId.{Address, RegisterWithoutIdIndividualRequest, RegisterWithoutIdResponse}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
-import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+import org.scalatest.matchers.should.Matchers.*
 import play.api.libs.json.{JsResultException, JsValue, Json}
 
 class RegisterWithoutIdIndividualRequestSpec extends AnyFlatSpec with Matchers {
 
-  import RegisterWithoutIdIndividualRequestSpec._
+  import RegisterWithoutIdIndividualRequestSpec.*
 
   "RegistrationNoIdIndividualRequest.apiWrites" should "transform a request with full address details" in {
 
-    val actual = Json.toJson(fullAddressRequest)(RegisterWithoutIdIndividualRequest.writesRegistrationNoIdIndividualRequest(acknowledgementReference))
+    val actual = Json.toJson(fullAddressRequest)(using RegisterWithoutIdIndividualRequest.writesRegistrationNoIdIndividualRequest(acknowledgementReference))
 
-    actual shouldEqual expectedFullAddressJson
+    actual `shouldEqual` expectedFullAddressJson
 
   }
 
   it should "transform a request with minimal address details" in {
 
-    val actual = Json.toJson(minimalAddressRequest)(RegisterWithoutIdIndividualRequest.writesRegistrationNoIdIndividualRequest(acknowledgementReference))
+    val actual = Json.toJson(minimalAddressRequest)(using RegisterWithoutIdIndividualRequest.writesRegistrationNoIdIndividualRequest(acknowledgementReference))
 
-    actual shouldEqual expectedMinimalAddressJson
+    actual `shouldEqual` expectedMinimalAddressJson
 
   }
 

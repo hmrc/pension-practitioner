@@ -33,11 +33,11 @@ class OrganisationReadsSpec extends AnyWordSpec with Matchers with OptionValues 
       val result = organisation.as[Organisation]
 
       "we have organisation name" in {
-        result.organisationName mustBe "Test-Ltd"
+        result.organisationName `mustBe` "Test-Ltd"
       }
 
       "we have organisation type" in {
-        result.organisationType mustBe OrganisationTypeEnum.Partnership
+        result.organisationType `mustBe` OrganisationTypeEnum.Partnership
       }
 
     }

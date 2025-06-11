@@ -37,7 +37,7 @@ class PsaSchemeActionImpl (srn:SchemeReferenceNumber, schemeConnector: SchemeCon
     val isAssociated = schemeConnector.checkForAssociation(
       Left(request.psaId),
       srn
-    )(hc(request))
+    )(using hc(using request))
 
     isAssociated.flatMap {
       case Right(true) => block(request)

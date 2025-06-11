@@ -33,14 +33,11 @@
 package repository
 
 import com.google.inject.Inject
-import org.mongodb.scala.SingleObservableFuture
-import org.mongodb.scala.gridfs.SingleObservableFuture
-import org.mongodb.scala.ObservableFuture
-import org.mongodb.scala.gridfs.ObservableFuture
 import com.mongodb.client.model.FindOneAndUpdateOptions
 import crypto.DataEncryptor
-import org.mongodb.scala.model._
-import play.api.libs.json._
+import org.mongodb.scala.gridfs.{ObservableFuture, SingleObservableFuture}
+import org.mongodb.scala.model.*
+import play.api.libs.json.*
 import play.api.{Configuration, Logging}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats

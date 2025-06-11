@@ -25,7 +25,7 @@ case class Organisation(organisationName: String, organisationType: Organisation
 object Organisation {
   implicit val reads: Reads[Organisation] = (
     (JsPath \ "organisationName").read[String] and
-      (JsPath \ "organisationType").read(EnumUtils.enumReads(OrganisationTypeEnum))
+      (JsPath \ "organisationType").read(using EnumUtils.enumReads(OrganisationTypeEnum))
     ) (
     (orgName, orgType) => {
       Organisation(

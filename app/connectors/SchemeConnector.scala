@@ -49,7 +49,7 @@ class SchemeConnector @Inject()(
 
     httpClientV2
       .get(url"${config.checkAssociationUrl}")
-      .setHeader(headers: _*)
+      .setHeader(headers*)
       .execute[HttpResponse]
       .map { response =>
         response.status match {
@@ -65,7 +65,7 @@ class SchemeConnector @Inject()(
             Left(handleErrorResponse(
               httpMethod = "GET",
               url        = config.checkAssociationUrl,
-              args       = Seq("Bad Request with missing parameters PSA Id or SRN"): _*
+              args       = Seq("Bad Request with missing parameters PSA Id or SRN")*
             )(response))
         }
       }
@@ -79,7 +79,7 @@ class SchemeConnector @Inject()(
 
     httpClientV2
       .get(url)
-      .setHeader(headers: _*)
+      .setHeader(headers*)
       .execute[HttpResponse]
       .map { response =>
         response.status match {

@@ -61,13 +61,13 @@ class RegistrationControllerSpec
 
   private val application: Application = new GuiceApplicationBuilder()
     .configure(conf = "auditing.enabled" -> false, "metrics.enabled" -> false, "metrics.jvm" -> false).
-    overrides(modules: _*).build()
+    overrides(modules*).build()
   implicit val mat: Materializer = application.materializer
 
   before {
     reset(mockRegistrationConnector)
     reset(authConnector)
-    when(authConnector.authorise[Option[String]](any(), any())(any(), any())) thenReturn Future.successful(Some(externalId))
+    when(authConnector.authorise[Option[String]](any(), any())(using any(), any())) `thenReturn` Future.successful(Some(externalId))
   }
   private val controller = application.injector.instanceOf[RegistrationController]
 
@@ -84,12 +84,12 @@ class RegistrationControllerSpec
 
       when(mockRegistrationConnector.registerWithIdIndividual(
         ArgumentMatchers.eq(externalId), ArgumentMatchers.eq(nino), ArgumentMatchers.eq(mandatoryRequestData)
-      )(any(), any())).thenReturn(Future.successful(Right(successResponse)))
+      )(using any(), any())).thenReturn(Future.successful(Right(successResponse)))
 
       val result = controller.registerWithIdIndividual(fakeRequestWithNino)
 
       ScalaFutures.whenReady(result) { _ =>
-        status(result) mustBe OK
+        status(result) `mustBe` OK
         contentAsJson(result) mustEqual Json.toJson(successResponse)
       }
     }
@@ -100,25 +100,25 @@ class RegistrationControllerSpec
 
       when(mockRegistrationConnector.registerWithIdIndividual(
         ArgumentMatchers.eq(externalId), ArgumentMatchers.eq(nino), ArgumentMatchers.eq(mandatoryRequestData)
-      )(any(), any())).thenReturn(Future.successful(Right(successResponse)))
+      )(using any(), any())).thenReturn(Future.successful(Right(successResponse)))
 
       recoverToExceptionIf[BadRequestException] {
         controller.registerWithIdIndividual(FakeRequest("", ""))
       } map { response =>
-        response.responseCode mustBe BAD_REQUEST
-        response.message mustBe "Bad Request with missing nino for register with id call for individual"
+        response.responseCode `mustBe` BAD_REQUEST
+        response.message `mustBe` "Bad Request with missing nino for register with id call for individual"
       }
     }
 
     "throw Upstream5XXResponse on Internal Server Error from DES" in {
 
-      when(mockRegistrationConnector.registerWithIdIndividual(any(), any(), any())(any(), any()))
+      when(mockRegistrationConnector.registerWithIdIndividual(any(), any(), any())(using any(), any()))
         .thenReturn(Future.failed(UpstreamErrorResponse(message = "Internal Server Error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR)))
 
       recoverToExceptionIf[UpstreamErrorResponse] {
         controller.registerWithIdIndividual(fakeRequestWithNino)
       } map {
-        _.statusCode mustBe INTERNAL_SERVER_ERROR
+        _.statusCode `mustBe` INTERNAL_SERVER_ERROR
       }
     }
   }
@@ -137,12 +137,12 @@ class RegistrationControllerSpec
 
       when(mockRegistrationConnector.registerWithIdOrganisation(
         ArgumentMatchers.eq(externalId), ArgumentMatchers.eq(utr), ArgumentMatchers.eq(mandatoryRequestData)
-      )(any(), any())).thenReturn(Future.successful(Right(successResponse)))
+      )(using any(), any())).thenReturn(Future.successful(Right(successResponse)))
 
       val result = controller.registerWithIdOrganisation(fakeRequestWithUtr)
 
       ScalaFutures.whenReady(result) { _ =>
-        status(result) mustBe OK
+        status(result) `mustBe` OK
         contentAsJson(result) mustEqual Json.toJson(successResponse)
       }
     }
@@ -153,25 +153,25 @@ class RegistrationControllerSpec
 
       when(mockRegistrationConnector.registerWithIdOrganisation(
         ArgumentMatchers.eq(externalId), ArgumentMatchers.eq(nino), ArgumentMatchers.eq(mandatoryRequestData)
-      )(any(), any())).thenReturn(Future.successful(Right(successResponse)))
+      )(using any(), any())).thenReturn(Future.successful(Right(successResponse)))
 
       recoverToExceptionIf[BadRequestException] {
         controller.registerWithIdOrganisation(FakeRequest("", ""))
       } map { response =>
-        response.responseCode mustBe BAD_REQUEST
-        response.message mustBe "Bad Request with missing utr or request body for register with id call for organisation"
+        response.responseCode `mustBe` BAD_REQUEST
+        response.message `mustBe` "Bad Request with missing utr or request body for register with id call for organisation"
       }
     }
 
     "throw Upstream5XXResponse on Internal Server Error from DES" in {
 
-      when(mockRegistrationConnector.registerWithIdOrganisation(any(), any(), any())(any(), any()))
+      when(mockRegistrationConnector.registerWithIdOrganisation(any(), any(), any())(using any(), any()))
         .thenReturn(Future.failed(UpstreamErrorResponse(message = "CONFLICT", CONFLICT, CONFLICT)))
 
       recoverToExceptionIf[UpstreamErrorResponse] {
         controller.registerWithIdOrganisation(fakeRequestWithUtr)
       } map {
-        _.statusCode mustBe CONFLICT
+        _.statusCode `mustBe` CONFLICT
       }
     }
   }
@@ -202,26 +202,26 @@ class RegistrationControllerSpec
       val successResponse: RegisterWithoutIdResponse = RegisterWithoutIdResponse("XE0001234567890", "1234567890")
 
       when(mockRegistrationConnector.registrationNoIdIndividual(
-        ArgumentMatchers.eq(externalId), ArgumentMatchers.eq(requestBody.as[RegisterWithoutIdIndividualRequest]))(any(), any()))
+        ArgumentMatchers.eq(externalId), ArgumentMatchers.eq(requestBody.as[RegisterWithoutIdIndividualRequest]))(using any(), any()))
         .thenReturn(Future.successful(Right(successResponse)))
 
       val result = call(controller.registrationNoIdIndividual, fakeRequestWithNoIdIndBody)
 
       ScalaFutures.whenReady(result) { _ =>
-        verify(mockRegistrationConnector, times(1)).registrationNoIdIndividual(any(), any())(any(), any())
-        status(result) mustBe OK
+        verify(mockRegistrationConnector, times(1)).registrationNoIdIndividual(any(), any())(using any(), any())
+        status(result) `mustBe` OK
       }
     }
 
     "throw Upstream5XXResponse on Internal Server Error from DES" in {
 
-      when(mockRegistrationConnector.registrationNoIdIndividual(any(), any())(any(), any()))
+      when(mockRegistrationConnector.registrationNoIdIndividual(any(), any())(using any(), any()))
         .thenReturn(Future.failed(UpstreamErrorResponse(message = "Internal Server Error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR)))
 
       recoverToExceptionIf[UpstreamErrorResponse] {
         call(controller.registrationNoIdIndividual, fakeRequestWithNoIdIndBody)
       } map {
-        _.statusCode mustBe INTERNAL_SERVER_ERROR
+        _.statusCode `mustBe` INTERNAL_SERVER_ERROR
       }
     }
   }
@@ -258,26 +258,26 @@ class RegistrationControllerSpec
       val successResponse: RegisterWithoutIdResponse = RegisterWithoutIdResponse("XE0001234567890", "1234567890")
 
       when(mockRegistrationConnector.registrationNoIdOrganisation(
-        ArgumentMatchers.eq(externalId), ArgumentMatchers.eq(requestBody.as[OrganisationRegistrant]))(any(), any()))
+        ArgumentMatchers.eq(externalId), ArgumentMatchers.eq(requestBody.as[OrganisationRegistrant]))(using any(), any()))
         .thenReturn(Future.successful(Right(successResponse)))
 
       val result = call(controller.registrationNoIdOrganisation, fakeRequestWithNoIdOrgBody)
 
       ScalaFutures.whenReady(result) { _ =>
-        verify(mockRegistrationConnector, times(1)).registrationNoIdOrganisation(any(), any())(any(), any())
-        status(result) mustBe OK
+        verify(mockRegistrationConnector, times(1)).registrationNoIdOrganisation(any(), any())(using any(), any())
+        status(result) `mustBe` OK
       }
     }
 
     "throw Upstream5XXResponse on Internal Server Error from DES" in {
 
-      when(mockRegistrationConnector.registrationNoIdOrganisation(any(), any())(any(), any()))
+      when(mockRegistrationConnector.registrationNoIdOrganisation(any(), any())(using any(), any()))
         .thenReturn(Future.failed(UpstreamErrorResponse(message = "Internal Server Error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR)))
 
       recoverToExceptionIf[UpstreamErrorResponse] {
         call(controller.registrationNoIdOrganisation, fakeRequestWithNoIdOrgBody)
       } map {
-        _.statusCode mustBe INTERNAL_SERVER_ERROR
+        _.statusCode `mustBe` INTERNAL_SERVER_ERROR
       }
     }
   }

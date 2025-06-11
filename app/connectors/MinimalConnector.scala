@@ -59,7 +59,7 @@ class MinimalConnectorImpl @Inject()(
     val url = url"${appConfig.minimalDetailsUrl.format(regime, idType, idValue)}"
 
     httpClientV2.get(url)
-      .setHeader(headerUtils.integrationFrameworkHeader(): _*)
+      .setHeader(headerUtils.integrationFrameworkHeader()*)
       .execute[HttpResponse] map { response =>
       response.status match {
         case OK =>
@@ -73,7 +73,7 @@ class MinimalConnectorImpl @Inject()(
   private case object MinDetailsInvalidResponseException extends Exception
 
   private def validateGetJson(response: HttpResponse): MinimalDetails =
-    response.json.validate[MinimalDetails](MinimalDetails.reads).fold(
+    response.json.validate[MinimalDetails](using MinimalDetails.reads).fold(
       _ => {
         invalidPayloadHandler.logFailures("/resources/schemas/minimalDetails.json")(response.json)
         throw MinDetailsInvalidResponseException

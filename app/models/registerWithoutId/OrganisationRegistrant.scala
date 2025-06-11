@@ -46,7 +46,7 @@ object OrganisationRegistrant {
   private val writesOrganisationRegistrant: Writes[OrganisationRegistrant] = {
     (
       (__ \ "organisation").write[OrganisationName] and
-        (__ \ "address").write[Address](writesAddress)
+        (__ \ "address").write[Address](using writesAddress)
       ) { o =>
       (
         o.organisation,
@@ -70,7 +70,7 @@ object OrganisationRegistrant {
             "faxNumber" -> JsNull,
             "emailAddress" -> JsNull
           )
-        ) ++ Json.toJson(registrant)(writesOrganisationRegistrant).as[JsObject]
+        ) ++ Json.toJson(registrant)(using writesOrganisationRegistrant).as[JsObject]
       }
     }
   }

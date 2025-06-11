@@ -35,7 +35,6 @@ class SubscriptionController @Inject()(
                                         schemeConnector: SchemeConnector,
                                         pspSubscriptionTransformer: PSPSubscriptionTransformer,
                                         cc: ControllerComponents,
-                                        authAction: actions.PsaPspAuthAction,
                                         pspAuthAction: actions.PspAuthAction,
                                         noEnrolmentAuthAction: actions.NoEnrolmentAuthAction
                                       )(implicit ec: ExecutionContext) extends BackendController(cc)

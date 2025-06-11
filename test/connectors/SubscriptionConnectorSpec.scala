@@ -149,7 +149,7 @@ class SubscriptionConnectorSpec
         connector.pspSubscription(externalId, data)
       ) map {
         ex =>
-          ex.statusCode mustBe INTERNAL_SERVER_ERROR
+          ex.statusCode `mustBe` INTERNAL_SERVER_ERROR
       }
 
     }
@@ -169,7 +169,7 @@ class SubscriptionConnectorSpec
       )
 
       connector.pspSubscription(externalId, data).map { _ =>
-        verify(mockAuditService, times(1)).sendExtendedEvent(eventCaptor.capture())(any(), any())
+        verify(mockAuditService, times(1)).sendExtendedEvent(eventCaptor.capture())(using any(), any())
         eventCaptor.getValue mustEqual PSPSubscription(externalId, Status.OK, data, Some(response))
       }
     }
@@ -187,7 +187,7 @@ class SubscriptionConnectorSpec
       )
 
       connector.getSubscriptionDetails(pspId).map { response =>
-        response.toOption.get mustBe pspUserAnswers
+        response.toOption.get `mustBe` pspUserAnswers
       }
     }
 
@@ -318,7 +318,7 @@ class SubscriptionConnectorSpec
         connector.pspDeregistration(pspId, data)
       ) map {
         ex =>
-          ex.statusCode mustBe INTERNAL_SERVER_ERROR
+          ex.statusCode `mustBe` INTERNAL_SERVER_ERROR
       }
     }
 

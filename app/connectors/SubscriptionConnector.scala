@@ -23,8 +23,6 @@ import play.api.Logger
 import play.api.http.Status.*
 import play.api.libs.json.*
 import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
-import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue
-import play.api.libs.ws.writeableOf_JsValue
 import play.api.mvc.RequestHeader
 import transformations.toUserAnswers.PspDetailsTransformer
 import uk.gov.hmrc.http.*
@@ -56,7 +54,7 @@ class SubscriptionConnector @Inject()(
 
     httpClientV2.post(url)
       .withBody(data)
-      .setHeader(headerCarrier.extraHeaders: _*)
+      .setHeader(headerCarrier.extraHeaders*)
       .execute[HttpResponse] map { response =>
       responseToEither(response = response, url = url.toString)
     } andThen subscriptionAuditService.sendSubscribeAuditEvent(externalId, data) andThen
@@ -82,7 +80,7 @@ class SubscriptionConnector @Inject()(
     val url = url"${config.subscriptionDetailsUrl.format(pspId)}"
 
     httpClientV2.get(url)
-      .setHeader(hc.extraHeaders: _*)
+      .setHeader(hc.extraHeaders*)
       .execute[HttpResponse] map { response =>
       response.status match {
         case OK =>
@@ -101,7 +99,7 @@ class SubscriptionConnector @Inject()(
 
     httpClientV2.post(url)
       .withBody(data)
-      .setHeader(hc.extraHeaders: _*)
+      .setHeader(hc.extraHeaders*)
       .execute[HttpResponse] map { response =>
         responseToEither(response = response, url = url.toString)
       } andThen

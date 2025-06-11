@@ -90,7 +90,7 @@ class SubscriptionControllerSpec extends AsyncWordSpec with Matchers with Mockit
 
   val application: Application = new GuiceApplicationBuilder()
     .configure(conf = "auditing.enabled" -> false, "metrics.enabled" -> false, "metrics.jvm" -> false).
-    overrides(modules: _*).build()
+    overrides(modules*).build()
 
   val controller: SubscriptionController = application.injector.instanceOf[SubscriptionController]
 
@@ -105,23 +105,23 @@ class SubscriptionControllerSpec extends AsyncWordSpec with Matchers with Mockit
     "return OK when valid response from API" in {
       reset(authConnector)
       AuthUtils.noEnrolmentAuthStub(authConnector)
-      when(mockSubscriptionConnector.pspSubscription(any(), any())(any(), any()))
+      when(mockSubscriptionConnector.pspSubscription(any(), any())(using any(), any()))
         .thenReturn(Future.successful(Right(HttpResponse(OK, response.toString))))
 
       val result = controller.subscribePsp(JourneyType.PSP_SUBSCRIPTION)(fakeRequest.withJsonBody(uaIndividualUK))
-      status(result) mustBe OK
+      status(result) `mustBe` OK
     }
 
     "throw Upstream5XXResponse on Internal Server Error from API" in {
       reset(authConnector)
       AuthUtils.noEnrolmentAuthStub(authConnector)
-      when(mockSubscriptionConnector.pspSubscription(any(), any())(any(), any()))
+      when(mockSubscriptionConnector.pspSubscription(any(), any())(using any(), any()))
         .thenReturn(Future.failed(UpstreamErrorResponse(message = "Internal Server Error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR)))
 
       recoverToExceptionIf[UpstreamErrorResponse] {
         controller.subscribePsp(JourneyType.PSP_SUBSCRIPTION)(fakeRequest.withJsonBody(uaIndividualUK))
       } map {
-        _.statusCode mustBe INTERNAL_SERVER_ERROR
+        _.statusCode `mustBe` INTERNAL_SERVER_ERROR
       }
     }
 
@@ -130,57 +130,57 @@ class SubscriptionControllerSpec extends AsyncWordSpec with Matchers with Mockit
   "getPspDetailsSelf" must {
     "return OK when service returns successfully" in {
 
-      when(mockSubscriptionConnector.getSubscriptionDetails(any())(any()))
+      when(mockSubscriptionConnector.getSubscriptionDetails(any())(using any()))
         .thenReturn(Future.successful(Right(Json.obj())))
       val result = controller.getPspDetailsSelf(fakeRequest)
 
-      status(result) mustBe OK
-      contentAsJson(result) mustBe Json.obj()
+      status(result) `mustBe` OK
+      contentAsJson(result) `mustBe` Json.obj()
     }
 
     "return bad request when connector returns BAD_REQUEST" in {
 
-      when(mockSubscriptionConnector.getSubscriptionDetails(any())(any()))
+      when(mockSubscriptionConnector.getSubscriptionDetails(any())(using any()))
         .thenReturn(Future.successful(Left(HttpResponse(BAD_REQUEST, "bad request")))
         )
 
       val result = controller.getPspDetailsSelf(fakeRequest)
 
-      status(result) mustBe BAD_REQUEST
-      contentAsString(result) mustBe "bad request"
+      status(result) `mustBe` BAD_REQUEST
+      contentAsString(result) `mustBe` "bad request"
     }
 
     "return not found when connector returns NOT_FOUND" in {
 
-      when(mockSubscriptionConnector.getSubscriptionDetails(any())(any()))
+      when(mockSubscriptionConnector.getSubscriptionDetails(any())(using any()))
         .thenReturn(Future.successful(Left(HttpResponse(NOT_FOUND, "not found"))))
 
       val result = controller.getPspDetailsSelf(fakeRequest)
 
-      status(result) mustBe NOT_FOUND
-      contentAsString(result) mustBe "not found"
+      status(result) `mustBe` NOT_FOUND
+      contentAsString(result) `mustBe` "not found"
     }
   }
 
   "deregisterPspSelf" must {
     "return OK when valid response from API" in {
 
-      when(mockSubscriptionConnector.pspDeregistration(any(), any())(any()))
+      when(mockSubscriptionConnector.pspDeregistration(any(), any())(using any()))
         .thenReturn(Future.successful(Right(HttpResponse(OK, response.toString))))
 
       val result = controller.deregisterPspSelf(fakeRequest.withJsonBody(deregistrationRequestJson))
-      status(result) mustBe OK
+      status(result) `mustBe` OK
     }
 
     "throw Upstream5XXResponse on Internal Server Error from API" in {
 
-      when(mockSubscriptionConnector.pspDeregistration(any(), any())(any()))
+      when(mockSubscriptionConnector.pspDeregistration(any(), any())(using any()))
         .thenReturn(Future.failed(UpstreamErrorResponse(message = "Internal Server Error", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR)))
 
       recoverToExceptionIf[UpstreamErrorResponse] {
         controller.deregisterPspSelf(fakeRequest.withJsonBody(deregistrationRequestJson))
       } map {
-        _.statusCode mustBe INTERNAL_SERVER_ERROR
+        _.statusCode `mustBe` INTERNAL_SERVER_ERROR
       }
     }
 
@@ -188,46 +188,46 @@ class SubscriptionControllerSpec extends AsyncWordSpec with Matchers with Mockit
 
   "canDeregisterSelf" must {
     "return OK and false when canDeregister called with psa ID having some schemes" in {
-      when(mockSchemeConnector.listOfSchemes(any(), any()))
+      when(mockSchemeConnector.listOfSchemes(using any(), any()))
         .thenReturn(Future.successful(Right(listOfSchemesJson())))
       val result = controller.canDeregisterSelf(fakeRequest)
 
-      status(result) mustBe OK
+      status(result) `mustBe` OK
       contentAsJson(result) mustEqual JsBoolean(false)
     }
 
     "return OK and true when canDeregister called with psa ID having no scheme detail item at all" in {
-      when(mockSchemeConnector.listOfSchemes(any(), any()))
+      when(mockSchemeConnector.listOfSchemes(using any(), any()))
         .thenReturn(Future.successful(Right(noSchemesJson)))
       val result = controller.canDeregisterSelf(fakeRequest)
 
-      status(result) mustBe OK
+      status(result) `mustBe` OK
       contentAsJson(result) mustEqual JsBoolean(true)
     }
 
     "return OK and false when canDeregister called with psa ID having only wound-up schemes" in {
-      when(mockSchemeConnector.listOfSchemes(any(), any()))
+      when(mockSchemeConnector.listOfSchemes(using any(), any()))
         .thenReturn(Future.successful(Right(listOfSchemesJson(Seq("Wound-up", "Deregistered")))))
       val result = controller.canDeregisterSelf(fakeRequest)
 
-      status(result) mustBe OK
+      status(result) `mustBe` OK
       contentAsJson(result) mustEqual JsBoolean(true)
     }
 
     "return OK and false when canDeregister called with psp ID having both wound-up schemes and non-wound-up schemes" in {
-      when(mockSchemeConnector.listOfSchemes(any(), any()))
+      when(mockSchemeConnector.listOfSchemes(using any(), any()))
         .thenReturn(Future.successful(Right(listOfSchemesJson(Seq("Open", "Wound-up")))))
       val result = controller.canDeregisterSelf(fakeRequest)
 
-      status(result) mustBe OK
+      status(result) `mustBe` OK
       contentAsJson(result) mustEqual JsBoolean(false)
     }
 
     "return http exception when non OK httpresponse returned" in {
-      when(mockSchemeConnector.listOfSchemes(any(), any()))
+      when(mockSchemeConnector.listOfSchemes(using any(), any()))
         .thenReturn(Future.successful(Left(HttpResponse(BAD_REQUEST, "bad request"))))
       val result = controller.canDeregisterSelf(fakeRequest)
-      status(result) mustBe BAD_REQUEST
+      status(result) `mustBe` BAD_REQUEST
     }
   }
 

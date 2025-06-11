@@ -38,25 +38,25 @@ class DataEncryptorSpec extends AnyFreeSpec with Matchers with GuiceOneAppPerSui
 
   "encrypt" - {
     "must encrypt jsValue" in {
-      encryptor.encrypt(id, notEncryptedJsValue).as[EncryptedValue] mustBe an[EncryptedValue]
+      encryptor.encrypt(id, notEncryptedJsValue).as[EncryptedValue] `mustBe` an[EncryptedValue]
     }
     "must not encrypt if no key is provided" in {
-      encryptorNoKey.encrypt(id, notEncryptedJsValue) mustBe notEncryptedJsValue
+      encryptorNoKey.encrypt(id, notEncryptedJsValue) `mustBe` notEncryptedJsValue
     }
   }
 
   "decrypt" - {
     "must decrypt jsValue" in {
-      encryptor.decrypt(id, Json.toJson(encryptedJsValue)) mustBe notEncryptedJsValue
+      encryptor.decrypt(id, Json.toJson(encryptedJsValue)) `mustBe` notEncryptedJsValue
     }
 
     "must return original value if not encrypted" in {
-      encryptorNoKey.decrypt(id, notEncryptedJsValue) mustBe notEncryptedJsValue
+      encryptorNoKey.decrypt(id, notEncryptedJsValue) `mustBe` notEncryptedJsValue
     }
 
     "must throw a RuntimeException if no encryption field is available while decrypting a value" in {
       val exception = intercept[RuntimeException](encryptorNoKey.decrypt(id, Json.toJson(encryptedJsValue)))
-      exception mustBe a[RuntimeException]
+      exception `mustBe` a[RuntimeException]
     }
   }
 }

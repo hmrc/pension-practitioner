@@ -47,7 +47,7 @@ class MinimalDetailsController @Inject()(
     implicit hc: HeaderCarrier, request: RequestHeader): Future[Either[HttpResponse, MinimalDetails]] = {
     minimalDetailsCacheRepository.get(idValue).flatMap {
       case Some(response) =>
-        response.validate[MinimalDetails](MinimalDetails.defaultReads) match {
+        response.validate[MinimalDetails](using MinimalDetails.defaultReads) match {
           case JsSuccess(value, _) => Future.successful(Right(value))
           case JsError(_) => getAndCacheMinimalDetails(idValue, idType, regime)
         }
