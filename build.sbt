@@ -10,7 +10,7 @@ lazy val microservice = Project(appName, file("."))
     majorVersion := 0,
     libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test
   )
-  .settings(scalaVersion := "3.7.0")
+  .settings(scalaVersion := "3.7.1")
   .settings(
     RoutesKeys.routesImport ++= Seq("models.enumeration.JourneyType",
       "models.SchemeReferenceNumber"),
@@ -22,7 +22,7 @@ lazy val microservice = Project(appName, file("."))
       "-Wconf:src=target/.*:s",                     // silence warnings from compiled files
       "-Wconf:msg=Flag.*repeatedly:silent",         // Suppress warnings for repeated flags
       "-Wconf:src=.*StartupModule\\.scala.*:silent", // Suppress warning about unused Environment
-      "-Wconf:msg=.*unused explicit parameter.*&src=.*/controllers/SubscriptionController\\.scala:silent"
+      "-Wconf:msg=.*unused explicit parameter.*&src=.*/SubscriptionController\\.scala:silent"
     )
   )
   .settings(

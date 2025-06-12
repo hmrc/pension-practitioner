@@ -21,7 +21,6 @@ import play.api.libs.json.*
 trait Enumerable[A] {
 
   def withName(str: String): Option[A]
-//  def nameOf(value: A): String
 }
 
 object Enumerable {
