@@ -13,7 +13,7 @@ object CodeCoverageSettings {
       ".*GuiceInjector",
       ".*MigrationService",
       ".*StartupModule.*",
-      ".*AuditServiceImpl.*",
+      ".*AuditService.*",
       ".*\\$anon.*",
       ".*EnumPathBinder.*"
     )
