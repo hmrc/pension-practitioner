@@ -2,7 +2,7 @@ import play.sbt.PlayImport.caffeine
 import sbt.*
 
 object AppDependencies {
-  private val bootstrapVersion = "9.12.0"
+  private val bootstrapVersion = "9.13.0"
   private val mongoVersion = "2.6.0"
 
   val compile = Seq(
@@ -10,7 +10,7 @@ object AppDependencies {
     "uk.gov.hmrc"                  %% "bootstrap-backend-play-30"  % bootstrapVersion,
     "com.networknt"                 % "json-schema-validator"      % "1.5.7",
     "uk.gov.hmrc"                  %% "domain-play-30"             % "11.0.0",
-    "com.fasterxml.jackson.module" %% "jackson-module-scala"       % "2.19.0",
+    "com.fasterxml.jackson.module" %% "jackson-module-scala"       % "2.19.1",
     caffeine
   )
 
