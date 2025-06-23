@@ -18,11 +18,7 @@ lazy val microservice = Project(appName, file("."))
     scalacOptions ++= Seq(
       "-feature",
       "-Wconf:src=routes/.*:s",
-      "-Xfatal-warnings",                           // Treat all warnings as errors
-      "-Wconf:src=target/.*:s",                     // silence warnings from compiled files
-      "-Wconf:msg=Flag.*repeatedly:silent",         // Suppress warnings for repeated flags
-      "-Wconf:src=.*StartupModule\\.scala.*:silent", // Suppress warning about unused Environment
-      "-Wconf:msg=.*unused explicit parameter.*&src=.*/SubscriptionController\\.scala:silent"
+      "-Wconf:msg=Flag.*repeatedly:silent"         // Suppress warnings for repeated flags
     )
   )
   .settings(
@@ -32,8 +28,4 @@ lazy val microservice = Project(appName, file("."))
   .settings(
     Test / fork := true,
     Test / javaOptions += "-Dconfig.file=conf/test.application.conf"
-  )
-  .settings(resolvers += Resolver.jcenterRepo)
-  .settings(
-    resolvers += MavenRepository("HMRC-open-artefacts-maven2", "https://open.artefacts.tax.service.gov.uk/maven2")
   )
