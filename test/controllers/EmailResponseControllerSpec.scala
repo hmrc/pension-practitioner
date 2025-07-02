@@ -62,7 +62,7 @@ class EmailResponseControllerSpec extends AsyncWordSpec with Matchers with Mocki
   override def beforeEach(): Unit = {
     reset(mockAuditService)
     reset(mockAuthConnector)
-    when(mockAuthConnector.authorise[Enrolments](any(), any())(any(), any()))
+    when(mockAuthConnector.authorise[Enrolments](any(), any())(using any(), any()))
       .thenReturn(Future.successful(enrolments))
   }
 
@@ -70,16 +70,16 @@ class EmailResponseControllerSpec extends AsyncWordSpec with Matchers with Mocki
     "respond OK when given EmailEvents" in {
       val result = controller.retrieveStatus(PSP_SUBSCRIPTION, requestId, encryptedEmail, encryptedPspId)(fakeRequest.withBody(Json.toJson(emailEvents)))
 
-      status(result) mustBe OK
-      verify(mockAuditService, times(4)).sendEvent(eventCaptor.capture())(any(), any())
+      status(result) `mustBe` OK
+      verify(mockAuditService, times(4)).sendEvent(eventCaptor.capture())(using any(), any())
       eventCaptor.getValue mustEqual EmailAuditEvent(psp, email, Complained, PSP_SUBSCRIPTION, requestId)
     }
 
     "respond with BAD_REQUEST when not given EmailEvents" in {
       val result = controller.retrieveStatus(PSP_SUBSCRIPTION, requestId, encryptedEmail, encryptedPspId)(fakeRequest.withBody(Json.obj("name" -> "invalid")))
 
-      verify(mockAuditService, never).sendEvent(any())(any(), any())
-      status(result) mustBe BAD_REQUEST
+      verify(mockAuditService, never).sendEvent(any())(using any(), any())
+      status(result) `mustBe` BAD_REQUEST
     }
   }
 
@@ -88,8 +88,8 @@ class EmailResponseControllerSpec extends AsyncWordSpec with Matchers with Mocki
       val result = controller
         .retrieveStatusForPSPDeregistration(encryptedPspId, encryptedEmail)(fakeRequest.withBody(Json.toJson(emailEvents)))
 
-      status(result) mustBe OK
-      verify(mockAuditService, times(4)).sendEvent(eventCaptor.capture())(any(), any())
+      status(result) `mustBe` OK
+      verify(mockAuditService, times(4)).sendEvent(eventCaptor.capture())(using any(), any())
       eventCaptor.getValue mustEqual PSPDeregistrationEmailAuditEvent(psp, email, Complained)
     }
 
@@ -97,8 +97,8 @@ class EmailResponseControllerSpec extends AsyncWordSpec with Matchers with Mocki
       val result = controller
         .retrieveStatusForPSPDeregistration(encryptedPspId, encryptedEmail)(fakeRequest.withBody(Json.obj("name" -> "invalid")))
 
-      verify(mockAuditService, never).sendEvent(any())(any(), any())
-      status(result) mustBe BAD_REQUEST
+      verify(mockAuditService, never).sendEvent(any())(using any(), any())
+      status(result) `mustBe` BAD_REQUEST
     }
   }
 }

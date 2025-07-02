@@ -36,28 +36,28 @@ class PSPSubscriptionTransformerSpec
         val transformer = new PSPSubscriptionTransformer
 
         val transformedJson = uaIndividualUK.transform(transformer.transformPsp).asOpt.value
-        transformedJson mustBe individualUK
+        transformedJson `mustBe` individualUK
       }
 
       "must transform from UserAnswers to ETMP AFT Return format for Non UK individual" in {
         val transformer = new PSPSubscriptionTransformer
 
         val transformedJson = uaIndividualNonUk.transform(transformer.transformPsp).asOpt.value
-        transformedJson mustBe individualNonUk
+        transformedJson `mustBe` individualNonUk
       }
 
       "must transform from UserAnswers to ETMP AFT Return format for existing UK company" in {
         val transformer = new PSPSubscriptionTransformer
 
         val transformedJson =uaCompanyUk.transform(transformer.transformPsp).asOpt.value
-        transformedJson mustBe companyUK
+        transformedJson `mustBe` companyUK
       }
 
       "must transform from UserAnswers to ETMP AFT Return format for Non UK partnership" in {
         val transformer = new PSPSubscriptionTransformer
 
         val transformedJson = uaPartnershipNonUK.transform(transformer.transformPsp).asOpt.value
-        transformedJson mustBe partnershipNonUK
+        transformedJson `mustBe` partnershipNonUK
       }
     }
 
@@ -66,28 +66,28 @@ class PSPSubscriptionTransformerSpec
         val transformer = new PSPSubscriptionTransformer
 
         val transformedJson = uaIndividualUKVariation.transform(transformer.transformPsp).asOpt.value
-        transformedJson mustBe individualUKVariation
+        transformedJson `mustBe` individualUKVariation
       }
 
       "must transform from UserAnswers to ETMP AFT Return format for Non UK individual" in {
         val transformer = new PSPSubscriptionTransformer
 
         val transformedJson = uaIndividualNonUkVariation.transform(transformer.transformPsp).asOpt.value
-        transformedJson mustBe individualNonUkVariation
+        transformedJson `mustBe` individualNonUkVariation
       }
 
       "must transform from UserAnswers to ETMP AFT Return format for existing UK company" in {
         val transformer = new PSPSubscriptionTransformer
 
         val transformedJson = uaCompanyNonUkVariation.transform(transformer.transformPsp).asOpt.value
-        transformedJson mustBe companyNonUKVariation
+        transformedJson `mustBe` companyNonUKVariation
       }
 
       "must transform from UserAnswers to ETMP AFT Return format for Non UK partnership" in {
         val transformer = new PSPSubscriptionTransformer
 
         val transformedJson = uaPartnershipUKVariation.transform(transformer.transformPsp).asOpt.value
-        transformedJson mustBe partnershipUKVariation
+        transformedJson `mustBe` partnershipUKVariation
       }
     }
   }

@@ -18,7 +18,7 @@ package controllers
 
 import com.google.inject.Inject
 import connectors.AssociationConnector
-import controllers.actions.{PsaAuthAction, PsaPspAuthAction, PsaSchemeAuthAction, PspAuthAction, PspSchemeAuthAction}
+import controllers.actions.{PsaAuthAction, PsaSchemeAuthAction, PspAuthAction, PspSchemeAuthAction}
 import models.SchemeReferenceNumber
 import play.api.Logger
 import play.api.libs.json.JsValue
@@ -33,7 +33,6 @@ import scala.concurrent.{ExecutionContext, Future}
 class AssociationController @Inject()(
                                        associationConnector: AssociationConnector,
                                        cc: ControllerComponents,
-                                       authAction: PsaPspAuthAction,
                                        psaAuthAction: PsaAuthAction,
                                        psaSchemeAuthAction: PsaSchemeAuthAction,
                                        pspAuthAction: PspAuthAction,

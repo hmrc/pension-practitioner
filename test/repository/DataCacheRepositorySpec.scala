@@ -18,7 +18,8 @@ package repository
 
 import crypto.DataEncryptor
 import org.mockito.ArgumentMatchers
-import org.mockito.Mockito._
+import org.mockito.Mockito.*
+import org.mongodb.scala.gridfs.ObservableFuture
 import org.mongodb.scala.model.Filters
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.must.Matchers
@@ -34,14 +35,22 @@ import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 import utils.LocalMongoDB
 
 import java.time.Instant
+import scala.compiletime.uninitialized
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class DataCacheRepositorySpec extends AnyWordSpec with MockitoSugar with Matchers with LocalMongoDB with BeforeAndAfter with
-  BeforeAndAfterAll with ScalaFutures with GuiceOneAppPerSuite { // scalastyle:off magic.number
+class DataCacheRepositorySpec
+  extends AnyWordSpec
+    with MockitoSugar
+    with Matchers
+    with LocalMongoDB
+    with BeforeAndAfter
+    with BeforeAndAfterAll
+    with ScalaFutures
+    with GuiceOneAppPerSuite { // scalastyle:off magic.number
 
   override implicit val patienceConfig: PatienceConfig = PatienceConfig(Span(30, Seconds), Span(1, Millis))
 
-  var dataCacheRepository: DataCacheRepository = _
+  var dataCacheRepository: DataCacheRepository = uninitialized
 
   implicit val dateFormat: Format[Instant] = MongoJavatimeFormats.instantFormat
 
@@ -59,7 +68,7 @@ class DataCacheRepositorySpec extends AnyWordSpec with MockitoSugar with Matcher
   }
 
   override def beforeAll(): Unit = {
-    when(mockConfig.get[String](ArgumentMatchers.eq("mongodb.psp-cache.name"))(ArgumentMatchers.any()))
+    when(mockConfig.get[String](ArgumentMatchers.eq("mongodb.psp-cache.name"))(using ArgumentMatchers.any()))
       .thenReturn("psp-journey")
     dataCacheRepository = buildFormRepository(mongoHost, mongoPort)
     super.beforeAll()
@@ -77,7 +86,7 @@ class DataCacheRepositorySpec extends AnyWordSpec with MockitoSugar with Matcher
       } yield documentsInDB
 
       whenReady(documentsInDB) { documentsInDB =>
-        documentsInDB.size mustBe 1
+        documentsInDB.size `mustBe` 1
       }
     }
 
@@ -91,7 +100,7 @@ class DataCacheRepositorySpec extends AnyWordSpec with MockitoSugar with Matcher
       } yield dataRetrieved
 
       whenReady(result) {
-        _ mustBe Some(dummyData)
+        _ `mustBe` Some(dummyData)
       }
     }
   }
@@ -105,7 +114,7 @@ class DataCacheRepositorySpec extends AnyWordSpec with MockitoSugar with Matcher
       } yield resultOfGet
 
       whenReady(result) {
-        _ mustBe None
+        _ `mustBe` None
       }
     }
   }
@@ -121,7 +130,7 @@ class DataCacheRepositorySpec extends AnyWordSpec with MockitoSugar with Matcher
       } yield dataRetrieved
 
       whenReady(saveAndRemoveData) {
-        _ mustBe None
+        _ `mustBe` None
       }
     }
   }

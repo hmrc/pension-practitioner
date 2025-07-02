@@ -55,7 +55,7 @@ class PsaAuthAction @Inject()(
 
   override def
   invokeBlock[A](request: Request[A], block: PsaAuthRequest[A] => Future[Result]): Future[Result] =
-    invoke(request, block)(HeaderCarrierConverter.fromRequest(request))
+    invoke(request, block)(using HeaderCarrierConverter.fromRequest(request))
 
   private def invoke[A](request: Request[A], block: PsaAuthRequest[A] => Future[Result])
                        (implicit hc: HeaderCarrier): Future[Result] = {

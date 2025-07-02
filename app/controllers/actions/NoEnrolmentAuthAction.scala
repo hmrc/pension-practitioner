@@ -43,7 +43,7 @@ class NoEnrolmentAuthAction @Inject()(
     with Logging {
 
   override def invokeBlock[A](request: Request[A], block: NoEnrolmentAuthRequest[A] => Future[Result]): Future[Result] =
-    invoke(request, block)(HeaderCarrierConverter.fromRequest(request))
+    invoke(request, block)(using HeaderCarrierConverter.fromRequest(request))
 
   private def invoke[A](request: Request[A], block: NoEnrolmentAuthRequest[A] => Future[Result])
                (implicit hc: HeaderCarrier): Future[Result] = {

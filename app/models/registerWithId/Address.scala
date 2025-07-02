@@ -56,7 +56,7 @@ case class UkAddress(addressLine1: String, addressLine2: Option[String] = None, 
 object UkAddress {
 
   val apiReads: Reads[UkAddress] = (
-    JsPath.read(Address.commonAddressElementsReads) and
+    JsPath.read(using Address.commonAddressElementsReads) and
       (JsPath \ "postalCode").read[String]
     ) ((common, postalCode) => UkAddress(common._1, common._2, common._3, common._4, common._5, postalCode))
 
@@ -69,7 +69,7 @@ case class InternationalAddress(addressLine1: String, addressLine2: Option[Strin
 
 object InternationalAddress {
   val apiReads: Reads[InternationalAddress] = (
-    JsPath.read(Address.commonAddressElementsReads) and
+    JsPath.read(using Address.commonAddressElementsReads) and
       (JsPath \ "postalCode").readNullable[String]
     ) ((common, postalCode) => InternationalAddress(common._1, common._2, common._3, common._4, common._5, postalCode))
 

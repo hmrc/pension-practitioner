@@ -72,7 +72,7 @@ class NoEnrolmentAuthActionSpec extends PlaySpec with GuiceOneAppPerSuite with B
           val controller = new Harness(authAction)
           val result = controller.onPageLoad()(FakeRequest())
 
-          status(result) mustBe UNAUTHORIZED
+          status(result) `mustBe` UNAUTHORIZED
         }
       }
     }

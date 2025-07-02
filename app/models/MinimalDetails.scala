@@ -36,7 +36,7 @@ object MinimalDetails {
   implicit val reads: Reads[MinimalDetails] = (
     (JsPath \ "email").read[String] and
       (JsPath \ "psaSuspensionFlag").readNullable[Boolean] and
-      (JsPath \ "minimalDetails" \ "individualDetails").readNullable[IndividualDetails](IndividualDetails.individualDetailReads) and
+      (JsPath \ "minimalDetails" \ "individualDetails").readNullable[IndividualDetails](using IndividualDetails.individualDetailReads) and
       (JsPath \ "minimalDetails" \ "organisationOrPartnershipName").readNullable[String] and
       (JsPath \ "rlsFlag").read[Boolean] and
       (JsPath \ "deceasedFlag").read[Boolean]

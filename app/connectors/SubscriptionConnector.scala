@@ -20,12 +20,13 @@ import audit.SubscriptionAuditService
 import com.google.inject.Inject
 import config.AppConfig
 import play.api.Logger
-import play.api.http.Status._
-import play.api.libs.json._
+import play.api.http.Status.*
+import play.api.libs.json.*
+import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
 import play.api.mvc.RequestHeader
 import transformations.toUserAnswers.PspDetailsTransformer
-import uk.gov.hmrc.http.HttpReads.Implicits._
-import uk.gov.hmrc.http._
+import uk.gov.hmrc.http.*
+import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
 import utils.{HttpResponseHelper, InvalidPayloadHandler}
 
@@ -53,7 +54,7 @@ class SubscriptionConnector @Inject()(
 
     httpClientV2.post(url)
       .withBody(data)
-      .setHeader(headerCarrier.extraHeaders: _*)
+      .setHeader(headerCarrier.extraHeaders*)
       .execute[HttpResponse] map { response =>
       responseToEither(response = response, url = url.toString)
     } andThen subscriptionAuditService.sendSubscribeAuditEvent(externalId, data) andThen
@@ -79,7 +80,7 @@ class SubscriptionConnector @Inject()(
     val url = url"${config.subscriptionDetailsUrl.format(pspId)}"
 
     httpClientV2.get(url)
-      .setHeader(hc.extraHeaders: _*)
+      .setHeader(hc.extraHeaders*)
       .execute[HttpResponse] map { response =>
       response.status match {
         case OK =>
@@ -98,7 +99,7 @@ class SubscriptionConnector @Inject()(
 
     httpClientV2.post(url)
       .withBody(data)
-      .setHeader(hc.extraHeaders: _*)
+      .setHeader(hc.extraHeaders*)
       .execute[HttpResponse] map { response =>
         responseToEither(response = response, url = url.toString)
       } andThen

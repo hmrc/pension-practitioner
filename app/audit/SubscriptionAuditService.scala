@@ -17,9 +17,9 @@
 package audit
 
 import com.google.inject.Inject
-import play.api.libs.functional.syntax._
-import play.api.libs.json.Reads._
-import play.api.libs.json._
+import play.api.libs.functional.syntax.*
+import play.api.libs.json.*
+import play.api.libs.json.Reads.*
 import play.api.mvc.RequestHeader
 import uk.gov.hmrc.http.{HttpException, HttpResponse, UpstreamErrorResponse}
 
@@ -68,6 +68,7 @@ case class PSPSubscription(
     ).getOrElse(throw ExpandAcronymTransformerFailed)
 
   private val requestExpandAcronymTransformer: JsValue => JsObject =
+    import play.api.libs.json.Reads.JsObjectReducer
     json => json.as[JsObject].transform(
       __.json.update(
         (
@@ -80,7 +81,7 @@ case class PSPSubscription(
             (__ \ "subscriptionTypeAndPensionSchemePractitionerIdDetails" \ "pensionSchemePractitionerId").json.copyFrom(
               (__ \ "subscriptionTypeAndPSPIDDetails" \ "pspid").json.pick) orElse doNothing
             )
-          ) reduce
+          ).reduce
       ) andThen
         (__ \ "subscriptionTypeAndPSPIDDetails").json.prune andThen
         (__ \ "subscriptionTypeAndPensionSchemePractitionerIdDetails" \ "existingPSPID").json.prune andThen

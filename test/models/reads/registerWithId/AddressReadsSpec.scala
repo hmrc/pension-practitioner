@@ -34,27 +34,27 @@ class AddressReadsSpec extends AnyWordSpec with Matchers with OptionValues {
       "we have a UK address" when {
         val result = address.as[Address].asInstanceOf[UkAddress]
         "with addressLine 1" in {
-          result.addressLine1 mustBe ukAddressSample.addressLine1
+          result.addressLine1 `mustBe` ukAddressSample.addressLine1
         }
 
         "with addressLine 2" in {
-          result.addressLine2 mustBe ukAddressSample.addressLine2
+          result.addressLine2 `mustBe` ukAddressSample.addressLine2
         }
 
         "with an optional addressLine 3" in {
-          result.addressLine3 mustBe ukAddressSample.addressLine3
+          result.addressLine3 `mustBe` ukAddressSample.addressLine3
         }
 
         "with an optional addressLine 4" in {
-          result.addressLine4 mustBe ukAddressSample.addressLine4
+          result.addressLine4 `mustBe` ukAddressSample.addressLine4
         }
 
         "with a postalCode" in {
-          result.postalCode mustBe ukAddressSample.postalCode
+          result.postalCode `mustBe` ukAddressSample.postalCode
         }
 
         "with countryCode" in {
-          result.countryCode mustBe ukAddressSample.countryCode
+          result.countryCode `mustBe` ukAddressSample.countryCode
         }
 
       }
@@ -66,25 +66,25 @@ class AddressReadsSpec extends AnyWordSpec with Matchers with OptionValues {
         val result = address.as[Address].asInstanceOf[InternationalAddress]
 
         "with addressLine 1" in {
-          result.addressLine1 mustBe ukAddressSample.addressLine1
+          result.addressLine1 `mustBe` ukAddressSample.addressLine1
         }
 
         "with optional addressLine 2" in {
-          result.addressLine2 mustBe ukAddressSample.addressLine2
+          result.addressLine2 `mustBe` ukAddressSample.addressLine2
         }
 
         "with an optional addressLine 3" in {
-          result.addressLine3 mustBe ukAddressSample.addressLine3
+          result.addressLine3 `mustBe` ukAddressSample.addressLine3
         }
 
         "with an optional addressLine 4" in {
-          result.addressLine4 mustBe ukAddressSample.addressLine4
+          result.addressLine4 `mustBe` ukAddressSample.addressLine4
         }
 
         "with no postal code" in {
           val result = address.as[Address]
 
-          result.asInstanceOf[InternationalAddress].postalCode mustBe None
+          result.asInstanceOf[InternationalAddress].postalCode `mustBe` None
         }
 
         "with postal code" in {
@@ -92,7 +92,7 @@ class AddressReadsSpec extends AnyWordSpec with Matchers with OptionValues {
 
           val result = input.as[Address]
 
-          result.asInstanceOf[InternationalAddress].postalCode mustBe nonUkAddressSample.postalCode
+          result.asInstanceOf[InternationalAddress].postalCode `mustBe` nonUkAddressSample.postalCode
         }
 
         "with territory defined as country code" in {
@@ -100,7 +100,7 @@ class AddressReadsSpec extends AnyWordSpec with Matchers with OptionValues {
 
           val result = input.as[Address]
 
-          result.asInstanceOf[InternationalAddress].countryCode mustBe nonUkAddressSample.countryCode
+          result.asInstanceOf[InternationalAddress].countryCode `mustBe` nonUkAddressSample.countryCode
         }
 
         "with territory defined as country code with leading space" in {
@@ -108,7 +108,7 @@ class AddressReadsSpec extends AnyWordSpec with Matchers with OptionValues {
 
           val result = input.as[Address]
 
-          result.asInstanceOf[InternationalAddress].countryCode mustBe nonUkAddressSample.countryCode
+          result.asInstanceOf[InternationalAddress].countryCode `mustBe` nonUkAddressSample.countryCode
         }
       }
     }

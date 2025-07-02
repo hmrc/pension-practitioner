@@ -54,9 +54,9 @@ class OrganisationRegistrantWritesSpec extends AnyWordSpec with Matchers {
           """.stripMargin
         )
 
-        val result = Json.toJson(orgRegistrant)(OrganisationRegistrant.writesOrganisationRegistrantRequest("test-correlation-id"))
+        val result = Json.toJson(orgRegistrant)(using OrganisationRegistrant.writesOrganisationRegistrantRequest("test-correlation-id"))
 
-        result mustBe expectedJsValue
+        result `mustBe` expectedJsValue
       }
     }
   }

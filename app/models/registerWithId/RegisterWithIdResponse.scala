@@ -17,8 +17,7 @@
 package models.registerWithId
 
 import models.enumeration.OrganisationTypeEnum
-import play.api.libs.functional.syntax._
-import play.api.libs.json._
+import play.api.libs.json.*
 
 case class RegisterWithIdResponse(
                                    safeId: String,
@@ -31,16 +30,7 @@ case class RegisterWithIdResponse(
                                  )
 
 object RegisterWithIdResponse {
-  implicit val reads: Reads[RegisterWithIdResponse] = Json.reads[RegisterWithIdResponse]
-  implicit val writes: Writes[RegisterWithIdResponse] = (
-    (JsPath \ "safeId").write[String] and
-      (JsPath \ "sapNumber").write[String] and
-      (JsPath \ "isAnIndividual").write[Boolean] and
-      (JsPath \ "individual").writeNullable[IndividualType] and
-      (JsPath \ "organisation").writeNullable[OrganisationType] and
-      (JsPath \ "address").write(Address.defaultWrites) and
-      (JsPath \ "contactDetails").write[ContactCommDetailsType]
-    ) (unlift(RegisterWithIdResponse.unapply))
+  implicit val format: OFormat[RegisterWithIdResponse] = Json.format[RegisterWithIdResponse]
 }
 
 case class OrganisationType(organisationName: String,

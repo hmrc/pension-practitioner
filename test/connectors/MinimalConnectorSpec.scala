@@ -76,7 +76,7 @@ class MinimalConnectorSpec extends AsyncWordSpec with Matchers with WireMockHelp
       )
 
       connector.getMinimalDetails(pspId, idType, regime).map { response =>
-        response.toOption.get mustBe minDetailsIndividual
+        response.toOption.get `mustBe` minDetailsIndividual
       }
     }
 
@@ -92,8 +92,8 @@ class MinimalConnectorSpec extends AsyncWordSpec with Matchers with WireMockHelp
 
       connector.getMinimalDetails(pspId, idType, regime) map {
         response =>
-          response.swap.getOrElse(HttpResponse(0, "")).body contains "INVALID_IDVALUE"
-          response.swap.getOrElse(HttpResponse(0, "")).status mustBe BAD_REQUEST
+          response.swap.getOrElse(HttpResponse(0, "")).body `contains` "INVALID_IDVALUE"
+          response.swap.getOrElse(HttpResponse(0, "")).status `mustBe` BAD_REQUEST
       }
 
     }
@@ -109,8 +109,8 @@ class MinimalConnectorSpec extends AsyncWordSpec with Matchers with WireMockHelp
 
       connector.getMinimalDetails(pspId, idType, regime) map {
         response =>
-          response.swap.getOrElse(HttpResponse(0, "")).body contains "NOT_FOUND"
-          response.swap.getOrElse(HttpResponse(0, "")).status mustBe NOT_FOUND
+          response.swap.getOrElse(HttpResponse(0, "")).body `contains` "NOT_FOUND"
+          response.swap.getOrElse(HttpResponse(0, "")).status `mustBe` NOT_FOUND
       }
     }
 
@@ -126,8 +126,8 @@ class MinimalConnectorSpec extends AsyncWordSpec with Matchers with WireMockHelp
 
       connector.getMinimalDetails(pspId, idType, regime) map {
         response =>
-          response.swap.getOrElse(HttpResponse(0, "")).body contains "FORBIDDEN"
-          response.swap.getOrElse(HttpResponse(0, "")).status mustBe FORBIDDEN
+          response.swap.getOrElse(HttpResponse(0, "")).body `contains` "FORBIDDEN"
+          response.swap.getOrElse(HttpResponse(0, "")).status `mustBe` FORBIDDEN
       }
     }
 
@@ -143,8 +143,8 @@ class MinimalConnectorSpec extends AsyncWordSpec with Matchers with WireMockHelp
 
       connector.getMinimalDetails(pspId, idType, regime) map {
         response =>
-          response.swap.getOrElse(HttpResponse(0, "")).body contains "SERVER_ERROR"
-          response.swap.getOrElse(HttpResponse(0, "")).status mustBe INTERNAL_SERVER_ERROR
+          response.swap.getOrElse(HttpResponse(0, "")).body `contains` "SERVER_ERROR"
+          response.swap.getOrElse(HttpResponse(0, "")).status `mustBe` INTERNAL_SERVER_ERROR
       }
     }
   }

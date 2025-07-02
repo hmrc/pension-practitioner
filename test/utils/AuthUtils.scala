@@ -35,8 +35,14 @@ object AuthUtils {
   val srn = "S2400000006"
   val externalId = "externalId"
 
-  def failedAuthStub(mockAuthConnector: AuthConnector): OngoingStubbing[Future[Unit]] = when(mockAuthConnector.authorise[Unit](any(), any())(any(), any())) thenReturn Future.failed(new Exception())
-  def authStub(mockAuthConnector: AuthConnector): OngoingStubbing[Future[Enrolments ~ Option[String]]] = when(mockAuthConnector.authorise[Enrolments ~ Option[String]](any(), any())(any(), any())) thenReturn Future.successful(AuthUtils.authResponse)
+  def failedAuthStub(mockAuthConnector: AuthConnector): OngoingStubbing[Future[Unit]] =
+    when(mockAuthConnector.authorise[Unit](any(), any())(using any(), any()))
+      `thenReturn` Future.failed(new Exception())
+
+  def authStub(mockAuthConnector: AuthConnector): OngoingStubbing[Future[Enrolments ~ Option[String]]] =
+    when(mockAuthConnector.authorise[Enrolments ~ Option[String]](any(), any())(using any(), any()))
+      `thenReturn` Future.successful(AuthUtils.authResponse)
+
   val authResponse = new ~(
     Enrolments(
       Set(
@@ -46,7 +52,8 @@ object AuthUtils {
   )
 
   def authStubPsa(mockAuthConnector: AuthConnector): OngoingStubbing[Future[Enrolments ~ Option[String]]] =
-    when(mockAuthConnector.authorise[Enrolments ~ Option[String]](any(), any())(any(), any())) thenReturn Future.successful(AuthUtils.authResponsePsa)
+    when(mockAuthConnector.authorise[Enrolments ~ Option[String]](any(), any())(using any(), any()))
+      `thenReturn` Future.successful(AuthUtils.authResponsePsa)
   val authResponsePsa = new ~(
     Enrolments(
       Set(
@@ -54,7 +61,9 @@ object AuthUtils {
       )
     ), Some(id)
   )
-  def noEnrolmentAuthStub(mockAuthConnector: AuthConnector): OngoingStubbing[Future[Option[String]]] = when(mockAuthConnector.authorise[Option[String]](any(), any())(any(), any())) thenReturn Future.successful(AuthUtils.noEnrolmentAuthResponse)
+  def noEnrolmentAuthStub(mockAuthConnector: AuthConnector): OngoingStubbing[Future[Option[String]]] =
+    when(mockAuthConnector.authorise[Option[String]](any(), any())(using any(), any()))
+      `thenReturn` Future.successful(AuthUtils.noEnrolmentAuthResponse)
 
   val noEnrolmentAuthResponse: Option[String] = Some(id)
 

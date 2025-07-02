@@ -21,11 +21,12 @@ import com.google.inject.Inject
 import config.AppConfig
 import models.registerWithId.RegisterWithIdResponse
 import models.registerWithoutId.{OrganisationRegistrant, RegisterWithoutIdIndividualRequest, RegisterWithoutIdResponse}
-import play.api.http.Status._
-import play.api.libs.json._
+import play.api.http.Status.*
+import play.api.libs.json.*
+import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
 import play.api.mvc.RequestHeader
-import uk.gov.hmrc.http.HttpReads.Implicits._
-import uk.gov.hmrc.http._
+import uk.gov.hmrc.http.*
+import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
 import utils.HttpResponseHelper
 
@@ -52,7 +53,7 @@ class RegistrationConnector @Inject()(
 
     httpClientV2.post(url)
       .withBody(registerData)
-      .setHeader(desHeaderCarrier.extraHeaders: _*)
+      .setHeader(desHeaderCarrier.extraHeaders*)
       .execute[HttpResponse] map { response =>
         handleHttpResponseWithIdForErrors(response, url.toString)
       } andThen registrationAuditService.sendRegisterWithIdAuditEvent(
@@ -79,7 +80,7 @@ class RegistrationConnector @Inject()(
 
     httpClientV2.post(url)
       .withBody(registerData)
-      .setHeader(desHeaderCarrier.extraHeaders: _*)
+      .setHeader(desHeaderCarrier.extraHeaders*)
       .execute[HttpResponse] map { response =>
         handleHttpResponseWithIdForErrors(response, url.toString)
       } andThen registrationAuditService.sendRegisterWithIdAuditEvent(
@@ -99,13 +100,13 @@ class RegistrationConnector @Inject()(
     val url = url"${config.registerWithoutIdIndividualUrl}"
     val correlationId = headerUtils.getCorrelationId
     val registerWithNoIdData =
-      Json.toJson(registerData)(
+      Json.toJson(registerData)(using 
         RegisterWithoutIdIndividualRequest.writesRegistrationNoIdIndividualRequest(correlationId)
       )
 
     httpClientV2.post(url)
       .withBody(registerWithNoIdData)
-      .setHeader(desHeaderCarrier.extraHeaders: _*)
+      .setHeader(desHeaderCarrier.extraHeaders*)
       .execute[HttpResponse] map { response =>
         handleHttpResponseWithoutIdForErrors(response, url.toString)
       } andThen registrationAuditService.sendRegisterWithoutIdAuditEvent(
@@ -125,13 +126,13 @@ class RegistrationConnector @Inject()(
     val url = url"${config.registerWithoutIdOrganisationUrl}"
     val correlationId = headerUtils.getCorrelationId
     val registerWithNoIdData =
-      Json.toJson(registerData)(
+      Json.toJson(registerData)(using
         OrganisationRegistrant.writesOrganisationRegistrantRequest(correlationId)
       )
 
     httpClientV2.post(url)
       .withBody(registerWithNoIdData)
-      .setHeader(desHeaderCarrier.extraHeaders: _*)
+      .setHeader(desHeaderCarrier.extraHeaders*)
       .execute[HttpResponse] map { response =>
         handleHttpResponseWithoutIdForErrors(response, url.toString)
       } andThen registrationAuditService.sendRegisterWithoutIdAuditEvent(

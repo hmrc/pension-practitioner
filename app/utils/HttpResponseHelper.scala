@@ -40,7 +40,7 @@ trait HttpResponseHelper extends HttpErrorFunctions {
         HttpEntity.Strict(ByteString(body), Some("application/json"))
       case message: String =>
         HttpEntity.Strict(ByteString(message), Some("text/plain"))
-      case _ =>
+      case null =>
         HttpEntity.NoEntity
     }
 

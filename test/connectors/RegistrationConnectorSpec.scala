@@ -89,7 +89,7 @@ class RegistrationConnectorSpec
 
       connector.registerWithIdIndividual(externalId, testNino, testRegisterDataIndividual).map {
         response =>
-          response mustBe Right(registerIndividualResponse.as[RegisterWithIdResponse])
+          response `mustBe` Right(registerIndividualResponse.as[RegisterWithIdResponse])
       }
     }
 
@@ -105,7 +105,7 @@ class RegistrationConnectorSpec
 
       connector.registerWithIdIndividual(externalId, testNino, testRegisterDataIndividual).map {
         response =>
-          response.left.value.responseCode mustBe BAD_REQUEST
+          response.left.value.responseCode `mustBe` BAD_REQUEST
           response.left.value.message must include("INVALID_NINO")
       }
     }
@@ -123,7 +123,7 @@ class RegistrationConnectorSpec
         connector.registerWithIdIndividual(externalId, testNino, testRegisterDataIndividual)
       ) map {
         ex =>
-          ex.statusCode mustBe SERVICE_UNAVAILABLE
+          ex.statusCode `mustBe` SERVICE_UNAVAILABLE
       }
     }
 
@@ -139,7 +139,7 @@ class RegistrationConnectorSpec
           )
       )
       connector.registerWithIdIndividual(externalId, testNino, testRegisterDataIndividual).map { _ =>
-        verify(mockAuditService, times(1)).sendEvent(eventCaptor.capture())(any(), any())
+        verify(mockAuditService, times(1)).sendEvent(eventCaptor.capture())(using any(), any())
         eventCaptor.getValue mustEqual PSPRegistration(
           withId = true,
           externalId = externalId,
@@ -167,7 +167,7 @@ class RegistrationConnectorSpec
 
       connector.registerWithIdOrganisation(externalId, testUtr, testRegisterDataOrganisation).map {
         response =>
-          response.value mustBe registerOrganisationResponse.as[RegisterWithIdResponse]
+          response.value `mustBe` registerOrganisationResponse.as[RegisterWithIdResponse]
       }
     }
 
@@ -183,7 +183,7 @@ class RegistrationConnectorSpec
 
       connector.registerWithIdOrganisation(externalId, testUtr, testRegisterDataOrganisation) map {
         res =>
-          res.left.value.responseCode mustBe BAD_REQUEST
+          res.left.value.responseCode `mustBe` BAD_REQUEST
           res.left.value.message must include("INVALID_UTR")
       }
     }
@@ -201,7 +201,7 @@ class RegistrationConnectorSpec
         connector.registerWithIdOrganisation(externalId, testUtr, testRegisterDataOrganisation)
       ) map {
         ex =>
-          ex.statusCode mustBe CONFLICT
+          ex.statusCode `mustBe` CONFLICT
       }
     }
 
@@ -218,7 +218,7 @@ class RegistrationConnectorSpec
       )
 
       connector.registerWithIdOrganisation(externalId, testUtr, testRegisterDataOrganisation).map { _ =>
-        verify(mockAuditService, times(1)).sendEvent(eventCaptor.capture())(any(), any())
+        verify(mockAuditService, times(1)).sendEvent(eventCaptor.capture())(using any(), any())
         eventCaptor.getValue mustEqual PSPRegistration(
           withId = true,
           externalId = externalId,
@@ -246,7 +246,7 @@ class RegistrationConnectorSpec
 
       connector.registrationNoIdOrganisation(externalId, organisationRegistrant).map {
         response =>
-          response mustBe Right(registerWithoutIdResponse)
+          response `mustBe` Right(registerWithoutIdResponse)
       }
     }
 
@@ -255,7 +255,7 @@ class RegistrationConnectorSpec
       when(mockHeaderUtils.getCorrelationId).thenReturn(testCorrelationId)
       val regWithoutIdRequest =
         Json.toJson(organisationRegistrant)(
-          OrganisationRegistrant.writesOrganisationRegistrantRequest(testCorrelationId)
+          using OrganisationRegistrant.writesOrganisationRegistrantRequest(testCorrelationId)
         )
       server.stubFor(
         post(urlEqualTo(registerOrganisationWithoutIdUrl))
@@ -267,7 +267,7 @@ class RegistrationConnectorSpec
       )
 
       connector.registrationNoIdOrganisation(externalId, organisationRegistrant).map { _ =>
-        verify(mockAuditService, times(1)).sendEvent(eventCaptor.capture())(any(), any())
+        verify(mockAuditService, times(1)).sendEvent(eventCaptor.capture())(using any(), any())
         eventCaptor.getValue mustEqual PSPRegistration(
           withId = false,
           externalId = externalId,
@@ -295,7 +295,7 @@ class RegistrationConnectorSpec
 
       connector.registrationNoIdIndividual(externalId, registerIndividualWithoutIdRequest).map {
         response =>
-          response mustBe Right(registerWithoutIdResponse)
+          response `mustBe` Right(registerWithoutIdResponse)
       }
     }
 
@@ -312,7 +312,7 @@ class RegistrationConnectorSpec
       )
 
       connector.registrationNoIdIndividual(externalId, registerIndividualWithoutIdRequest).map { _ =>
-        verify(mockAuditService, times(1)).sendEvent(eventCaptor.capture())(any(), any())
+        verify(mockAuditService, times(1)).sendEvent(eventCaptor.capture())(using any(), any())
         eventCaptor.getValue mustEqual PSPRegistration(
           withId = false,
           externalId = externalId,
@@ -434,7 +434,7 @@ object RegistrationConnectorSpec {
 
   private val registerIndividualWithoutIdRequestJson: JsValue =
     Json.toJson(registerIndividualWithoutIdRequest)(
-      RegisterWithoutIdIndividualRequest.writesRegistrationNoIdIndividualRequest(testCorrelationId)
+      using RegisterWithoutIdIndividualRequest.writesRegistrationNoIdIndividualRequest(testCorrelationId)
     )
 
   private def errorResponse(code: String): String = {

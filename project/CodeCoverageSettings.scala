@@ -3,11 +3,31 @@ import scoverage.ScoverageKeys
 
 object CodeCoverageSettings {
 
-  private val coverageExcludedFiles = "<empty>;Reverse.*;.*repository.*;" +
-    ".*BuildInfo.*;.*javascript.*;.*Routes.*;.*GuiceInjector;.*MigrationService"
+  private val coverageExcludedFiles: Seq[String] = Seq(
+      "<empty>",
+      "Reverse.*",
+      ".*repository.*",
+      ".*BuildInfo.*",
+      ".*javascript.*",
+      ".*Routes.*",
+      ".*GuiceInjector",
+      ".*MigrationService",
+      ".*StartupModule.*",
+      ".*AuditService.*",
+      ".*\\$anon.*",
+      ".*EnumPathBinder.*"
+    )
 
-  val settings: Seq[Setting[_]] = Seq(
-    ScoverageKeys.coverageExcludedFiles := coverageExcludedFiles,
+  private val implicitOFormatObjects: Seq[String] = Seq(
+      ".*MinimalDetailsEvent.*",
+      ".*PSPDetails.*",
+      ".*SchemeDetails.*",
+      ".*ListOfSchemes.*",
+      ".*PSPRegistration.*"
+    )
+
+  val settings: Seq[Setting[?]] = Seq(
+    ScoverageKeys.coverageExcludedFiles := (coverageExcludedFiles ++ implicitOFormatObjects).mkString(";"),
     ScoverageKeys.coverageMinimumStmtTotal := 80,
     ScoverageKeys.coverageFailOnMinimum := true,
     ScoverageKeys.coverageHighlighting := true,

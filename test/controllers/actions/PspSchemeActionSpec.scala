@@ -52,29 +52,29 @@ class PspSchemeActionSpec extends PlaySpec with MockitoSugar with BeforeAndAfter
   private def getResult = {
     new PspSchemeAuthAction(mockSchemeConnector)
       .apply(srn)
-      .invokeBlock(authRequest, { _: PspAuthRequest[AnyContent] => Future.successful(Ok("success")) })
+      .invokeBlock(authRequest, (_: PspAuthRequest[AnyContent]) => Future.successful(Ok("success")))
   }
 
   private def mockCheckForAssociation = {
-    when(mockSchemeConnector.checkForAssociation(ArgumentMatchers.eq(Right(PspId(AuthUtils.pspId))), ArgumentMatchers.eq(srn))(ArgumentMatchers.any()))
+    when(mockSchemeConnector.checkForAssociation(ArgumentMatchers.eq(Right(PspId(AuthUtils.pspId))), ArgumentMatchers.eq(srn))(using ArgumentMatchers.any()))
   }
 
   "PsaSchemeActionSpec" must {
     "return success response if pension scheme is associated with srn" in {
       mockCheckForAssociation.thenReturn(Future.successful(Right(true)))
       val result = getResult
-      status(result) mustBe OK
-      contentAsString(result) mustBe "success"
+      status(result) `mustBe` OK
+      contentAsString(result) `mustBe` "success"
     }
 
     "return Forbidden if pension scheme is not associated with srn" in {
       mockCheckForAssociation.thenReturn(Future.successful(Right(false)))
-      status(getResult) mustBe FORBIDDEN
+      status(getResult) `mustBe` FORBIDDEN
     }
 
     "return recover from error if association call fails" in {
       mockCheckForAssociation.thenReturn(Future.successful(Left(new HttpException("failed", 500))))
-      getResult.failed.map { _ mustBe new Exception("failed") }
+      getResult.failed.map { _ `mustBe` new Exception("failed") }
     }
   }
 }

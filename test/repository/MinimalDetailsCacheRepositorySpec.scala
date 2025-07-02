@@ -18,8 +18,9 @@ package repository
 
 import crypto.DataEncryptor
 import org.mockito.ArgumentMatchers
-import org.mockito.Mockito._
+import org.mockito.Mockito.*
 import org.mongodb.scala.model.Filters
+import org.mongodb.scala.{ObservableFuture, SingleObservableFuture}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.time.{Millis, Seconds, Span}
@@ -34,10 +35,19 @@ import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 import utils.LocalMongoDB
 
 import java.time.Instant
+import scala.compiletime.uninitialized
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class MinimalDetailsCacheRepositorySpec extends AnyWordSpec with MockitoSugar with Matchers with LocalMongoDB with BeforeAndAfter with
-  BeforeAndAfterEach with BeforeAndAfterAll with ScalaFutures with GuiceOneAppPerSuite { // scalastyle:off magic.number
+class MinimalDetailsCacheRepositorySpec
+  extends AnyWordSpec
+    with MockitoSugar
+    with Matchers
+    with LocalMongoDB
+    with BeforeAndAfter
+    with BeforeAndAfterEach
+    with BeforeAndAfterAll
+    with ScalaFutures
+    with GuiceOneAppPerSuite { // scalastyle:off magic.number
 
   override implicit val patienceConfig: PatienceConfig = PatienceConfig(Span(30, Seconds), Span(1, Millis))
 
@@ -56,12 +66,12 @@ class MinimalDetailsCacheRepositorySpec extends AnyWordSpec with MockitoSugar wi
     new MinimalDetailsCacheRepository(MongoComponent(mongoUri), mockConfig, app.injector.instanceOf[DataEncryptor])
   }
 
-  var minimalDetailsCacheRepository: MinimalDetailsCacheRepository = _
+  var minimalDetailsCacheRepository: MinimalDetailsCacheRepository = uninitialized
 
   override def beforeAll(): Unit = {
-    when(mockConfig.get[String](ArgumentMatchers.eq("mongodb.minimal-detail.name"))(ArgumentMatchers.any()))
+    when(mockConfig.get[String](ArgumentMatchers.eq("mongodb.minimal-detail.name"))(using ArgumentMatchers.any()))
       .thenReturn("minimal-detail")
-    when(mockConfig.get[Int](ArgumentMatchers.eq("mongodb.minimal-detail.timeToLiveInSeconds"))(ArgumentMatchers.any()))
+    when(mockConfig.get[Int](ArgumentMatchers.eq("mongodb.minimal-detail.timeToLiveInSeconds"))(using ArgumentMatchers.any()))
       .thenReturn(3600)
     minimalDetailsCacheRepository = buildFormRepository(mongoHost, mongoPort)
 
@@ -80,7 +90,7 @@ class MinimalDetailsCacheRepositorySpec extends AnyWordSpec with MockitoSugar wi
       } yield documentsInDB
 
       whenReady(documentsInDB) { documentsInDB =>
-        documentsInDB.size mustBe 1
+        documentsInDB.size `mustBe` 1
       }
     }
 
@@ -94,7 +104,7 @@ class MinimalDetailsCacheRepositorySpec extends AnyWordSpec with MockitoSugar wi
       } yield dataRetrieved
 
       whenReady(result) {
-        _ mustBe Some(dummyData)
+        _ `mustBe` Some(dummyData)
       }
     }
   }
@@ -108,7 +118,7 @@ class MinimalDetailsCacheRepositorySpec extends AnyWordSpec with MockitoSugar wi
       } yield resultOfGet
 
       whenReady(result) {
-        _ mustBe None
+        _ `mustBe` None
       }
     }
   }
@@ -124,7 +134,7 @@ class MinimalDetailsCacheRepositorySpec extends AnyWordSpec with MockitoSugar wi
       } yield dataRetrieved
 
       whenReady(saveAndRemoveData) {
-        _ mustBe None
+        _ `mustBe` None
       }
     }
   }
