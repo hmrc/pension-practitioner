@@ -11,8 +11,6 @@ object CodeCoverageSettings {
       ".*javascript.*",
       ".*Routes.*",
       ".*GuiceInjector",
-      ".*MigrationService",
-      ".*StartupModule.*",
       ".*AuditService.*",
       ".*\\$anon.*",
       ".*EnumPathBinder.*"

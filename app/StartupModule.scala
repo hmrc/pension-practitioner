@@ -16,10 +16,11 @@
 
 import com.google.inject.AbstractModule
 import play.api.{Configuration, Environment}
-import service.MigrationService
 
+import scala.annotation.nowarn
+
+@nowarn("msg=unused explicit parameter")
 class StartupModule(environment: Environment, configuration: Configuration) extends AbstractModule {
   override def configure(): Unit = {
-    if (configuration.get[Boolean]("mongodb.migration.enable")) bind(classOf[MigrationService]).asEagerSingleton()
   }
 }
