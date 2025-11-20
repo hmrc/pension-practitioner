@@ -27,6 +27,8 @@ import transformations.userAnswersToDes.PSPSubscriptionTransformer
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.{ErrorHandler, HttpResponseHelper}
+import scala.annotation.unused
+
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -43,7 +45,7 @@ class SubscriptionController @Inject()(
 
   private val logger = Logger(classOf[SubscriptionController])
 
-  def subscribePsp(journeyType: JourneyType.Name): Action[AnyContent] = noEnrolmentAuthAction.async { implicit request =>
+  def subscribePsp(@unused journeyType: JourneyType.Name): Action[AnyContent] = noEnrolmentAuthAction.async { implicit request =>
       val feJson = request.body.asJson
       logger.debug(s"[PSP-Subscription-Incoming-Payload]$feJson")
       feJson match {
