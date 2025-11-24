@@ -22,6 +22,7 @@ import models.enumeration.JourneyType.PSP_SUBSCRIPTION
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.*
+import org.scalactic.Prettifier.default
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AsyncWordSpec
@@ -34,16 +35,14 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import repository.{DataCacheRepository, MinimalDetailsCacheRepository}
 import uk.gov.hmrc.auth.core.*
-import uk.gov.hmrc.crypto.PlainText
-import org.scalactic.Prettifier.default
-import services.JsonCryptoService
+import uk.gov.hmrc.crypto.{ApplicationCrypto, PlainText}
 
 import java.time.Instant
 import scala.concurrent.Future
 
-class EmailResponseControllerSpec extends AsyncWordSpec with Matchers with MockitoSugar with BeforeAndAfterEach {
+class EmailResponseOldControllerSpec extends AsyncWordSpec with Matchers with MockitoSugar with BeforeAndAfterEach {
 
-  import EmailResponseControllerSpec._
+  import EmailResponseOldControllerSpec.*
 
   private val mockAuditService = mock[AuditService]
   private val mockAuthConnector = mock[AuthConnector]
@@ -57,12 +56,12 @@ class EmailResponseControllerSpec extends AsyncWordSpec with Matchers with Mocki
       bind[MinimalDetailsCacheRepository].toInstance(mock[MinimalDetailsCacheRepository])
     )).build()
 
-  private val crypto = application.injector.instanceOf[JsonCryptoService]
+  private val crypto = application.injector.instanceOf[ApplicationCrypto]
   private val controller = application.injector.instanceOf[EmailResponseController]
-  private val encryptedPspId = crypto.jsonCrypto.encrypt(PlainText(psp)).value
-  private val encryptedEmail = crypto.jsonCrypto.encrypt(PlainText(email)).value
-  private val invalidEncryptedPspId = crypto.jsonCrypto.encrypt(PlainText(invalidPsp)).value
-  private val invalidEncryptedEmail = crypto.jsonCrypto.encrypt(PlainText(invalidEmail)).value
+  private val encryptedPspId = crypto.QueryParameterCrypto.encrypt(PlainText(psp)).value
+  private val encryptedEmail = crypto.QueryParameterCrypto.encrypt(PlainText(email)).value
+  private val invalidEncryptedPspId = crypto.QueryParameterCrypto.encrypt(PlainText(invalidPsp)).value
+  private val invalidEncryptedEmail = crypto.QueryParameterCrypto.encrypt(PlainText(invalidEmail)).value
 
   override def beforeEach(): Unit = {
     reset(mockAuditService)
@@ -153,7 +152,7 @@ class EmailResponseControllerSpec extends AsyncWordSpec with Matchers with Mocki
   }
 }
 
-object EmailResponseControllerSpec {
+object EmailResponseOldControllerSpec {
   private val psp = "27654321"
   private val email = "test@test.com"
   private val invalidPsp = "xxxxx"
