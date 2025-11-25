@@ -21,15 +21,16 @@ import connectors.{SchemeConnector, SubscriptionConnector}
 import models.ListOfSchemes
 import models.enumeration.JourneyType
 import play.api.Logger
-import play.api.libs.json._
-import play.api.mvc._
+import play.api.libs.json.*
+import play.api.mvc.*
 import transformations.userAnswersToDes.PSPSubscriptionTransformer
-import uk.gov.hmrc.http._
+import uk.gov.hmrc.http.*
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.{ErrorHandler, HttpResponseHelper}
 import scala.annotation.unused
 
 
+import scala.annotation.unused
 import scala.concurrent.{ExecutionContext, Future}
 
 class SubscriptionController @Inject()(
