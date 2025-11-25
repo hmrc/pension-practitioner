@@ -27,7 +27,6 @@ import transformations.userAnswersToDes.PSPSubscriptionTransformer
 import uk.gov.hmrc.http.*
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.{ErrorHandler, HttpResponseHelper}
-import scala.annotation.unused
 
 
 import scala.annotation.unused
