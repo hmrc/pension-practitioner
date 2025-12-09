@@ -57,7 +57,7 @@ class EmailResponseOldController @Inject()(
                                         ): Action[JsValue] =
     Action(parser.tolerantJson) {
       implicit request =>
-        logger.warn("application parameter encrypted psp & emailAddress email status parameters")
+        logger.warn("application parameter PSPDeregistration encrypted psp & emailAddress email status parameters")
         auditEmailStatus(encryptedPspId, encryptedEmail)
     }
 }
