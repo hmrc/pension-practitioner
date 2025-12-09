@@ -84,10 +84,10 @@ trait AuditEmailStatus {
             ).foreach { event =>
               (maybeJourneyType, maybeRequestId) match {
                 case (Some(journeyType), Some(requestId)) =>
-                  logger.debug(s"Email Audit event coming from $journeyType is $event")
+                  logger.warn(s"Email Audit event coming from $journeyType is $event")
                   auditService.sendEvent(EmailAuditEvent(emailIdentifiers.pspId.id, emailIdentifiers.emailAddress, event.event, journeyType, requestId))
                 case _ =>
-                  logger.debug(s"Email Audit event is $event")
+                  logger.warn(s"Email Audit event is $event")
                   auditService.sendEvent(PSPDeregistrationEmailAuditEvent(emailIdentifiers.pspId.id, emailIdentifiers.emailAddress, event.event))
               }
             }
