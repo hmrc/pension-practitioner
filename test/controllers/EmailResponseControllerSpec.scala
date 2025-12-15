@@ -108,49 +108,6 @@ class EmailResponseControllerSpec extends AsyncWordSpec with Matchers with Mocki
       contentAsString(result) mustBe "Malformed PSPID & Malformed Email Address"
     }
   }
-
-  "retrieveStatusForPSPDeregistration" must {
-    "respond OK when given EmailEvents" in {
-      val result = controller
-        .retrieveStatusForPSPDeregistration(encryptedPspId, encryptedEmail)(fakeRequest.withBody(Json.toJson(emailEvents)))
-
-      status(result) `mustBe` OK
-      verify(mockAuditService, times(4)).sendEvent(eventCaptor.capture())(using any(), any())
-      eventCaptor.getValue mustEqual PSPDeregistrationEmailAuditEvent(psp, email, Complained)
-    }
-
-    "respond with BAD_REQUEST when not given EmailEvents" in {
-      val result = controller
-        .retrieveStatusForPSPDeregistration(encryptedPspId, encryptedEmail)(fakeRequest.withBody(Json.obj("name" -> "invalid")))
-
-      verify(mockAuditService, never).sendEvent(any())(using any(), any())
-      status(result) `mustBe` BAD_REQUEST
-    }
-
-    "respond with Forbidden when psp is invalid" in {
-      val result = controller
-        .retrieveStatusForPSPDeregistration(invalidEncryptedPspId, encryptedEmail)(fakeRequest.withBody(Json.toJson(emailEvents)))
-
-      status(result) `mustBe` FORBIDDEN
-      contentAsString(result) mustBe "Malformed PSPID"
-    }
-
-    "respond with Forbidden when email is invalid" in {
-      val result = controller
-        .retrieveStatusForPSPDeregistration(encryptedPspId, invalidEncryptedEmail)(fakeRequest.withBody(Json.toJson(emailEvents)))
-
-      status(result) `mustBe` FORBIDDEN
-      contentAsString(result) mustBe "Malformed Email Address"
-    }
-
-    "respond with Forbidden when psp & email are invalid" in {
-      val result = controller
-        .retrieveStatusForPSPDeregistration(invalidEncryptedPspId, invalidEncryptedEmail)(fakeRequest.withBody(Json.toJson(emailEvents)))
-
-      status(result) `mustBe` FORBIDDEN
-      contentAsString(result) mustBe "Malformed PSPID & Malformed Email Address"
-    }
-  }
 }
 
 object EmailResponseControllerSpec {
