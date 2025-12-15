@@ -57,7 +57,7 @@ class EmailResponseOldControllerSpec extends AsyncWordSpec with Matchers with Mo
     )).build()
 
   private val crypto = application.injector.instanceOf[ApplicationCrypto]
-  private val controller = application.injector.instanceOf[EmailResponseController]
+  private val controller = application.injector.instanceOf[EmailResponseOldController]
   private val encryptedPspId = crypto.QueryParameterCrypto.encrypt(PlainText(psp)).value
   private val encryptedEmail = crypto.QueryParameterCrypto.encrypt(PlainText(email)).value
   private val invalidEncryptedPspId = crypto.QueryParameterCrypto.encrypt(PlainText(invalidPsp)).value
@@ -102,49 +102,6 @@ class EmailResponseOldControllerSpec extends AsyncWordSpec with Matchers with Mo
 
     "respond with Forbidden when psp & email are invalid" in {
       val result = controller.retrieveStatus(PSP_SUBSCRIPTION, requestId, invalidEncryptedEmail, invalidEncryptedPspId)(fakeRequest.withBody(Json.toJson(emailEvents)))
-
-      status(result) `mustBe` FORBIDDEN
-      contentAsString(result) mustBe "Malformed PSPID & Malformed Email Address"
-    }
-  }
-
-  "retrieveStatusForPSPDeregistration" must {
-    "respond OK when given EmailEvents" in {
-      val result = controller
-        .retrieveStatusForPSPDeregistration(encryptedPspId, encryptedEmail)(fakeRequest.withBody(Json.toJson(emailEvents)))
-
-      status(result) `mustBe` OK
-      verify(mockAuditService, times(4)).sendEvent(eventCaptor.capture())(using any(), any())
-      eventCaptor.getValue mustEqual PSPDeregistrationEmailAuditEvent(psp, email, Complained)
-    }
-
-    "respond with BAD_REQUEST when not given EmailEvents" in {
-      val result = controller
-        .retrieveStatusForPSPDeregistration(encryptedPspId, encryptedEmail)(fakeRequest.withBody(Json.obj("name" -> "invalid")))
-
-      verify(mockAuditService, never).sendEvent(any())(using any(), any())
-      status(result) `mustBe` BAD_REQUEST
-    }
-
-    "respond with Forbidden when psp is invalid" in {
-      val result = controller
-        .retrieveStatusForPSPDeregistration(invalidEncryptedPspId, encryptedEmail)(fakeRequest.withBody(Json.toJson(emailEvents)))
-
-      status(result) `mustBe` FORBIDDEN
-      contentAsString(result) mustBe "Malformed PSPID"
-    }
-
-    "respond with Forbidden when email is invalid" in {
-      val result = controller
-        .retrieveStatusForPSPDeregistration(encryptedPspId, invalidEncryptedEmail)(fakeRequest.withBody(Json.toJson(emailEvents)))
-
-      status(result) `mustBe` FORBIDDEN
-      contentAsString(result) mustBe "Malformed Email Address"
-    }
-
-    "respond with Forbidden when psp & email are invalid" in {
-      val result = controller
-        .retrieveStatusForPSPDeregistration(invalidEncryptedPspId, invalidEncryptedEmail)(fakeRequest.withBody(Json.toJson(emailEvents)))
 
       status(result) `mustBe` FORBIDDEN
       contentAsString(result) mustBe "Malformed PSPID & Malformed Email Address"

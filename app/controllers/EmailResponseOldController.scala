@@ -50,14 +50,4 @@ class EmailResponseOldController @Inject()(
         logger.warn("application parameter encrypted psp & emailAddress email status parameters")
         auditEmailStatus(encryptedPspId, email, Some(journeyType), Some(requestId))
     }
-
-  def retrieveStatusForPSPDeregistration(
-                                          encryptedPspId: String,
-                                          encryptedEmail: String
-                                        ): Action[JsValue] =
-    Action(parser.tolerantJson) {
-      implicit request =>
-        logger.warn("application parameter PSPDeregistration encrypted psp & emailAddress email status parameters")
-        auditEmailStatus(encryptedPspId, encryptedEmail)
-    }
 }
