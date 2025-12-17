@@ -19,8 +19,6 @@ POST          /authorise-psp/:srn                                               
 POST          /de-authorise-psp/:srn                                                                            controllers.AssociationController.deAuthorisePspSrn(srn: SchemeReferenceNumber)
 POST          /de-authorise-psp-self/:srn                                                                       controllers.AssociationController.deAuthorisePspSelf(srn: SchemeReferenceNumber)
 
-POST          /email-response/:journeyType/:requestId/:email/:pspId                                             controllers.EmailResponseOldController.retrieveStatus(journeyType: JourneyType.Name, requestId: String, email: String, pspId: String)
-
 POST          /email-status-response/:journeyType/:requestId/:email/:pspId                                      controllers.EmailResponseController.retrieveStatus(journeyType: JourneyType.Name, requestId: String, email: String, pspId: String)
 
 GET           /get-minimal-details-self                                                                         controllers.MinimalDetailsController.getMinimalDetailsSelf
