@@ -16,8 +16,8 @@
 
 package utils
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.networknt.schema.{JsonSchema, JsonSchemaFactory, SpecVersion, ValidationMessage}
+import tools.jackson.databind.ObjectMapper
+import com.networknt.schema.{Error, Schema, SchemaRegistry, SpecificationVersion}
 import org.slf4j.LoggerFactory
 import play.api.libs.json._
 
@@ -28,9 +28,9 @@ class InvalidPayloadHandler {
 
   private val logger = LoggerFactory.getLogger("InvalidPayloadHandler")
 
-  private[utils] def loadSchema(schemaFileName: String): JsonSchema = {
+  private[utils] def loadSchema(schemaFileName: String): Schema = {
     val schemaUrl = getClass.getResourceAsStream(schemaFileName)
-    val factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V4)
+    val factory = SchemaRegistry.withDefaultDialect(SpecificationVersion.DRAFT_4)
     factory.getSchema(schemaUrl)
   }
 
@@ -41,7 +41,7 @@ class InvalidPayloadHandler {
 
   }
 
-  private[utils] def getFailures(schema: JsonSchema, json: JsValue): Set[ValidationFailure] = {
+  private[utils] def getFailures(schema: Schema, json: JsValue): Set[ValidationFailure] = {
 
     val mapper = new ObjectMapper()
     val jsonNode = mapper.readTree(json.toString())
@@ -51,7 +51,7 @@ class InvalidPayloadHandler {
     set.map {
       message =>
         val value = InvalidPayloadHandlerImpl.valueFromJson(message, json)
-        ValidationFailure(message.getType, message.getMessage, value)
+        ValidationFailure(message.getKeyword, message.getMessage, value)
     }
 
   }
@@ -63,7 +63,7 @@ class InvalidPayloadHandler {
 
   }
 
-  private[utils] def logFailures(schema: JsonSchema, json: JsValue, args: Seq[String]): Unit = {
+  private[utils] def logFailures(schema: Schema, json: JsValue, args: Seq[String]): Unit = {
 
     val failures = getFailures(schema, json)
     val msg = new StringBuilder()
@@ -86,8 +86,8 @@ class InvalidPayloadHandler {
 }
 
 object InvalidPayloadHandlerImpl {
-  private[utils] def valueFromJson(message: ValidationMessage, json: JsValue): Option[String] = {
-    message.getType match {
+  private[utils] def valueFromJson(message: Error, json: JsValue): Option[String] = {
+    message.getKeyword match {
       case "enum" | "format" | "maximum" | "maxLength" | "minimum" | "minLength" | "pattern" | "type" =>
         (json \ message.getMessageKey).toEither match {
           case Right(jsValue) =>
